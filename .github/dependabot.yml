@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # `catalog:` specifiers in pnpm-workspace.yaml are invisible to Dependabot
+  # (dependabot-core#12244) — the toolchain there is bumped by hand.
+  - package-ecosystem: 'npm'
+    directories:
+      - '/'
+      - '/packages/*'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    open-pull-requests-limit: 10

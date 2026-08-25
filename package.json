@@ -1,0 +1,36 @@
+{
+  "name": "enonic-ui-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for the Enonic UI toolkit packages",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/npm-enonic-ui-toolkit.git"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "vp run -r build",
+    "clean": "vp run -r clean",
+    "check": "vp check && pnpm run typecheck",
+    "check:fix": "vp check --fix && pnpm run typecheck",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "vp lint",
+    "fmt": "vp fmt",
+    "test": "vp test --run",
+    "test:watch": "vp test",
+    "version:set": "node scripts/version.mjs",
+    "release:dry": "pnpm -r publish --dry-run --no-git-checks"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@10.33.4"
+}

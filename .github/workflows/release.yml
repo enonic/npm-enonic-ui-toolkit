@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  precheck:
+    name: Verify the tag points at master or a version branch
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.contains.outputs.allowed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check if the tag commit is on an allowed branch
+        id: contains
+        shell: bash
+        run: |
+          git fetch --quiet origin '+refs/heads/*:refs/remotes/origin/*' || true
+
+          contains="$(git branch -r --contains "${GITHUB_SHA}" | sed 's/^[ *]*//')"
+
+          echo "Branches containing the tag commit:"
+          echo "${contains}"
+
+          if echo "${contains}" | grep -Eq '^origin/(main|master|[0-9]+\.[0-9]+)$'; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  npm-publish:
+    name: Publish to npm
+    needs: precheck
+    if: needs.precheck.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        with:
+          package_json_file: package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Lockstep versioning: the tag names one version, and every package carries it.
+      - name: Verify the tag matches every package version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          status=0
+
+          for manifest in package.json packages/*/package.json; do
+            pkg_version="$(node -p "require('./${manifest}').version")"
+            if [ "$tag_version" != "$pkg_version" ]; then
+              echo "Version mismatch in ${manifest}: tag=${tag_version} package.json=${pkg_version}"
+              status=1
+            fi
+          done
+
+          if [ "$status" != "0" ]; then
+            echo "Run 'pnpm version:set ${tag_version}' and tag the result."
+            exit 1
+          fi
+
+          echo "Every package is at ${tag_version}"
+
+      - name: Check
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      # --no-git-checks: the tag is checked out in detached HEAD state.
+      # A pre-release tag (v1.2.0-beta.1) publishes to the `beta` dist-tag, everything else to `latest`.
+      - name: Publish
+        run: pnpm -r publish --no-git-checks --tag ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          name: Enonic UI Toolkit ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

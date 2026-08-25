@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Typechecking the whole workspace as one program, so a package's own tsconfig stays free of
+    // path mapping — `vp pack` reads it to emit declarations, and there the sibling packages must
+    // resolve through node_modules to their published types, not be inlined from source.
+    "paths": {
+      "@enonic/ui-types": ["./packages/ui-types/src/index.ts"],
+      "@enonic/ui-utils": ["./packages/ui-utils/src/index.ts"],
+      "@enonic/ui-kit": ["./packages/ui-kit/src/index.ts"],
+      "@enonic/input-types": ["./packages/input-types/src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["packages/*/src/**/*", "packages/*/vite.config.ts", "vite.config.ts", "scripts/**/*"]
+}

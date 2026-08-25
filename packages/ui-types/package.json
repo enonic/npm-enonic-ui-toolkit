@@ -1,0 +1,50 @@
+{
+  "name": "@enonic/ui-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types and behavioural contracts for Enonic UIs",
+  "keywords": [
+    "enonic",
+    "types",
+    "typescript"
+  ],
+  "homepage": "https://github.com/enonic/npm-enonic-ui-toolkit#readme",
+  "bugs": {
+    "url": "https://github.com/enonic/npm-enonic-ui-toolkit/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Enonic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/npm-enonic-ui-toolkit.git",
+    "directory": "packages/ui-types"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "scripts": {
+    "build": "vp pack",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "publint": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

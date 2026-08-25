@@ -1,0 +1,38 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# AI Assistant
+.mcp.json
+settings.local.json
+.claude/scheduled_tasks.lock
+
+# Build files
+dist/
+*.tsbuildinfo
+
+# Build tools
+node_modules/
+.pnpm-store/
+.vite-plus/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Misc
+coverage/
+.cache/
+.temp/
+.tmp/
+.oxlintcache
+*.local

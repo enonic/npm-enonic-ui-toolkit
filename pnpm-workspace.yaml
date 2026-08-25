@@ -1,0 +1,36 @@
+packages:
+  - 'packages/*'
+
+# One version of the toolchain for every package. Dependabot cannot update a `catalog:`
+# specifier (dependabot-core#12244), so these are bumped by hand — which is also why only the
+# toolchain lives here and package dependencies stay in each package.json.
+catalog:
+  # Node 24 is the runtime this repository targets (.nvmrc, engines); types for a newer
+  # major would let code compile against APIs the minimum supported runtime does not have.
+  '@types/node': ^24.13.3
+  '@types/react': ^19.2.18
+  '@types/react-dom': ^19.2.4
+  preact: ^10.29.8
+  publint: ^0.3.24
+  typescript: ^7.0.2
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
+  vite-plus: 0.2.9
+  vitest: 4.1.10
+
+overrides:
+  vite: 'catalog:'
+  vitest: 'catalog:'
+
+# `vite` is an alias onto vite-plus-core: it satisfies vitest's peer at runtime but not by
+# version. react/react-dom are aliased to preact/compat, so the real packages never install.
+peerDependencyRules:
+  allowAny:
+    - vite
+    - react
+    - react-dom
+  allowedVersions:
+    vite: '*'
+
+minimumReleaseAge: 4320 # 3 days
+minimumReleaseAgeExclude:
+  - '@enonic/*'
