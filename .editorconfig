@@ -1,3 +1,5 @@
+# Not boilerplate: oxfmt reads `indent_size` from here, so this file sets the workspace's
+# 2-space indent. `vite.config.ts` owns the rest of the format configuration.
 root = true
 
 [*]

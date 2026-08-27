@@ -1,4 +1,9 @@
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vite-plus';
+
+const source = (name: string): string =>
+  fileURLToPath(new URL(`packages/${name}/src/index.ts`, import.meta.url));
 
 /**
  * Workspace-level configuration: linting, formatting and tests run once over every package.
@@ -17,6 +22,12 @@ export default defineConfig({
     ignorePatterns: ['**/dist/**', '.github/**'],
   },
 
+  // Run on commit by the hook dispatcher; `vp check --fix` so lint autofixes ride along.
+  staged: {
+    '*.{ts,tsx}': 'vp check --fix',
+    '*.{json,md,yml,yaml}': 'vp fmt',
+  },
+
   // `vp run -r <task>` walks the packages in dependency order; caching package.json scripts is
   // what makes a second `build` free when nothing changed.
   run: {
@@ -30,12 +41,20 @@ export default defineConfig({
   },
 
   // Every package is Preact; `react` is what the ecosystem's types and libraries import.
+  // These aliases govern lint and tests only — `vp pack` emits `react` as a bare external,
+  // declared in each package's peerDependencies.
   resolve: {
     alias: {
       react: 'preact/compat',
       'react-dom': 'preact/compat',
       'react-dom/client': 'preact/compat/client',
       'react/jsx-runtime': 'preact/jsx-runtime',
+      // Siblings resolve to source in tests, mirroring the root tsconfig `paths`, so a test
+      // needs no build and never runs against a stale dist.
+      '@enonic/ui-types': source('ui-types'),
+      '@enonic/ui-utils': source('ui-utils'),
+      '@enonic/ui-kit': source('ui-kit'),
+      '@enonic/input-types': source('input-types'),
     },
     dedupe: ['preact', 'preact/compat'],
   },

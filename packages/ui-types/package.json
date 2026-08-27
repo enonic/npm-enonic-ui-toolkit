@@ -36,7 +36,7 @@
     "provenance": false
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && node ../../scripts/assert-externals.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
@@ -45,6 +45,6 @@
     "vite-plus": "catalog:"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.12.0"
   }
 }

@@ -1,12 +1,13 @@
 {
   "name": "@enonic/input-types",
   "version": "0.1.0",
-  "description": "XP input types as Preact components, and the form that composes them",
+  "description": "XP input types as React components, and the form that composes them",
   "keywords": [
     "enonic",
     "form",
     "input-types",
     "preact",
+    "react",
     "xp"
   ],
   "homepage": "https://github.com/enonic/npm-enonic-ui-toolkit#readme",
@@ -38,7 +39,7 @@
     "provenance": false
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && node ../../scripts/assert-externals.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
@@ -53,6 +54,6 @@
     "preact": ">=10.0.0"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.12.0"
   }
 }

@@ -1,11 +1,12 @@
 {
   "name": "@enonic/ui-kit",
   "version": "0.1.0",
-  "description": "Composite Preact components with behaviour: layouts, panels, toolbars, browse screens",
+  "description": "Composite React components with behaviour: layouts, panels, toolbars, browse screens",
   "keywords": [
     "components",
     "enonic",
     "preact",
+    "react",
     "tailwind",
     "ui"
   ],
@@ -38,7 +39,7 @@
     "provenance": false
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && node ../../scripts/assert-externals.mjs",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
@@ -53,6 +54,6 @@
     "preact": ">=10.0.0"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=22.12.0"
   }
 }

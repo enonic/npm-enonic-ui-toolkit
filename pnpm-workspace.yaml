@@ -1,13 +1,15 @@
 packages:
   - 'packages/*'
 
-# One version of the toolchain for every package. Dependabot cannot update a `catalog:`
-# specifier (dependabot-core#12244), so these are bumped by hand — which is also why only the
-# toolchain lives here and package dependencies stay in each package.json.
+# One version of the toolchain for every package, bumped by hand. Dependabot does read
+# `catalog:` specifiers (GA 2025-02-04), but dependabot-core#12244 is still open: a catalog
+# bump rewrites the lockfile `specifier` to a concrete version, which then fails
+# `pnpm install --frozen-lockfile`. Package dependencies stay in each package.json because
+# a single toolchain version across five manifests is worth centralising and their deps are not.
 catalog:
-  # Node 24 is the runtime this repository targets (.nvmrc, engines); types for a newer
-  # major would let code compile against APIs the minimum supported runtime does not have.
-  '@types/node': ^24.13.3
+  # Types for the Node the toolchain runs on (.nvmrc). The published packages are browser
+  # code with a lower engines floor; `scripts/assert-externals.mjs` keeps `node:*` out of them.
+  '@types/node': ^26.2.0
   '@types/react': ^19.2.18
   '@types/react-dom': ^19.2.4
   preact: ^10.29.8
@@ -30,6 +32,12 @@ peerDependencyRules:
     - react-dom
   allowedVersions:
     vite: '*'
+
+# A peer conflict is an install error, not a warning; the rules above are the exceptions.
+strictPeerDependencies: true
+
+savePrefix: '~'
+auditLevel: moderate
 
 minimumReleaseAge: 4320 # 3 days
 minimumReleaseAgeExclude:

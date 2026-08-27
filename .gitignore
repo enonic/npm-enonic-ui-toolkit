@@ -18,6 +18,8 @@ dist/
 node_modules/
 .pnpm-store/
 .vite-plus/
+# Only the regenerated dispatcher; hooks directly in .vite-hooks/ are project-owned.
+.vite-hooks/_/
 
 # OS files
 .DS_Store
