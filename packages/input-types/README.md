@@ -11,13 +11,15 @@ domain the rest of the toolkit knows nothing about.
 
 ## Install
 
+Pick one framework — the same contract as `@enonic/ui`:
+
 ```sh
-pnpm add @enonic/input-types preact
+pnpm add @enonic/input-types react react-dom   # React
+pnpm add @enonic/input-types preact            # Preact
 ```
 
-The components are written as React code and run on Preact, the same way `@enonic/ui` does. The
-published files import `react` as a bare specifier; the consuming application maps it to
-`preact/compat` in its bundler, and the real React never installs:
+The components are written as React code. On Preact, map React's names to `preact/compat` in the
+application's bundler — the real React never installs:
 
 ```ts
 // vite.config.ts of the consuming application

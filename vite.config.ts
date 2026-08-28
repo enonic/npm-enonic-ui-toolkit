@@ -40,9 +40,9 @@ export default defineConfig({
     passWithNoTests: true,
   },
 
-  // Every package is Preact; `react` is what the ecosystem's types and libraries import.
+  // The workspace builds and tests on Preact; `react` is what package sources import.
   // These aliases govern lint and tests only — `vp pack` emits `react` as a bare external,
-  // declared in each package's peerDependencies.
+  // and `react`/`react-dom`/`preact` become optional peers with the first component.
   resolve: {
     alias: {
       react: 'preact/compat',

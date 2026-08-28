@@ -47,7 +47,7 @@ pnpm install
 pnpm check && pnpm build && pnpm test
 
 git commit -am "Release v0.2.0"
-git tag v0.2.0
+git tag -a v0.2.0 -m "v0.2.0"    # annotated: --follow-tags does not push lightweight tags
 git push origin master --follow-tags
 ```
 

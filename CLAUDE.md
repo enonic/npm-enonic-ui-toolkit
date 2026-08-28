@@ -27,9 +27,11 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 
 - Everything `dist` imports must be declared in that package's `dependencies` or
   `peerDependencies` — `vp pack` externalizes what it cannot resolve and still exits 0;
-  `scripts/assert-externals.mjs` fails the build on the difference.
+  `scripts/assert-externals.mjs` fails the build on the difference. The inverse — a resolvable
+  devDependency bundled _into_ dist — is an error via `deps.onlyBundle: []` in each pack config.
 - Package sources import `react`, never `preact/compat` — the workspace alias serves lint and
-  tests only, and the published artifact carries bare `react` imports declared as peers.
+  tests only, and the published artifact carries bare `react` imports. `react`, `react-dom` and
+  `preact` become **optional** peers with the first component; the consumer picks one framework.
 - A package's own tsconfig keeps **no** `paths`: `vp lint` and `vp pack` read it, and mapping
   siblings to source would inline their types into the published declarations.
 - After changing a version in the catalog: `rm -rf node_modules pnpm-lock.yaml && pnpm install`,

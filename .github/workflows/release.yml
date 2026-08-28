@@ -9,6 +9,7 @@ on:
 concurrency:
   group: release
   cancel-in-progress: false
+  queue: max
 
 permissions:
   contents: write
@@ -78,6 +79,22 @@ jobs:
           fi
 
           echo "Every package is at ${tag_version}"
+
+      # A patch tagged on an old version branch would republish `latest` backward — the
+      # sequential case no concurrency setting prevents. Pre-releases publish to `beta`
+      # and are exempt.
+      - name: Refuse to move `latest` backward
+        if: ${{ !contains(github.ref_name, '-') }}
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          published="$(npm view @enonic/ui-types version 2>/dev/null || echo 0.0.0)"
+          highest="$(printf '%s\n%s\n' "$published" "$tag_version" | sort -V | tail -1)"
+
+          if [ "$highest" != "$tag_version" ]; then
+            echo "::error::latest on npm is ${published}; publishing ${tag_version} would move it backward"
+            exit 1
+          fi
 
       - name: Check
         run: pnpm check

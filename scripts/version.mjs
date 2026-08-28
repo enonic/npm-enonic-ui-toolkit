@@ -8,8 +8,11 @@ import { fileURLToPath } from 'node:url';
 
 const version = process.argv[2];
 
-// semver without build metadata: `+` does not survive a git tag name anyway.
-const shape = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
+// semver without build metadata, which npm strips from a published version anyway.
+const identifier = String.raw`(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)`;
+const shape = new RegExp(
+  String.raw`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-${identifier}(\.${identifier})*)?$`,
+);
 
 if (version == null || !shape.test(version)) {
   console.error('Usage: pnpm version:set <x.y.z[-tag]>');

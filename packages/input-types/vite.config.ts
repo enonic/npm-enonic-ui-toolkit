@@ -4,6 +4,9 @@ import { defineConfig } from 'vite-plus';
 export default defineConfig({
   pack: {
     entry: ['src/index.ts'],
+    // Nothing may be bundled from node_modules: a resolvable devDependency would otherwise be
+    // inlined silently — a frozen copy of a sibling or react shipping inside dist.
+    deps: { onlyBundle: [] },
     outDir: 'dist',
     format: 'esm',
     platform: 'neutral', // browser code, but no DOM-only assumption at build time
