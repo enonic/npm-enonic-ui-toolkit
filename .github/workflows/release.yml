@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# One release at a time: concurrent publishes race on the `latest` dist-tag.
+concurrency:
+  group: release
+  cancel-in-progress: false
+  queue: max
+
+permissions:
+  contents: write
+
+env:
+  VP_GIT_HOOKS: '0'
+
+jobs:
+  npm-publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify the tag commit is on master or a version branch
+        shell: bash
+        run: |
+          contains="$(git branch -r --contains "${GITHUB_SHA}" | sed 's/^[ *]*//')"
+
+          echo "Branches containing the tag commit:"
+          echo "${contains}"
+
+          if ! echo "${contains}" | grep -Eq '^origin/(main|master|[0-9]+\.[0-9]+)$'; then
+            echo "::error::Tag ${GITHUB_REF_NAME} points at a commit that is not on master or a version branch"
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+        with:
+          package_json_file: package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      # Lockstep versioning: the tag names one version, and every package carries it.
+      - name: Verify the tag matches every package version
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          status=0
+
+          for manifest in package.json packages/*/package.json; do
+            pkg_version="$(node -p "require('./${manifest}').version")"
+            if [ "$tag_version" != "$pkg_version" ]; then
+              echo "Version mismatch in ${manifest}: tag=${tag_version} package.json=${pkg_version}"
+              status=1
+            fi
+          done
+
+          if [ "$status" != "0" ]; then
+            echo "Run 'pnpm version:set ${tag_version}' and tag the result."
+            exit 1
+          fi
+
+          echo "Every package is at ${tag_version}"
+
+      # A patch tagged on an old version branch would republish `latest` backward — the
+      # sequential case no concurrency setting prevents. Pre-releases publish to `beta`
+      # and are exempt.
+      - name: Refuse to move `latest` backward
+        if: ${{ !contains(github.ref_name, '-') }}
+        shell: bash
+        run: |
+          tag_version="${GITHUB_REF_NAME#v}"
+          published="$(npm view @enonic/ui-types version 2>/dev/null || echo 0.0.0)"
+          highest="$(printf '%s\n%s\n' "$published" "$tag_version" | sort -V | tail -1)"
+
+          if [ "$highest" != "$tag_version" ]; then
+            echo "::error::latest on npm is ${published}; publishing ${tag_version} would move it backward"
+            exit 1
+          fi
+
+      - name: Check
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      # Provenance is deliberately off (publishConfig.provenance in every manifest): enabling it
+      # needs `id-token: write` here, and whether pnpm's publish honours publishConfig.provenance
+      # has to be settled against a live registry first.
+      # --no-git-checks: the tag is checked out in detached HEAD state.
+      # A pre-release tag (v1.2.0-beta.1) publishes to the `beta` dist-tag, everything else to `latest`.
+      - name: Publish
+        run: pnpm -r publish --no-git-checks --tag ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          name: Enonic UI Toolkit ${{ github.ref_name }}
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}

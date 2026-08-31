@@ -1,0 +1,50 @@
+version: 2
+updates:
+  # Dependabot does read `catalog:` specifiers — pnpm workspace catalogs went GA on
+  # 2025-02-04. What is still open is dependabot-core#12244: a catalog bump rewrites the
+  # lockfile `specifier` to a concrete version, and CI's `pnpm install --frozen-lockfile`
+  # then fails. Such a PR goes green after a local `pnpm install` and a second commit.
+  - package-ecosystem: 'npm'
+    directories:
+      - '/'
+      - '/packages/*'
+    schedule:
+      interval: 'monthly'
+    open-pull-requests-limit: 5
+
+    # Mirrors `minimumReleaseAge` in pnpm-workspace.yaml, which guards installs but not
+    # Dependabot. Security updates ignore cooldown entirely.
+    cooldown:
+      default-days: 3
+      semver-major-days: 7
+      semver-minor-days: 3
+      semver-patch-days: 3
+
+    groups:
+      # Everything low-risk arrives as one PR a month.
+      npm:
+        applies-to: version-updates
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+      # Fires on a Dependabot alert rather than the schedule above, and is exempt from
+      # open-pull-requests-limit. One advisory across five manifests becomes one PR.
+      npm-security:
+        applies-to: security-updates
+        patterns: ['*']
+
+    # Majors are deliberately in no group: one PR each.
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    open-pull-requests-limit: 5
+    groups:
+      # Majors included here, unlike npm — a broken action fails CI immediately.
+      actions:
+        applies-to: version-updates
+        patterns: ['*']
+      actions-security:
+        applies-to: security-updates
+        patterns: ['*']

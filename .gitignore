@@ -1,0 +1,40 @@
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# AI Assistant
+.mcp.json
+settings.local.json
+.claude/scheduled_tasks.lock
+
+# Build files
+dist/
+*.tsbuildinfo
+
+# Build tools
+node_modules/
+.pnpm-store/
+.vite-plus/
+# Only the regenerated dispatcher; hooks directly in .vite-hooks/ are project-owned.
+.vite-hooks/_/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Misc
+coverage/
+.cache/
+.temp/
+.tmp/
+.oxlintcache
+*.local

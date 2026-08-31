@@ -1,0 +1,59 @@
+{
+  "name": "@enonic/ui-kit",
+  "version": "0.1.0",
+  "description": "Composite React components with behaviour: layouts, panels, toolbars, browse screens",
+  "keywords": [
+    "components",
+    "enonic",
+    "preact",
+    "react",
+    "tailwind",
+    "ui"
+  ],
+  "homepage": "https://github.com/enonic/npm-enonic-ui-toolkit#readme",
+  "bugs": {
+    "url": "https://github.com/enonic/npm-enonic-ui-toolkit/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Enonic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enonic/npm-enonic-ui-toolkit.git",
+    "directory": "packages/ui-kit"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "scripts": {
+    "build": "vp pack && node ../../scripts/assert-externals.mjs",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "preact": "catalog:",
+    "publint": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "preact": ">=10.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
