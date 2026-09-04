@@ -13,7 +13,8 @@ export default defineConfig({
     target: 'es2023',
     dts: true,
     clean: true,
-    sourcemap: true,
+    // A types-only package: a declaration map would point at sources the tarball does not carry.
+    sourcemap: false,
     publint: true,
     report: false,
   },

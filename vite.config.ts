@@ -38,6 +38,12 @@ export default defineConfig({
     environment: 'node',
     include: ['packages/*/src/**/*.{test,spec}.{ts,tsx}'],
     passWithNoTests: true,
+    // Type-level tests: `*.test-d.ts` is checked by tsc, so a wrong shape fails instead of passing
+    // as a no-op run.
+    typecheck: {
+      enabled: true,
+      include: ['packages/*/src/**/*.test-d.ts'],
+    },
   },
 
   // The workspace builds and tests on Preact; `react` is what package sources import.

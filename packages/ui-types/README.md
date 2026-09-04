@@ -13,28 +13,33 @@ pnpm add -D @enonic/ui-types
 
 ## The mount contract
 
-The contract between a shell and a module it mounts into its page: an admin section, a panel widget,
-a menu item shipped by another application and discovered at runtime. The shell creates an open
-shadow root, hands the module a container inside it and a `Host`, and calls `mount`; the module owns
-everything inside the container, the shell owns the page around it.
+The contract between a shell and a module it mounts into its page: a screen or a panel shipped by
+another application, discovered at runtime and rendered into a container the shell owns. The shell
+creates an open shadow root, hands the module a container inside it and a `Host`, and calls
+`mount`; the module owns everything inside the container, the shell owns the page around it.
 
-| Type               | What it is                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------------- |
-| `Readable<T>`      | `get()` for the current value, `subscribe` for changes — it never calls back on subscribe |
-| `Notification`     | a toast the module raises: level, localized message, optional `autoClose`                 |
-| `Host`             | what every mount gets: `baseUrl`, `locale`, `theme`, `visible`, `notify`                  |
-| `Routed`           | what a mount with a url segment adds: `path`, `navigate`                                  |
-| `SectionHost`      | `Host & Routed` — what an interface whose mounts own a segment hands over                 |
-| `MountOptions<H>`  | `{ container, host }`, the argument of `mount`; `H` defaults to `Host`                    |
-| `Unmount`          | what `mount` returns, synchronously; idempotent and must not throw                        |
-| `SectionModule<H>` | what a module's entry exports: `{ mount(options: MountOptions<H>): Unmount }`             |
+| Type              | What it is                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `Readable<T>`     | `get()` for the current value, `listen` for changes — it never calls back on subscribe |
+| `ToastTone`       | `info`, `success`, `warning`, `error` — as `@enonic/ui`'s `Toast` names them           |
+| `NotifyOptions`   | `autoHide`, `lifetimeMs`                                                               |
+| `Host`            | what every mount gets: `baseUrl`, `extension`, `locale`, `theme`, `visible`, `notify`  |
+| `Routed`          | what a mount with a url segment adds: `path`, `navigate` with `NavigateOptions`        |
+| `RoutedHost`      | `Host & Routed` — what an interface whose mounts own a segment hands over              |
+| `MountOptions<H>` | the argument of `mount`: `container` and `host`; `H` defaults to `Host`                |
+| `Unmount`         | what `mount` returns, synchronously; idempotent and must not throw                     |
+| `Mount<H>`        | the function a module's entry exports — annotate it with this                          |
+| `Module<H>`       | what a module's entry exports as a whole                                               |
 
 A host declares which type its interface hands over; XP Settings' `settings.section` hands a
-`SectionHost`. A host whose mounts own no segment hands a `Host` extended with its own capability,
-and a module written against `SectionHost` is unaffected. The rules the types cannot express are in
-the TSDoc of `src/mount.ts`: a module never touches the page outside its container, every string
-crossing the boundary is localized, one module instance serves every extension its application
-ships, and a mount knows which extension it is by the last segment of `baseUrl`.
+`RoutedHost`. A host whose mounts own no segment hands a `Host` extended with its own capability,
+and a module written against `RoutedHost` is unaffected. The rules the types cannot express are in
+the TSDoc, where a provider reads them: a module never touches the page outside its container,
+every string crossing the boundary is localized, one module instance may serve several mounts and
+`Host.extension` says which one this is, and a revoked host answers every call with a no-op.
+
+The declarations reference the DOM lib for `HTMLElement`; a consumer's tsconfig has to include it,
+which a browser project's does.
 
 How the Settings shell behaves behind these types — keep-alive, what a hidden mount hears,
 revocation — is documented with the shell, in app-settings' `docs/extensions/`.
