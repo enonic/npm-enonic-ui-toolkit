@@ -86,7 +86,7 @@ the root Vite config) — a dev-time choice, not part of the published contract.
 - **ESM only.** Every consumer bundles. If server-side XP code ever needs one of these packages, a
   `cjs` output is a one-line change to that package's `pack` config — worth doing then, not now.
 - **No CSS is published yet.** How `ui-kit` reaches a consumer's Tailwind build is an open
-  question tracked on the epic.
+  question with no issue yet; it has to be answered before the first component lands.
 
 ## What a package declares
 
