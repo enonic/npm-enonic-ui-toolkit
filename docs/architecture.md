@@ -88,6 +88,14 @@ the root Vite config) — a dev-time choice, not part of the published contract.
 - **No CSS is published yet.** How `ui-kit` reaches a consumer's Tailwind build is an open
   question tracked on the epic.
 
+## What a package declares
+
+A package declares every bare import under its `src`, tests included — `vitest` as a devDependency
+where a test imports it, not borrowed from the root manifest. The root's devDependencies are the
+workspace toolchain, and a package that happens to resolve through them is one `pnpm install` away
+from not resolving; the TS2307 guard below cannot see it, because pnpm never places an undeclared
+sibling in the root but does place the root's own devDependencies there.
+
 ## How it is typechecked
 
 One program for the whole workspace: the root `tsconfig.json` includes every package's sources and
