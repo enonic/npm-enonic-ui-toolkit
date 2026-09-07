@@ -54,8 +54,10 @@ git push origin master --follow-tags
 The tag is what publishes: `.github/workflows/release.yml` refuses a tag whose commit is not on
 `master` or a version branch, verifies every manifest carries exactly the tagged version, runs the
 checks, and publishes the workspace. A suffixed tag — `v0.3.0-beta.1` — publishes to the `beta`
-dist-tag instead of `latest`, so it installs on purpose and never by default. The workflow expects
-`NPM_TOKEN` in the repository secrets with publish rights on the `@enonic` scope.
+dist-tag instead of `latest`, so it installs on purpose and never by default. The workflow authenticates through npm trusted publishing: each of the four packages names this
+repository's `release.yml` as its trusted publisher on npmjs.com, so no npm token is stored anywhere,
+and every published version carries a provenance attestation. A new package has to be published once
+with a token before it can be connected that way.
 
 ## Documentation
 

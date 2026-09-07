@@ -11,8 +11,12 @@ concurrency:
   cancel-in-progress: false
   queue: max
 
+# `id-token` is what npm trusted publishing runs on: the registry trusts this workflow of this
+# repository directly, so no npm token exists to store or expire, and every published version
+# carries a provenance attestation.
 permissions:
   contents: write
+  id-token: write
 
 env:
   VP_GIT_HOOKS: '0'
@@ -105,15 +109,12 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # Provenance is deliberately off (publishConfig.provenance in every manifest): enabling it
-      # needs `id-token: write` here, and whether pnpm's publish honours publishConfig.provenance
-      # has to be settled against a live registry first.
+      # Authenticates through the OIDC token GitHub issues to this run; each package on npm names
+      # this repository and workflow as its trusted publisher.
       # --no-git-checks: the tag is checked out in detached HEAD state.
       # A pre-release tag (v1.2.0-beta.1) publishes to the `beta` dist-tag, everything else to `latest`.
       - name: Publish
         run: pnpm -r publish --no-git-checks --tag ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
