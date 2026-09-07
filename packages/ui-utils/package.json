@@ -1,6 +1,6 @@
 {
   "name": "@enonic/ui-utils",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Framework-free helpers for Enonic UIs: strings, URLs, dates, requests, i18n",
   "keywords": [
     "enonic",
