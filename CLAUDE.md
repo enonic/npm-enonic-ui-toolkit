@@ -68,8 +68,10 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 
 Sibling checkouts, read-only.
 
-| Repo                   | What to read it for                                                                                                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../npm-enonic-ui`     | `@enonic/ui` itself — the base components this toolkit composes, and the precedent for how a package here is built, packaged and released.                                             |
-| `../app-settings`      | The first consumer. `docs/extensions/` is the admin-section work whose contract lands in `ui-types`; its `widgets/` and `shared/` are what `ui-kit` and `ui-utils` are extracted from. |
-| `../app-contentstudio` | `modules/lib/src/main/resources/assets/js/v6/` — the same widgets solved a second time, and the toolkit's other intended consumer.                                                     |
+| Repo                   | What to read it for                                                                                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `../npm-enonic-ui`     | `@enonic/ui` itself — the base components this toolkit composes, and the precedent for how a package here is built, packaged and released.                                                                   |
+| `../app-settings`      | The Settings shell, and the first consumer of `ui-types`. `docs/extensions/` is the admin-section work whose mount contract lands there; `docs/platform-facts.md` is what XP actually does.                  |
+| `../app-applications`  | A section provider, one section. Its `widgets/`, `shared/ui` and `shared/` are, with app-users', the two identical copies `ui-kit` and `ui-utils` are extracted from; `shared/host/` is the section runtime. |
+| `../app-users`         | A section provider, four sections from one module — the shape the section runtime is built for. Same copies as app-applications; `docs/browse-framework.md` here specifies the screen they compose.          |
+| `../app-contentstudio` | `modules/lib/src/main/resources/assets/js/v6/` — the same widgets solved a second time, and the toolkit's other intended consumer.                                                                           |
