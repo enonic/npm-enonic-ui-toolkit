@@ -1,7 +1,7 @@
 {
   "name": "@enonic/ui-utils",
   "version": "0.2.0",
-  "description": "Framework-free helpers for Enonic UIs: strings, URLs, dates, requests, i18n",
+  "description": "Framework-free helpers for Enonic UIs: the request transport and phrase lookup",
   "keywords": [
     "enonic",
     "i18n",
@@ -41,9 +41,14 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "neverthrow": "^8.2.0",
     "publint": "catalog:",
     "typescript": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "neverthrow": "^8.2.0"
   },
   "engines": {
     "node": ">=22.12.0"
