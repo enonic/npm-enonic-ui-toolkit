@@ -31,8 +31,29 @@ resolve: {
     react: 'preact/compat',
     'react-dom': 'preact/compat',
     'react-dom/client': 'preact/compat/client',
+    'react/jsx-runtime': 'preact/jsx-runtime',
   },
 },
 ```
+
+## Text
+
+The kit ships its own English, keyed `uiKit.<component>.<name>`, and works without any setup. To
+render it in the application's words, add the keys to the phrase source the application already has
+and hand the kit an adapter over it, once, at the React root:
+
+```tsx
+import { UiKitProvider, fromPhrases } from '@enonic/ui-kit';
+
+<UiKitProvider translate={fromPhrases(() => $phrases.get())}>
+  <App />
+</UiKitProvider>;
+```
+
+The adapter must answer `undefined` for a key it does not carry — that is what lets the kit fall
+back to its own text. `fromPhrases` does so over a plain phrase map; a source with a
+`getMessage`-style API writes its `Translate` by hand, guarded the same way. `uiKitPhrases` lists
+every key the kit can render, for an application to assert its own bundle against; texts only the
+application knows — a title, a question about its own item — are props.
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

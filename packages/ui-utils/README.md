@@ -1,6 +1,6 @@
 # @enonic/ui-utils
 
-Everything useful without a view layer: the request transport and phrase lookup.
+Everything useful without a view layer: the request transport and the i18n core.
 
 **Nothing here imports a component or a framework, and nothing reads state it did not create.**
 That is the package's whole value — it can be used from a store, a worker, a test, or code that has
@@ -25,5 +25,8 @@ need it, and must not have it pulled in.
 | `requestJson<T>(url, options?)`         | fetch a JSON body as `ResultAsync<T, AppError>`; `options` carries `method`, a JSON-serialized `body`, `headers` and `signal` |
 | `requestOptionalJson<T>(url, options?)` | the same, with a 204 or an empty or `null` body resolving to `undefined`                                                      |
 | `localize(phrases, key, ...values)`     | the phrase behind `key` with `{0}`-style placeholders filled by position; a missing key is `#key#`                            |
+| `Translate`                             | what an application hands a toolkit package to speak in its words: a key and values in, a string or `undefined` for a miss    |
+| `fromPhrases(read)`                     | a `Translate` over a phrase map, read at call time; answers `undefined` for a key the map does not carry, never `#key#`       |
+| `resolveText(translate, phrases, ...)`  | the application's word through `translate`, else the package's own from `phrases` — what `useText` in `ui-kit` calls          |
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

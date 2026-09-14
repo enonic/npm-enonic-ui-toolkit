@@ -30,7 +30,11 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
   `scripts/assert-externals.mjs` fails the build on the difference. The inverse — a resolvable
   devDependency bundled _into_ dist — is an error via `deps.onlyBundle: []` in each pack config.
 - Package sources import `react`, never `preact/compat` — the workspace alias serves lint and
-  tests only, and the published artifact carries bare `react` imports. `react`, `react-dom` and
+  tests only, and the published artifact carries bare `react` imports. A package with JSX sets
+  `jsxImportSource: react` in its **own** tsconfig, which `vp pack` reads: the base config is on
+  preact for lint and tests, and without the override the emitted `dist` imports
+  `preact/jsx-runtime` and binds every consumer to Preact. `scripts/assert-externals.mjs` fails on
+  a `preact` import in dist, since the declaration check alone cannot see it. `react`, `react-dom` and
   `preact` become **optional** peers with the first component; the consumer picks one framework.
 - A package's own tsconfig keeps **no** `paths`: `vp lint` and `vp pack` read it, and mapping
   siblings to source would inline their types into the published declarations.

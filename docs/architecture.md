@@ -22,9 +22,12 @@ rather than a devDependency whenever the imported name reaches an exported signa
 nobody walks is worse than an absent one: the manifest decides what stays external to a build, so
 everything in it has to mean something.
 
-Internal dependencies are declared as `workspace:^` and published as a real version range. The
-workspace wiring has no live example yet — re-check the build ordering when the first real edge
-lands.
+Internal dependencies are declared as `workspace:^` and published as a real version range. The first
+real edge is `ui-kit → ui-utils`, and it settles the question this paragraph used to leave open: the
+sibling stays an import in the emitted `.d.ts` (`import { Phrases } from '@enonic/ui-utils'`) rather
+than being copied in, `vp run -r` builds ui-utils first, and ui-kit's own emit does not need that
+build to have happened. What proves the two sides agree is the workspace typecheck, where `paths`
+resolve the sibling to source.
 
 ## What is a peer and what is a dependency
 
@@ -61,12 +64,34 @@ The calls that are not obvious from the rule alone:
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not
   ours. They appear here only as devDependencies of the packages that build against it.
 - **The workspace packages are dependencies, not peers.** Lockstep versions plus a `^` range
-  deduplicate to one copy. The caveat is `ui-utils`, which owns the phrase store: if module-level
-  state is ever duplicated in a bundle, `@enonic/ui-utils` becomes a peer of the packages that
-  hold it.
+  deduplicate to one copy. `ui-utils` holds no module-level state — `fromPhrases` reads the
+  application's store through a closure, never one of its own — so two copies of it are harmless.
+  `ui-kit` is the exception: it holds `UiKitContext`, and a context created in one copy is
+  invisible to components from another, so a kit component in a second copy speaks English past the
+  application's provider, silently. The day `input-types` walks its allowed edge to `ui-kit`, it
+  declares `@enonic/ui-kit` as a **peer**, by the same rule that makes `@enonic/ui` one.
 - **`@tanstack/react-router` appears nowhere.** Routing belongs to the host application; extracted
   widgets take the path and a callback as props.
 - **`tailwindcss` is a devDependency** — it builds the packages, a consumer never receives it.
+
+## How a package says anything
+
+The i18n core — `Translate`, `fromPhrases`, `resolveText` — is in `ui-utils`, because every package
+with a screen needs it and `input-types` may not reach `ui-kit` for it. The React half — the
+context, `UiKitProvider`, `useText` — is in `ui-kit`. Each package ships its own English in
+fragments beside its components and resolves a key as it renders; the application translates by
+handing one `Translate` to the provider. The full design is toolkit issue #13.
+
+Two limits are the core's, not any one component's:
+
+- **No plural forms.** `localize` fills `{0}`-style placeholders and nothing else. A phrase that
+  varies with a count is two keys, `<name>.single` and `<name>.multiple`, and the component picks
+  one — the convention Content Studio's own phrase files already follow.
+- **`@enonic/ui` speaks English of its own** — `Dialog`'s close button, `SearchField`'s
+  placeholder and clear label, the date picker's month navigation — and reads none of it from the
+  kit's provider. Where a base component takes the text as a prop, the kit component that composes
+  it passes its own phrase through; where it does not, the text stays English until `@enonic/ui`
+  grows the prop.
 
 ## React, or Preact via compat
 
@@ -81,6 +106,12 @@ installation from pulling the real React in next to it.
 The workspace itself builds and tests on Preact (`jsxImportSource: preact`, the compat aliases in
 the root Vite config) — a dev-time choice, not part of the published contract. Never import
 `preact/compat` directly in package sources.
+
+That dev-time choice has one seam: `vp pack` reads the **package's** tsconfig, so a package with JSX
+overrides `jsxImportSource` to `react` there. Without the override the emitted `dist` imports
+`preact/jsx-runtime`, which makes preact a hard runtime dependency of every consumer — and the
+declaration check passes, because preact is a declared optional peer. `scripts/assert-externals.mjs`
+refuses a `preact` import in dist for that reason.
 
 ## How it is built
 
