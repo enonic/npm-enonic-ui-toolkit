@@ -11,8 +11,9 @@ consumer, which fetches them from its own server and passes them in.
 pnpm add @enonic/ui-utils neverthrow
 ```
 
-`neverthrow` is a peer: every request answers with its `ResultAsync`, so the consumer and the
-package must share one copy of the class.
+`neverthrow` is an optional peer: every request answers with its `ResultAsync`, so a consumer of
+the transport installs it and shares one copy of the class. A consumer of `localize` alone does not
+need it, and must not have it pulled in.
 
 ## What is here
 

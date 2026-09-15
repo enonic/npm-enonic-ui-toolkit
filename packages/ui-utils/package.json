@@ -50,6 +50,11 @@
   "peerDependencies": {
     "neverthrow": "^8.2.0"
   },
+  "peerDependenciesMeta": {
+    "neverthrow": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=22.12.0"
   }
