@@ -39,7 +39,7 @@ next section):
 | Package       | Peer                                                                                           | Dependency                                                                   |
 | ------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `ui-types`    | —                                                                                              | —                                                                            |
-| `ui-utils`    | `neverthrow`                                                                                   | `nanostores`                                                                 |
+| `ui-utils`    | `neverthrow`\*                                                                                 | `nanostores`                                                                 |
 | `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels` | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                             | `@enonic/ui-types`, `@enonic/ui-utils`                                       |
 
@@ -49,7 +49,8 @@ The calls that are not obvious from the rule alone:
   package is invisible to components from another: two copies means an overlay portals somewhere
   other than the layer its section opened, silently.
 - **`neverthrow` is a peer because `Result` is a class in an exported signature.** Two copies are
-  two unrelated classes, and an `instanceof` across that boundary fails.
+  two unrelated classes, and an `instanceof` across that boundary fails. It is **optional** because
+  only the transport needs it: a consumer of `localize` alone must not have it pulled in.
 - **`nanostores` is a dependency because an atom has no identity to share** — a structural
   `{get, subscribe}` object. Icon packs are dependencies for the same reason: leaf components,
   nothing to match against.
