@@ -31,6 +31,7 @@ resolve: {
     react: 'preact/compat',
     'react-dom': 'preact/compat',
     'react-dom/client': 'preact/compat/client',
+    'react/jsx-runtime': 'preact/jsx-runtime',
   },
 },
 ```

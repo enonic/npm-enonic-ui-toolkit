@@ -1,4 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // ! Overrides the workspace's `preact`: `vp pack` reads this file, and the emitted `dist` must
+    // ! import `react/jsx-runtime` — the framework a consumer picks, aliased to preact/compat in its
+    // ! own bundler if that is the choice. The workspace stays on preact for lint and tests through
+    // ! the aliases in the root vite config.
+    "jsxImportSource": "react"
+  },
   "include": ["src/**/*"]
 }
