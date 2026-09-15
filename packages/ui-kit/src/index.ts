@@ -3,4 +3,4 @@
  * carried behaviour. Layouts, split panels, toolbars, browse screens, dialog and form shells.
  */
 
-export * from './i18n';
+export {};

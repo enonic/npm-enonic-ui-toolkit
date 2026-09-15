@@ -22,12 +22,16 @@ rather than a devDependency whenever the imported name reaches an exported signa
 nobody walks is worse than an absent one: the manifest decides what stays external to a build, so
 everything in it has to mean something.
 
-Internal dependencies are declared as `workspace:^` and published as a real version range. The first
-real edge is `ui-kit → ui-utils`, and it settles the question this paragraph used to leave open: the
+Internal dependencies are declared as `workspace:^` and published as a real version range. The
+workspace wiring was checked on the first `ui-kit → ui-utils` edge before it moved out again: the
 sibling stays an import in the emitted `.d.ts` (`import { Phrases } from '@enonic/ui-utils'`) rather
-than being copied in, `vp run -r` builds ui-utils first, and ui-kit's own emit does not need that
-build to have happened. What proves the two sides agree is the workspace typecheck, where `paths`
-resolve the sibling to source.
+than being copied in, and `vp run -r` builds the dependency first. What that edge broke was
+`pnpm check` on a clean checkout — `vp lint` reads the depending package's tsconfig, which has no
+`paths`, resolves the sibling through node_modules to a `dist/index.d.ts` that no build has made yet,
+and fails with TS2307. A package other packages depend on therefore points its `main`, `types` and
+`exports` at `src/index.ts` and carries the `dist` versions under `publishConfig`, which pnpm swaps
+in at publish; `ui-utils` does so now. The published `.d.ts` still keeps the sibling as an import,
+because what decides that is the depending package's manifest, not where the import resolves.
 
 ## What is a peer and what is a dependency
 
@@ -64,34 +68,48 @@ The calls that are not obvious from the rule alone:
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not
   ours. They appear here only as devDependencies of the packages that build against it.
 - **The workspace packages are dependencies, not peers.** Lockstep versions plus a `^` range
-  deduplicate to one copy. `ui-utils` holds no module-level state — `fromPhrases` reads the
-  application's store through a closure, never one of its own — so two copies of it are harmless.
-  `ui-kit` is the exception: it holds `UiKitContext`, and a context created in one copy is
-  invisible to components from another, so a kit component in a second copy speaks English past the
-  application's provider, silently. The day `input-types` walks its allowed edge to `ui-kit`, it
-  declares `@enonic/ui-kit` as a **peer**, by the same rule that makes `@enonic/ui` one.
+  deduplicate to one copy, and none of them holds module-level state or a React context: the i18n
+  adapters in `ui-utils` read the application's store through a closure, never one of their own, and
+  the one context every layer's labels resolve through lives in `@enonic/ui`, already a peer.
+- **Auto-installed peers are off** (`autoInstallPeers: false`). With it on, an optional `react` peer
+  put the real React into the lockfile next to preact, and a regenerated lock put it back.
 - **`@tanstack/react-router` appears nowhere.** Routing belongs to the host application; extracted
   widgets take the path and a callback as props.
 - **`tailwindcss` is a devDependency** — it builds the packages, a consumer never receives it.
 
 ## How a package says anything
 
-The i18n core — `Translate`, `fromPhrases`, `resolveText` — is in `ui-utils`, because every package
-with a screen needs it and `input-types` may not reach `ui-kit` for it. The React half — the
-context, `UiKitProvider`, `useText` — is in `ui-kit`. Each package ships its own English in
-fragments beside its components and resolves a key as it renders; the application translates by
-handing one `Translate` to the provider. The full design is toolkit issue #13.
+Every layer renders labels of its own — `@enonic/ui`'s close buttons and pickers, the kit's dialogs,
+the form package's controls — and an application translates them all through one function at its
+root. The pieces sit where a React context can reach them:
+
+- **`@enonic/ui` owns the context**: `I18nProvider`, `useTranslate` and `usePhrases(fragment)`, and
+  reads its own labels through them. A context only works for code that imports the same
+  `createContext` call; `input-types` may not import `ui-kit`, and `@enonic/ui` could not see a kit
+  context at all, so the base layer is the only home that reaches all three — where react-aria puts
+  its `I18nProvider` for the same reason. A context here and one there would leave a supported
+  combination with two disconnected contexts and the base labels silently English.
+- **`ui-utils` owns the framework-free core**: the `Translate` type — structurally the one
+  `@enonic/ui` declares, which takes no dependency on this workspace — and the adapters over an
+  application's phrase source (`fromPhrases`, `fromLookup`, `passthrough`), `bindPhrases` for a
+  store, `mergePhrases` for a package's catalogue, `comparePhrases` for an application's check.
+- **The component packages own fragments and nothing else**: each component keeps its English in a
+  fragment beside it, keyed `uiKit.<component>.<name>`, resolves it through `usePhrases` from
+  `@enonic/ui`, and the package exports its merged catalogue. The first text-bearing component sets
+  the `@enonic/ui` release that ships the provider as the kit's peer floor.
+
+The function takes the English in rather than answering `undefined` on a miss: every translate
+function in the estate answers `#key#` for a key it lacks, so none of them could be handed over as
+is, while `defaultValue` makes each adapter one line and an i18next adapter `t(key, { defaultValue })`.
 
 Two limits are the core's, not any one component's:
 
 - **No plural forms.** `localize` fills `{0}`-style placeholders and nothing else. A phrase that
   varies with a count is two keys, `<name>.single` and `<name>.multiple`, and the component picks
   one — the convention Content Studio's own phrase files already follow.
-- **`@enonic/ui` speaks English of its own** — `Dialog`'s close button, `SearchField`'s
-  placeholder and clear label, the date picker's month navigation — and reads none of it from the
-  kit's provider. Where a base component takes the text as a prop, the kit component that composes
-  it passes its own phrase through; where it does not, the text stays English until `@enonic/ui`
-  grows the prop.
+- **Phrases are resolved as they render.** A component re-renders when the `Translate` it reads
+  changes identity; an application whose phrases change after mount hands the provider a new one,
+  and hoists the adapter out of the render so an unchanged one keeps its identity.
 
 ## React, or Preact via compat
 

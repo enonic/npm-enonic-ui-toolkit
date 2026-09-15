@@ -42,29 +42,16 @@
     "build": "vp pack && node ../../scripts/assert-externals.mjs",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "@enonic/ui-utils": "workspace:^"
-  },
   "devDependencies": {
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "preact": "catalog:",
     "publint": "catalog:",
     "typescript": "catalog:",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "preact": ">=10.0.0",
-    "react": "^19.0.0"
-  },
-  "peerDependenciesMeta": {
-    "preact": {
-      "optional": true
-    },
-    "react": {
-      "optional": true
-    }
+    "preact": ">=10.0.0"
   },
   "engines": {
     "node": ">=22.12.0"
