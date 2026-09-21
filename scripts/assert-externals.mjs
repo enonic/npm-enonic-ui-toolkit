@@ -38,16 +38,24 @@ for (const file of files) {
     const spec = match[1] ?? match[2] ?? match[3];
     if (spec.startsWith('.') || spec.startsWith('/')) continue;
     const name = spec.startsWith('@') ? spec.split('/').slice(0, 2).join('/') : spec.split('/')[0];
-    if (!declared.has(name)) violations.push({ spec, name, file });
+    if (!declared.has(name)) {
+      violations.push(
+        `dist/${file} imports '${spec}', but '${name}' is not in dependencies or peerDependencies of ${manifest.name}`,
+      );
+    }
+    // The published artifact is React code: a consumer on Preact aliases react to preact/compat in
+    // its own bundler. A `preact` import in dist means the workspace's dev-time jsxImportSource
+    // reached the emit, which `declared` cannot catch — preact is a peer for the framework choice.
+    if (name === 'preact') {
+      violations.push(
+        `dist/${file} imports '${spec}': the published artifact must carry react, not preact — check jsxImportSource in the package tsconfig`,
+      );
+    }
   }
 }
 
 if (violations.length > 0) {
-  for (const { spec, name, file } of violations) {
-    console.error(
-      `dist/${file} imports '${spec}', but '${name}' is not in dependencies or peerDependencies of ${manifest.name}`,
-    );
-  }
+  for (const violation of violations) console.error(violation);
   process.exit(1);
 }
 console.log(`[assert-externals] every bare import in dist is declared (${manifest.name})`);
