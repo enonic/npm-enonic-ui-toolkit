@@ -43,12 +43,12 @@ before.
 Where that rule lands for the code these packages are waiting for (\* = optional peer, see the
 next section):
 
-| Package       | Peer                                                                                           | Dependency                                                                   |
-| ------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `ui-types`    | —                                                                                              | —                                                                            |
-| `ui-utils`    | `neverthrow`\*                                                                                 | `nanostores`                                                                 |
-| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels` | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`       | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react`                       |
+| Package       | Peer                                                                                                         | Dependency                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `ui-types`    | —                                                                                                            | —                                                                            |
+| `ui-utils`    | `neverthrow`\*                                                                                               | `nanostores`                                                                 |
+| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels`               | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react`                       |
 
 The calls that are not obvious from the rule alone:
 

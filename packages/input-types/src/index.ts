@@ -15,6 +15,7 @@ export {
   type ProcessingToken,
   type RevealOptions,
 } from './field-registry';
+export * from './form';
 export * from './hooks';
 export {
   actionPhrases,
@@ -22,6 +23,7 @@ export {
   inputTypesPhrases,
   type InputTypesPhraseKey,
   occurrencePhrases,
+  setPhrases,
   validationPhrases,
 } from './i18n/phrases';
 export { type InputTypesTranslate, useInputTypesPhrases } from './i18n/use-phrases';

@@ -177,14 +177,16 @@ the package stands on its own.
 
 For `architecture.md`'s table, the row this package was waiting for, filled in:
 
-| Package       | Peer                                                                                     | Dependency                                             |
-| ------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
+| Package       | Peer                                                                                                         | Dependency                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
 
 `@enonic/ui`'s floor is the release that ships `I18nProvider` and `usePhrases` (npm-enonic-ui#542),
 for the same reason it is `ui-kit`'s. The `@dnd-kit` pair is a peer for the reason
 `react-resizable-panels` is: a sortable finds its `DndContext` through a context, and two copies
-are two contexts. Content Studio and lib-admin-ui both carry the pair already.
+are two contexts. Content Studio and lib-admin-ui both carry the pair already. `focus-trap-react`
+is what the set confirmations trap focus with, as `@enonic/ui`'s dialog does; a consumer with the
+dialog has it.
 
 The components carry Tailwind classes, as `ui-kit`'s dialogs will; how they reach a consumer's
 build is decided once, in #14, and this package follows it.
@@ -248,6 +250,19 @@ dependency order — nothing in a step imports a later one.
    `ItemSetView`, `OptionSetView` with the set hooks, confirmations and error hooks,
    `seedFormDefaults`, `normalizeFormValueTypes` — from Content Studio, with `HtmlAreaShell` left
    behind and `ItemLabel`, `InlineButton`, `useCloseOnScroll` brought along or replaced.
+   What the port settled: the renderer switches on `kind`, and `seedFormDefaults` and
+   `normalizeFormValueTypes` take a `registry` option as `validateForm` does; the one warning the
+   form raises — a deselected option's data goes on save — reaches the application through a
+   `notify` on `FormRenderer`, since the package has no message bus, and nothing is shown without
+   it; the default-value rule `InputField` and the seeder shared by copy is one
+   `computeDefaultValue` in `descriptor/`; the two occurrence views share a `SetOccurrenceHeader`
+   where Content Studio had the header twice; `InlineButton` became `Button size="sm"` with the
+   same classes; the scroll-to-occurrence looks for a `[data-form-panel]` ancestor, not Content
+   Studio's `.form-panel`. The confirmation bars keep `focus-trap-react`, which `@enonic/ui`'s
+   dialog already asks a consumer for, so it is a peer here too. The one DOM test
+   (`LockedSingleRadioBody.test.tsx`, on `@testing-library/preact`) stays behind with the open
+   question below; the tree-level tests came, on `Form.fromJson` in XP's dialect instead of
+   Content Studio's factory.
 7. **lib-admin-ui re-exports the package** (in that repository): `data/`, the schema classes and
    `form2/` become re-exports; `BaseInputType` and the legacy views stay.
 8. **Content Studio switches** (in that repository): the import pass, its input types registering

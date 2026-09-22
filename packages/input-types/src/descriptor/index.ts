@@ -11,6 +11,7 @@ export {
   truncateToMinutes,
 } from './date-descriptors';
 export { DateTimeRangeDescriptor } from './date-time-range-descriptor';
+export { computeDefaultValue } from './default-value';
 export type {
   FieldSetValidationNode,
   FormValidationNode,

@@ -63,6 +63,7 @@
     "@storybook/preact-vite": "~10.6.0",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "focus-trap-react": "^12.0.0",
     "preact": "catalog:",
     "publint": "catalog:",
     "typescript": "catalog:",
@@ -73,6 +74,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@enonic/ui": "^1.2.1",
+    "focus-trap-react": "^12.0.0",
     "preact": ">=10.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
