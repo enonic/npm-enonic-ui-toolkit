@@ -5,14 +5,14 @@ import { useInputTypesPhrases } from '../i18n/use-phrases';
 
 export type CounterProps = {
   length: number;
-  maxLength: number;
+  maxLength?: number;
   bottom?: boolean;
 };
 
 /** `12/40` beside a text input, red once over, with the remainder in a tooltip. */
 export const Counter = ({ length, maxLength, bottom }: CounterProps): ReactElement => {
   const t = useInputTypesPhrases();
-  const remaining = maxLength - length;
+  const remaining = (maxLength ?? 0) - length;
   const isOverLimit = remaining < 0;
   const tooltip = maxLength
     ? isOverLimit

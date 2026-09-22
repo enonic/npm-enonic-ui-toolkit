@@ -12,6 +12,7 @@ settings.local.json
 
 # Build files
 dist/
+storybook-static/
 *.tsbuildinfo
 
 # Build tools

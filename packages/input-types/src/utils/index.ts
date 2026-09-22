@@ -3,7 +3,7 @@ export {
   getNextMobileFocusTarget,
   handleMobileCompletionKeyDown,
 } from './accessibility';
-export { displayValue } from './display-value';
+export { displayValue, parseDisplayDateTime } from './display-value';
 export { getLangAttributes, type LangAttributes } from './lang-attributes';
 export {
   bucketServerErrorsByOccurrence,

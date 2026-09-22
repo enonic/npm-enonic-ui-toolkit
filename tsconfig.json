@@ -18,5 +18,11 @@
     },
     "types": ["node"]
   },
-  "include": ["packages/*/src/**/*", "packages/*/vite.config.ts", "vite.config.ts", "scripts/**/*"]
+  "include": [
+    "packages/*/src/**/*",
+    "packages/*/vite.config.ts",
+    "vite.config.ts",
+    "scripts/**/*",
+    ".storybook/**/*"
+  ]
 }

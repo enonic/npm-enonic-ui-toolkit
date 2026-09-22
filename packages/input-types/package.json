@@ -60,6 +60,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@enonic/ui": "^1.2.1",
     "@radix-ui/react-slot": "^1.2.0",
+    "@storybook/preact-vite": "~10.6.0",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "preact": "catalog:",

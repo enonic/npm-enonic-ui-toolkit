@@ -231,6 +231,19 @@ dependency order — nothing in a step imports a later one.
 5. **`input-types`: the built-in components.** The 13 with their stories, resolving their labels
    through `usePhrases`; `registerBuiltInTypes`; the workspace Storybook lands with the first
    slice. Can land in two or three slices by family — text and number, date and time, choice.
+   What the port settled: the catalogue grew the components' keys (`action.*`, the pickers'
+   placeholders and triggers, the option search) — `useI18n` never had a fixed set, the
+   package's `t` does; `DateTimeInput` and `InstantInput` read the typed text through
+   `parseDisplayDateTime`, which admits minutes and nothing finer, where `ui-utils`'s
+   `parseDateTime` stays general and accepts XP's stored seconds; their converters carry the
+   component's name (`dateTimeDisplayToValue`, `instantDisplayToValue`) since both are exported
+   from one entry. `TagInput` keeps `useSyncExternalStore` for the mobile flag rather than
+   `useIsMobile`, so the hooks fire in the order its tests were written against. The Storybook
+   sits at the root: `.storybook/` aliases `react` to `preact/compat` as the tests do, pre-bundles
+   `@enonic/ui` with Preact so one instance serves every hook, and the root manifest carries what
+   only the Storybook needs — Storybook itself, Tailwind, and `@enonic/ui`'s peers, `react`
+   among them for Storybook's own manager. `vite` there is the vite-plus alias, and the Storybook
+   builds on it.
 6. **`input-types`: the form.** `FormRenderer`, `FormItemRenderer`, `FieldSetView`,
    `ItemSetView`, `OptionSetView` with the set hooks, confirmations and error hooks,
    `seedFormDefaults`, `normalizeFormValueTypes` — from Content Studio, with `HtmlAreaShell` left
