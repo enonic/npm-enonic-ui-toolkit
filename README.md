@@ -62,3 +62,4 @@ with a token before it can be connected that way.
 ## Documentation
 
 - [`docs/architecture.md`](docs/architecture.md) — the package boundaries and the dependency rules
+- [`docs/input-types.md`](docs/input-types.md) — what `@enonic/input-types` extracts from lib-admin-ui and Content Studio, and what changes on the way
