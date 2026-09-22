@@ -58,6 +58,9 @@ export default defineConfig({
       // Siblings resolve to source in tests, mirroring the root tsconfig `paths`, so a test
       // needs no build and never runs against a stale dist.
       '@enonic/ui-types': source('ui-types'),
+      '@enonic/ui-utils/request': fileURLToPath(
+        new URL('packages/ui-utils/src/request.ts', import.meta.url),
+      ),
       '@enonic/ui-utils': source('ui-utils'),
       '@enonic/ui-kit': source('ui-kit'),
       '@enonic/input-types': source('input-types'),
