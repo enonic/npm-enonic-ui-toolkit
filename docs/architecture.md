@@ -30,7 +30,7 @@ than being copied in, and `vp run -r` builds the dependency first. What that edg
 `paths`, resolves the sibling through node_modules to a `dist/index.d.ts` that no build has made yet,
 and fails with TS2307. A package other packages depend on therefore points its `main`, `types` and
 `exports` at `src/index.ts` and carries the `dist` versions under `publishConfig`, which pnpm swaps
-in at publish; `ui-utils` does so now. The published `.d.ts` still keeps the sibling as an import,
+in at publish; `ui-utils` does so, and `ui-types` since `input-types` took its first import from it. The published `.d.ts` still keeps the sibling as an import,
 because what decides that is the depending package's manifest, not where the import resolves.
 
 ## What is a peer and what is a dependency

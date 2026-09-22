@@ -63,6 +63,12 @@ export default defineConfig({
       ),
       '@enonic/ui-utils': source('ui-utils'),
       '@enonic/ui-kit': source('ui-kit'),
+      '@enonic/input-types/data': fileURLToPath(
+        new URL('packages/input-types/src/data/index.ts', import.meta.url),
+      ),
+      '@enonic/input-types/schema': fileURLToPath(
+        new URL('packages/input-types/src/schema/index.ts', import.meta.url),
+      ),
       '@enonic/input-types': source('input-types'),
     },
     dedupe: ['preact', 'preact/compat'],
