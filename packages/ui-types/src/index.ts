@@ -7,6 +7,20 @@
  */
 
 export type {
+  FormFragmentJson,
+  FormItemJson,
+  FormItemType,
+  FormJson,
+  InputConfigEntryJson,
+  InputConfigJson,
+  InputJson,
+  ItemSetJson,
+  LayoutJson,
+  OccurrencesJson,
+  OptionSetJson,
+  OptionSetOptionJson,
+} from './form';
+export type {
   Host,
   Module,
   Mount,
@@ -19,3 +33,10 @@ export type {
   ToastTone,
   Unmount,
 } from './mount';
+export type { PrincipalType } from './principal';
+export type {
+  PropertyArrayJson,
+  PropertyTreeJson,
+  PropertyValueJson,
+  ValueTypeName,
+} from './property';
