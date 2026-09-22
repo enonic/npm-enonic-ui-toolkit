@@ -58,6 +58,38 @@ The classes are lib-admin-ui's `data/` and `form/` with the same method surface 
 idioms: no `Equitable`, no `iFrameSafeInstanceOf`, `equals(other)` on every class, `undefined`
 where a lookup finds nothing, and a `kind` on `FormItem` in place of `instanceof`.
 
+## The components
+
+Thirteen of XP's input types, each a component reading and writing a `Value`, and the call that
+puts them all in the registry:
+
+```tsx
+import { I18nProvider } from '@enonic/ui';
+import { InputField, registerBuiltInTypes } from '@enonic/input-types';
+
+registerBuiltInTypes();
+
+<I18nProvider translate={translate}>
+  <InputField input={form.getInputByName('title')} propertySet={tree.getRoot()} enabled />
+</I18nProvider>;
+```
+
+| Mode       | Components                                                                                                                               |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `list`     | `TextLineInput`, `TextAreaInput`, `LongInput`, `DoubleInput`, `GeoPointInput`, `DateInput`, `TimeInput`, `DateTimeInput`, `InstantInput` |
+| `single`   | `CheckboxInput`, `RadioButtonInput`                                                                                                      |
+| `internal` | `TagInput` (takes a `suggestTags` for completions), `ComboBoxInput`                                                                      |
+
+`PrincipalSelector` and `DateTimeRange` register as descriptors only — their components need what
+only an application has, a source of principals or a rich range widget — so `InputField` renders
+`UnsupportedInput` for them until the application registers its own. `registerBuiltInTypes` takes
+a registry, `inputTypeRegistry` by default, and replaces earlier registrations of the same names.
+
+Every text the components render is a key under `enonic.inputTypes.*` with an English default in
+`inputTypesPhrases`; an application translates through `@enonic/ui`'s `I18nProvider`, and
+`comparePhrases` from `@enonic/ui-utils` tells it which keys its bundle lacks. The components have
+stories: `pnpm storybook` at the workspace root.
+
 ## The engine
 
 The root entry is what renders one input and what a form composes: `InputField` finds the input's

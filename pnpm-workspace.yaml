@@ -48,3 +48,7 @@ minimumReleaseAgeExclude:
   - '@enonic/*'
 
 autoInstallPeers: false
+
+# esbuild's install script fetches its platform binary; Storybook's Vite builder runs on it.
+allowBuilds:
+  esbuild: true

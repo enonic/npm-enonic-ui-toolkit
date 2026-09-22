@@ -19,6 +19,7 @@ pnpm check                        # format, lint (type-aware oxlint), workspace 
 pnpm check:fix                    # same, fixing format and lint
 pnpm build                        # every package in dependency order, cached
 pnpm test                         # vitest, node environment
+pnpm storybook                    # every package's stories, on Preact, at :6006
 vp run -F @enonic/ui-kit build    # one package
 pnpm version:set 0.2.0            # lockstep bump of all five manifests (see README → Releasing)
 ```
@@ -44,6 +45,10 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
   tests and the staged hooks; each package's config owns only its `pack` block. Single quotes and
   sorted imports come from `vite.config.ts`; the 2-space indent from `.editorconfig`, which oxfmt
   reads.
+- **Storybook** lives at the root: `.storybook/` finds `packages/*/src/**/*.stories.tsx`, aliases
+  `react` to `preact/compat` as the tests do, and pulls Tailwind in through `@tailwindcss/vite`.
+  Its dependencies — Storybook, Tailwind, `@enonic/ui`'s peers — are root devDependencies and
+  nothing a package publishes.
 - **TypeScript 7**, `strict`, one program: the root tsconfig maps `@enonic/*` to sibling sources,
   so a typecheck needs no build.
 - Toolchain versions live in `pnpm-workspace.yaml`'s catalog and are bumped by hand; package

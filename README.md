@@ -33,6 +33,7 @@ pnpm test
 | Build every package            | `pnpm build`                     |
 | Build one package              | `vp run -F @enonic/ui-kit build` |
 | Tests                          | `pnpm test` / `pnpm test:watch`  |
+| Stories                        | `pnpm storybook`                 |
 | Set the version everywhere     | `pnpm version:set 0.2.0`         |
 
 ## Releasing

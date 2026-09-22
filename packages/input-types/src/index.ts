@@ -17,6 +17,7 @@ export {
 } from './field-registry';
 export * from './hooks';
 export {
+  actionPhrases,
   fieldPhrases,
   inputTypesPhrases,
   type InputTypesPhraseKey,
@@ -25,6 +26,7 @@ export {
 } from './i18n/phrases';
 export { type InputTypesTranslate, useInputTypesPhrases } from './i18n/use-phrases';
 export { createInputTypeRegistry, InputTypeRegistry, inputTypeRegistry } from './registry';
+export { registerBuiltInTypes } from './register-built-in-types';
 export type {
   InputTypeComponent,
   InputTypeComponentProps,

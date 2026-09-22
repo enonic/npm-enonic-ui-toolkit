@@ -34,8 +34,27 @@ export const fieldPhrases = {
   'enonic.inputTypes.field.charsOverLimit': '{0} character(s) over limit',
   'enonic.inputTypes.field.charsRemaining': '{0} character(s) remaining',
   'enonic.inputTypes.field.unsupportedType': 'Unsupported input type: {0}',
+  'enonic.inputTypes.field.optionPlaceholder': 'Type to search...',
+  'enonic.inputTypes.field.datePlaceholder': 'YYYY-MM-DD',
+  'enonic.inputTypes.field.dateTrigger': 'Open calendar',
+  'enonic.inputTypes.field.dateTimePlaceholder': 'YYYY-MM-DD hh:mm',
+  'enonic.inputTypes.field.dateTimeTrigger': 'Open date and time picker',
+  'enonic.inputTypes.field.timePlaceholder': 'HH:MM',
+  'enonic.inputTypes.field.timeTrigger': 'Open time picker',
 } as const;
 
-export const inputTypesPhrases = mergePhrases([validationPhrases, occurrencePhrases, fieldPhrases]);
+export const actionPhrases = {
+  'enonic.inputTypes.action.edit': 'Edit',
+  'enonic.inputTypes.action.ok': 'OK',
+  'enonic.inputTypes.action.apply': 'Apply',
+  'enonic.inputTypes.action.setDefault': 'Set default',
+} as const;
+
+export const inputTypesPhrases = mergePhrases([
+  validationPhrases,
+  occurrencePhrases,
+  fieldPhrases,
+  actionPhrases,
+]);
 
 export type InputTypesPhraseKey = keyof typeof inputTypesPhrases;

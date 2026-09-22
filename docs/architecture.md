@@ -138,8 +138,9 @@ directly in package sources.
 
 ## What a package declares
 
-A package declares every bare import under its `src`, tests included — `vitest` as a devDependency
-where a test imports it, not borrowed from the root manifest. The root's devDependencies are the
+A package declares every bare import under its `src`, tests and stories included — `vitest` as a
+devDependency where a test imports it, `@storybook/preact-vite` where a story does, not borrowed
+from the root manifest. Storybook itself and what it needs to render `@enonic/ui` are the root's. The root's devDependencies are the
 workspace toolchain, and a package that happens to resolve through them is one `pnpm install` away
 from not resolving; the TS2307 guard below cannot see it, because pnpm never places an undeclared
 sibling in the root but does place the root's own devDependencies there.
