@@ -5,6 +5,9 @@
     // path mapping — `vp pack` reads it to emit declarations, and there the sibling packages must
     // resolve through node_modules to their published types, not be inlined from source.
     "paths": {
+      "react": ["./node_modules/preact/compat"],
+      "react-dom": ["./node_modules/preact/compat"],
+      "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
       "@enonic/ui-types": ["./packages/ui-types/src/index.ts"],
       "@enonic/ui-utils": ["./packages/ui-utils/src/index.ts"],
       "@enonic/ui-utils/request": ["./packages/ui-utils/src/request.ts"],

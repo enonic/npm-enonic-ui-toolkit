@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "preact": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:",
