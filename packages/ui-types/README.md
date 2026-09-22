@@ -41,6 +41,33 @@ every string crossing the boundary is localized, one module instance may serve s
 The declarations reference the DOM lib for `HTMLElement`; a consumer's tsconfig has to include it,
 which a browser project's does.
 
+## The form and property contracts
+
+What XP's own JS libraries serialize a form and a property tree to — `lib-content` for a content
+type, `lib-schema` for a content type, mixin or form fragment, and an application's server for a
+form it reads from a descriptor, such as an id provider's configuration — and what
+`@enonic/input-types` reads them back from. The same dialect `@enonic-types/core` declares as
+`FormItem`, so a server typed against XP's types produces these without a cast; here every field
+XP omits is optional, `inputType` is any string and a config value is `unknown`, because that is
+what arrives.
+
+| Type                  | What it is                                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `FormJson`            | a form: its items in order                                                                                    |
+| `FormItemJson`        | one item — `InputJson`, `ItemSetJson`, `OptionSetJson`, `LayoutJson` or `FormFragmentJson`, by `formItemType` |
+| `FormItemType`        | the discriminant: `Input`, `ItemSet`, `OptionSet`, `Layout`, `FormFragment`                                   |
+| `OccurrencesJson`     | `minimum` and `maximum`; a maximum of 0 is unbounded                                                          |
+| `InputConfigJson`     | an input type's config, every property a list of `InputConfigEntryJson` — `value` plus attributes             |
+| `OptionSetOptionJson` | one option: `name`, `label`, `default`, its `items`                                                           |
+| `PropertyTreeJson`    | a property tree: its arrays                                                                                   |
+| `PropertyArrayJson`   | a named array of one `ValueTypeName`, its `values`                                                            |
+| `PropertyValueJson`   | a scalar under `v` or a nested tree under `set`                                                               |
+| `ValueTypeName`       | the value types XP knows, as `ValueTypes` names them                                                          |
+| `PrincipalType`       | `user`, `group`, `role` — a principal key's own prefix                                                        |
+
+The `{ Input: { … } }` dialect with one wrapper key per item is Content Studio's REST talking to
+Content Studio's client, and is not here.
+
 How the Settings shell behaves behind these types — keep-alive, what a hidden mount hears,
 revocation — is documented with the shell, in app-settings' `docs/extensions/`.
 
