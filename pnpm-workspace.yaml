@@ -24,10 +24,14 @@ overrides:
   vitest: 'catalog:'
 
 # `vite` is an alias onto vite-plus-core: it satisfies vitest's peer at runtime but not by
-# version. react/react-dom are aliased to preact/compat, so the real packages never install.
+# version. react/react-dom are aliased to preact/compat, so the real packages never install —
+# which is why a peer on them is neither missing nor of the wrong version here.
 peerDependencyRules:
   allowAny:
     - vite
+    - react
+    - react-dom
+  ignoreMissing:
     - react
     - react-dom
   allowedVersions:

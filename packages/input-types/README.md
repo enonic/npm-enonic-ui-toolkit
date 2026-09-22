@@ -58,4 +58,47 @@ The classes are lib-admin-ui's `data/` and `form/` with the same method surface 
 idioms: no `Equitable`, no `iFrameSafeInstanceOf`, `equals(other)` on every class, `undefined`
 where a lookup finds nothing, and a `kind` on `FormItem` in place of `instanceof`.
 
+## The engine
+
+The root entry is what renders one input and what a form composes: `InputField` finds the input's
+type in the registry, keeps its array in the tree filled to the minimum, validates every change
+through the type's descriptor, and shows the server's errors on the right occurrence.
+
+```tsx
+import { I18nProvider } from '@enonic/ui';
+import {
+  InputField,
+  inputTypeRegistry,
+  TextLineDescriptor,
+  validateForm,
+} from '@enonic/input-types';
+
+inputTypeRegistry.registerType({
+  mode: 'list',
+  descriptor: TextLineDescriptor,
+  component: MyTextLine,
+});
+
+<I18nProvider translate={translate}>
+  <InputField input={form.getInputByName('title')} propertySet={tree.getRoot()} enabled />
+</I18nProvider>;
+
+const { isValid, children } = validateForm(form, tree.getRoot(), { rawValues, serverErrors });
+```
+
+| Piece                                                                                     | What it is                                                                                                                                         |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InputTypeDescriptor`, the 15 built-in descriptors                                        | the pure half of an input type: its value type, how its config reads, its default, how a value validates                                           |
+| `InputTypeRegistry`, `inputTypeRegistry`, `createInputTypeRegistry`                       | the types a form can render, by name; a value each bundle registers into, not a global                                                             |
+| `OccurrenceManager`, `SetOccurrenceManager`, `validateForm`                               | the occurrences of an input or a set with a stable id each, and the whole form validated against its data                                          |
+| `ValidationResult`                                                                        | a phrase `{ key, values }` resolved where it renders, or a text `{ message }` — a server's, a schema's own                                         |
+| `InputField`, `OccurrenceList`, `InputLabel`, `FieldError`, `Counter`, `UnsupportedInput` | one input in a form, and the parts every input type is built from                                                                                  |
+| `SortableList`, `SortableGridList`                                                        | drag-to-reorder lists on `@dnd-kit`; the grid list keeps one tab stop for a list of editable rows                                                  |
+| the providers                                                                             | `ValidationVisibilityProvider`, `RawValueProvider`, `ServerErrorsProvider`, `LocaleProvider`, `FieldRegistryProvider`, `InputTypeRegistryProvider` |
+| `FieldRegistry`                                                                           | reaches a field from outside the form by its data path: an error to show, an occurrence to lock while something works on it, a field to reveal     |
+| `inputTypesPhrases`                                                                       | every text the package renders, under `enonic.inputTypes.*`, translated through `@enonic/ui`'s `I18nProvider`                                      |
+
+The components need `react`, `@enonic/ui` and the `@dnd-kit` pair as peers; the model entries need
+none of them.
+
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

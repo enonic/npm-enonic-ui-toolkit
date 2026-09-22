@@ -48,7 +48,7 @@ next section):
 | `ui-types`    | —                                                                                              | —                                                                            |
 | `ui-utils`    | `neverthrow`\*                                                                                 | `nanostores`                                                                 |
 | `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels` | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                             | `@enonic/ui-types`, `@enonic/ui-utils`                                       |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`       | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react`                       |
 
 The calls that are not obvious from the rule alone:
 
@@ -123,9 +123,11 @@ one framework. A React consumer aliases nothing. A Preact consumer maps `react` 
 to `preact/compat` in its bundler, and the `optional` flag is what keeps pnpm's automatic peer
 installation from pulling the real React in next to it.
 
-The workspace itself builds and tests on Preact (`jsxImportSource: preact`, the compat aliases in
-the root Vite config) — a dev-time choice, not part of the published contract. Never import
-`preact/compat` directly in package sources.
+The workspace itself tests on Preact through the compat aliases in the root Vite config — a
+dev-time choice, not part of the published contract. JSX compiles against `react/jsx-runtime`
+(`jsxImportSource: react`) so that `dist` imports React's runtime, which the aliases point at
+Preact in tests and a Preact consumer points there in its bundler. Never import `preact/compat`
+directly in package sources.
 
 ## How it is built
 

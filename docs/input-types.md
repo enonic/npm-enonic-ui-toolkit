@@ -218,7 +218,16 @@ dependency order — nothing in a step imports a later one.
    `ValidationResult` as a union, `createInputTypeRegistry`, `OccurrenceManager` and
    `SetOccurrenceManager`, `validateForm`, `getEffectiveOccurrences`, the contexts, the hooks,
    `FieldRegistry`, `InputField`, `OccurrenceList`, `SortableList`, `SortableGridList`,
-   `inputTypesPhrases`. `react`, `@enonic/ui` and the `@dnd-kit` pair become peers here.
+   `inputTypesPhrases`. `react`, `@enonic/ui` and the `@dnd-kit` pair become peers here. What the
+   port settled: a validation node's `occurrenceError` is a `ValidationMessage`, not a key with a
+   parameter spliced in; `FieldError` takes either a `message` or an unresolved `error`; a
+   descriptor's config text is read through `configText`, so an object in a config entry renders
+   empty rather than `[object Object]`. Types are Preact's — `react` resolves to `preact/compat`
+   in every tsconfig through `paths`, as `@enonic/ui` is typed and a Preact consumer resolves it —
+   while the emitted code imports `react/jsx-runtime`. `lucide-react` and `@enonic/ui` are mocked in
+   the component tests, as they were: the workspace has no React for their `require('react')`.
+   The tests came along with a codemod: `!` on indexed access under `noUncheckedIndexedAccess`,
+   keys in place of `#key#` strings, `undefined` for `null`.
 5. **`input-types`: the built-in components.** The 13 with their stories, resolving their labels
    through `usePhrases`; `registerBuiltInTypes`; the workspace Storybook lands with the first
    slice. Can land in two or three slices by family — text and number, date and time, choice.

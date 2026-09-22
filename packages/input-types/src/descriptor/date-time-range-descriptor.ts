@@ -1,0 +1,109 @@
+import type { InputConfigJson } from '@enonic/ui-types';
+import { LocalDateTime } from '@enonic/ui-utils';
+
+import { type Value, type ValueType, ValueTypes } from '../data';
+import { configText } from './config-text';
+import type { DateTimeRangeConfig } from './input-type-config';
+import type { InputTypeDescriptor } from './input-type-descriptor';
+import type { ValidationResult } from './validation-result';
+
+const RANGE_TYPES: readonly string[] = ['DateTime', 'LocalDateTime'];
+
+/**
+ * A `from` and a `to` in one nested set. The error texts come from the schema config, so they are
+ * messages, not phrases; the English fallbacks are XP's own.
+ */
+export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> = {
+  name: 'DateTimeRange',
+
+  getValueType(): ValueType {
+    return ValueTypes.DATA;
+  },
+
+  readConfig(raw: InputConfigJson): DateTimeRangeConfig {
+    const read = (name: string): string => configText(raw[name]?.[0]?.value);
+    const readTime = (name: string): { hours: number; minutes: number } | undefined => {
+      const time = read(name);
+      if (time === '') {
+        return undefined;
+      }
+      const [hours = '0', minutes = '0'] = time.split(':');
+      return {
+        hours: Number.parseInt(hours, 10) || 0,
+        minutes: Number.parseInt(minutes, 10) || 0,
+      };
+    };
+    const fromLabel = read('fromLabel') || 'Date from';
+    const toLabel = read('toLabel') || 'Date to';
+    return {
+      useTimezone: read('timezone') === 'true',
+      fromLabel,
+      toLabel,
+      errorNoStart: read('errorNoStart') || `${fromLabel} is required when ${toLabel} is set`,
+      errorEndInPast: read('errorEndInPast') || `${toLabel} cannot be in the past`,
+      errorEndBeforeStart:
+        read('errorEndBeforeStart') || `${toLabel} cannot be before ${fromLabel}`,
+      errorStartEqualsEnd:
+        read('errorStartEqualsEnd') || `${fromLabel} and ${toLabel} cannot be equal`,
+      defaultFromTime: readTime('defaultFromTime'),
+      defaultToTime: readTime('defaultToTime'),
+      fromPlaceholder: read('fromPlaceholder'),
+      toPlaceholder: read('toPlaceholder'),
+      optionalFrom: read('optionalFrom') !== '',
+    };
+  },
+
+  createDefaultValue(): Value {
+    return ValueTypes.DATA.newNullValue();
+  },
+
+  validate(value: Value, config: DateTimeRangeConfig): ValidationResult[] {
+    if (value.isNull()) {
+      return [];
+    }
+    if (!value.getType().equals(ValueTypes.DATA)) {
+      return [{ key: 'enonic.inputTypes.validation.notADateTimeRange' }];
+    }
+    const set = value.getPropertySet();
+    if (set === undefined) {
+      return [];
+    }
+    const from = set.getProperty('from', 0)?.getLocalDateTime();
+    const to = set.getProperty('to', 0)?.getLocalDateTime();
+    if (to !== undefined && from === undefined && !config.optionalFrom) {
+      return [{ message: config.errorNoStart }];
+    }
+    if (to === undefined) {
+      return [];
+    }
+    const toDate = to.toDate();
+    const now = new Date();
+    if (toDate < now) {
+      return [{ message: config.errorEndInPast }];
+    }
+    const effectiveFrom = from ?? LocalDateTime.fromDate(now);
+    if (toDate < effectiveFrom.toDate()) {
+      return [{ message: config.errorEndBeforeStart }];
+    }
+    if (to.equals(effectiveFrom)) {
+      return [{ message: config.errorStartEqualsEnd }];
+    }
+    return [];
+  },
+
+  valueBreaksRequired(value: Value): boolean {
+    const set = value.getPropertySet();
+    if (set === undefined) {
+      return true;
+    }
+    const from = set.getProperty('from', 0);
+    const to = set.getProperty('to', 0);
+    if (from !== undefined && !RANGE_TYPES.includes(from.getType().getName())) {
+      return true;
+    }
+    if (to !== undefined && !RANGE_TYPES.includes(to.getType().getName())) {
+      return true;
+    }
+    return false;
+  },
+};
