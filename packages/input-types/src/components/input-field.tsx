@@ -15,6 +15,7 @@ import {
   type PropertySet,
   type Value,
 } from '../data';
+import { computeDefaultValue } from '../descriptor/default-value';
 import { getEffectiveOccurrences } from '../descriptor/get-effective-occurrences';
 import type { OccurrenceValidationState } from '../descriptor/occurrence-manager';
 import type { ValidationResult } from '../descriptor/validation-result';
@@ -184,15 +185,10 @@ export const InputFieldResolved = ({
   const rawValueMap = useRawValueMap();
   const [touched, setTouched] = useState<Set<number>>(() => new Set());
 
-  const defaultValue = useMemo((): Value => {
-    const raw = input.getInputTypeConfig()?.default?.[0]?.value;
-    if (raw == null) return descriptor.getValueType().newNullValue();
-    const value = descriptor.createDefaultValue(raw);
-    if (value.isNull()) return descriptor.getValueType().newNullValue();
-    if (descriptor.validate(value, config).length > 0)
-      return descriptor.getValueType().newNullValue();
-    return value;
-  }, [input, descriptor, config]);
+  const defaultValue = useMemo(
+    (): Value => computeDefaultValue(input, descriptor, config),
+    [input, descriptor, config],
+  );
 
   const propertyArray = useMemo(() => {
     let array = propertySet.getPropertyArray(inputName);

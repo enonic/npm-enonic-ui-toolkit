@@ -27,6 +27,21 @@ export const occurrencePhrases = {
   'enonic.inputTypes.set.breaksMax': 'Max {0} occurrences allowed',
   'enonic.inputTypes.optionSet.selectionBreaksMin': 'At least {0} option(s) must be selected',
   'enonic.inputTypes.optionSet.selectionBreaksMax': 'At most {0} option(s) can be selected',
+  'enonic.inputTypes.optionSet.selectionBreaksMinOne': 'At least one option must be selected',
+  'enonic.inputTypes.optionSet.selectionBreaksMaxOne': 'Max one option can be selected',
+  'enonic.inputTypes.optionSet.dataCleared':
+    'The fields inside unselected option will be cleared on save!',
+} as const;
+
+export const setPhrases = {
+  'enonic.inputTypes.set.add': 'Add',
+  'enonic.inputTypes.set.addAbove': 'Add above',
+  'enonic.inputTypes.set.addBelow': 'Add below',
+  'enonic.inputTypes.set.delete': 'Delete',
+  'enonic.inputTypes.set.moreActions': 'More actions',
+  'enonic.inputTypes.set.expandAll': 'Expand all',
+  'enonic.inputTypes.set.collapseAll': 'Collapse all',
+  'enonic.inputTypes.set.unknownItem': 'Unknown form item type',
 } as const;
 
 export const fieldPhrases = {
@@ -48,6 +63,7 @@ export const actionPhrases = {
   'enonic.inputTypes.action.ok': 'OK',
   'enonic.inputTypes.action.apply': 'Apply',
   'enonic.inputTypes.action.setDefault': 'Set default',
+  'enonic.inputTypes.action.cancel': 'Cancel',
 } as const;
 
 export const inputTypesPhrases = mergePhrases([
@@ -55,6 +71,7 @@ export const inputTypesPhrases = mergePhrases([
   occurrencePhrases,
   fieldPhrases,
   actionPhrases,
+  setPhrases,
 ]);
 
 export type InputTypesPhraseKey = keyof typeof inputTypesPhrases;

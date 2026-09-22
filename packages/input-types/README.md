@@ -6,8 +6,8 @@ Separate from [`@enonic/ui-kit`](https://www.npmjs.com/package/@enonic/ui-kit) b
 is narrower and the dependency runs one way: a form is a screen element, but XP's schema model is a
 domain the rest of the toolkit knows nothing about.
 
-> **Status**: pre-1.0. The model is in; the input types and the form land step by step
-> (npm-enonic-ui-toolkit#18).
+> **Status**: pre-1.0. The model, the built-in input types and the form are in
+> (npm-enonic-ui-toolkit#18); lib-admin-ui and Content Studio are switching to them.
 
 ## Install
 
@@ -89,6 +89,52 @@ Every text the components render is a key under `enonic.inputTypes.*` with an En
 `inputTypesPhrases`; an application translates through `@enonic/ui`'s `I18nProvider`, and
 `comparePhrases` from `@enonic/ui-utils` tells it which keys its bundle lacks. The components have
 stories: `pnpm storybook` at the workspace root.
+
+## The form
+
+`FormRenderer` renders a whole form over one property set, item by item as its `kind` says: an
+input through `InputField`, a field set as a group, an item set and an option set as reorderable
+occurrences with their own items inside.
+
+```tsx
+import { I18nProvider } from '@enonic/ui';
+import {
+  FormRenderer,
+  LocaleProvider,
+  registerBuiltInTypes,
+  seedFormDefaults,
+  ValidationVisibilityProvider,
+} from '@enonic/input-types';
+import { PropertyTree } from '@enonic/input-types/data';
+import { Form } from '@enonic/input-types/schema';
+
+registerBuiltInTypes();
+const form = Form.fromJson(schema.form);
+const tree = new PropertyTree();
+seedFormDefaults(form, tree.getRoot());
+
+<I18nProvider translate={translate}>
+  <LocaleProvider locale={content.language}>
+    <ValidationVisibilityProvider visibility="interactive">
+      <FormRenderer form={form} propertySet={tree.getRoot()} notify={showWarning} />
+    </ValidationVisibilityProvider>
+  </LocaleProvider>
+</I18nProvider>;
+```
+
+The renderer renders the items and nothing around them. What surrounds a form is the
+application's: its locale, when to show errors, the server's errors and a field registry go in
+as providers; a `registry` prop names another registry than the shared one; `excludeInputTypes`
+leaves types out, as a nested form leaves out its host's; `notify` is where the one warning the
+form raises goes — a deselected option's data is dropped on save.
+
+| Piece                                                    | What it is                                                                                                           |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `FormRenderer`, `FormItemRenderer`, `FieldSetView`       | the form, one item, a group of items                                                                                 |
+| `ItemSetView`, `OptionSetView`                           | the sets: occurrences to add, reorder, collapse and delete with a confirmation; an option set's choice among options |
+| `seedFormDefaults`                                       | a fresh set filled as the form would fill it on first render, so a stored config equals what is shown                |
+| `normalizeFormValueTypes`                                | stored values converted to the types the inputs declare, after a schema or a writer changed                          |
+| `pruneUnselectedOptionData`, `selectOptionInPropertySet` | an option set's data as it is saved, and a selection made outside a render                                           |
 
 ## The engine
 
