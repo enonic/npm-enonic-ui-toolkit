@@ -9,7 +9,9 @@
       "@enonic/ui-utils": ["./packages/ui-utils/src/index.ts"],
       "@enonic/ui-utils/request": ["./packages/ui-utils/src/request.ts"],
       "@enonic/ui-kit": ["./packages/ui-kit/src/index.ts"],
-      "@enonic/input-types": ["./packages/input-types/src/index.ts"]
+      "@enonic/input-types": ["./packages/input-types/src/index.ts"],
+      "@enonic/input-types/data": ["./packages/input-types/src/data/index.ts"],
+      "@enonic/input-types/schema": ["./packages/input-types/src/schema/index.ts"]
     },
     "types": ["node"]
   },
