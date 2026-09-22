@@ -7,6 +7,7 @@
     "paths": {
       "@enonic/ui-types": ["./packages/ui-types/src/index.ts"],
       "@enonic/ui-utils": ["./packages/ui-utils/src/index.ts"],
+      "@enonic/ui-utils/request": ["./packages/ui-utils/src/request.ts"],
       "@enonic/ui-kit": ["./packages/ui-kit/src/index.ts"],
       "@enonic/input-types": ["./packages/input-types/src/index.ts"]
     },
