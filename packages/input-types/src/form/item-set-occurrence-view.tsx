@@ -10,6 +10,7 @@ import {
 
 import type { PropertySet } from '../data';
 import type { FormItem, Occurrences } from '../schema';
+import type { ComponentWithRef } from '../types';
 import { SetConfirmDelete, SetConfirmOverlay, useConfirmPosition } from './set-confirmation';
 import { useIsNewOccurrence } from './set-hooks';
 import { SetOccurrenceHeader } from './set-occurrence-header';
@@ -38,7 +39,7 @@ export type ItemSetOccurrenceViewProps = {
 };
 
 /** One occurrence of an item set: a collapsible header over its items, and a delete to confirm. */
-export const ItemSetOccurrenceView = forwardRef<HTMLDivElement, ItemSetOccurrenceViewProps>(
+const ItemSetOccurrenceViewImpl = forwardRef<HTMLDivElement, ItemSetOccurrenceViewProps>(
   (
     {
       index,
@@ -151,4 +152,7 @@ export const ItemSetOccurrenceView = forwardRef<HTMLDivElement, ItemSetOccurrenc
     );
   },
 );
-ItemSetOccurrenceView.displayName = ITEM_SET_OCCURRENCE_VIEW_NAME;
+ItemSetOccurrenceViewImpl.displayName = ITEM_SET_OCCURRENCE_VIEW_NAME;
+
+export const ItemSetOccurrenceView: ComponentWithRef<ItemSetOccurrenceViewProps, HTMLDivElement> =
+  ItemSetOccurrenceViewImpl;

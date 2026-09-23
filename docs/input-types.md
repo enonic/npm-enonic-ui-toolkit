@@ -198,7 +198,10 @@ dependency order — nothing in a step imports a later one.
 
 1. **`ui-types`: the form and property JSON contracts.** `FormJson` and its items by
    `formItemType`, `PropertyTreeJson`, `InputConfigJson`, `PrincipalType` — XP's dialect, pinned
-   by type tests and checked assignable from `@enonic-types/core`'s shapes.
+   by type tests and checked assignable from `@enonic-types/core`'s shapes. An input's `config`
+   is what `GenericValue.toRawJs()` emits — `maxLength: 11`, `options: [{value, label}]` — not
+   Content Studio's `[{value}]` / `[{'@value', value}]` entries; those are the descriptors' read
+   shape, `InputConfigEntries` in `input-types`, and `normalizeInputConfig` turns either into it.
 2. **`ui-utils`: date, time and geo values.** `LocalDate`, `LocalTime`, `LocalDateTime`,
    `DateTime`, `GeoPoint`, `Reference`, `BinaryReference`, `Link`, the parse and format helpers
    behind `DateHelper`, and `parseRelativeTime` for a date input's default, minus `Equitable`,
@@ -284,6 +287,32 @@ dependency order — nothing in a step imports a later one.
    bridge's form JSON is XP's dialect now, since the toolkit's `Form.toJson` writes it — the
    assistant reading it has to follow. Tests moved with the sets; the rest adjusted to
    `undefined` where `null` was.
+
+## What the review settled
+
+An independent pass over the three branches (four Claude agents on the toolkit, Codex on all
+three repositories) after step 8. Fixed in the toolkit: the config contract above, which had
+carried Content Studio's wrapper as if it were XP's; `readOptions` reads both an XP option
+(`value` is the stored value, `label` the text) and a Content Studio one (`@value` stored,
+`value` the text); the date-time-range labels and errors are phrases with the range's labels as
+parameters, not English in the descriptor; option-set selections sort ordinally, as Content
+Studio stored them, not by the host locale; the date parsers accept fractions longer than
+milliseconds again and truncate them; `ValueTypeConverter.convertTo` from a `DATA` value answers
+the target's null value instead of throwing; `Property.setValue` notifies only when the value
+changed and `force` only tags the event, as lib-admin-ui did; `useOccurrenceManager.add` passes
+the value through; the published declarations carry no Preact types — `forwardRef` results are
+annotated `ComponentWithRef`, `JSX.AriaRole` is `ElementRole`, handlers are React's top-level
+`KeyboardEventHandler` and friends; `useOptionSetSelection` works without a `FormRenderProvider`
+through `useOptionalFormRender`; the mobile Enter handler also reads `nativeEvent.isComposing`,
+where React puts it. In lib-admin-ui, `form2/components` re-exports the sortable list types it
+had dropped. Accepted as they are: the toolkit's `equals` uses `instanceof` where lib-admin-ui
+went through `iFrameSafe` — Content Studio loads one bundle, so one class identity; `Form.toJson`
+writes XP's dialect, and its two callers (the AI bridge, logging) follow; `removeAll` fires one
+event per removed property and `removeEmptySets` recurses as Content Studio's did;
+per-occurrence visibility is decided once, as Content Studio decided it; a named `FieldSet`
+reaches its parent through the same `setParent` as the sets, a path no caller takes yet.
+Nothing releases until `@enonic/ui` ships `usePhrases` (npm-enonic-ui#542) and the toolkit
+publishes; both consumers declare `^0.2.0` and get bumped then.
 
 ## Open questions
 

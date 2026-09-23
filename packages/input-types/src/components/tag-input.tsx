@@ -17,7 +17,10 @@ import {
 import { cn, getIsMobile, IconButton, Input, subscribeToMobileChanges, Tooltip } from '@enonic/ui';
 import { GripVertical, X } from 'lucide-react';
 import {
-  type JSX,
+  type ClipboardEventHandler,
+  type FocusEventHandler,
+  type KeyboardEventHandler,
+  type MouseEventHandler,
   type ReactElement,
   type RefObject,
   useEffect,
@@ -34,7 +37,7 @@ import type { InputTypeConfig } from '../descriptor/input-type-config';
 import { resolveValidationMessage } from '../descriptor/validation-result';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { Occurrences } from '../schema';
-import type { SelfManagedComponentProps } from '../types';
+import type { SelfManagedComponentProps, ElementRole } from '../types';
 import { getInputAccessibleName } from '../utils/accessibility';
 import { getFirstError, getOccurrenceErrorMessage } from '../utils/validation';
 import { FieldError } from './field-error';
@@ -122,9 +125,9 @@ type TagDraftInputProps = {
   inputRef: RefObject<HTMLInputElement>;
   onChange: (value: string) => void;
   onFocus: () => void;
-  onKeyDown: JSX.KeyboardEventHandler<HTMLInputElement>;
-  onPaste: JSX.ClipboardEventHandler<HTMLInputElement>;
-  onBlur: JSX.FocusEventHandler<HTMLInputElement>;
+  onKeyDown: KeyboardEventHandler<HTMLInputElement>;
+  onPaste: ClipboardEventHandler<HTMLInputElement>;
+  onBlur: FocusEventHandler<HTMLInputElement>;
   suggestionListId?: string;
   activeSuggestionId?: string;
   suggestionsExpanded: boolean;
@@ -505,13 +508,11 @@ const TagItem = ({
     const { onKeyDown: _ignored, ...rest } = listeners;
     dragListeners = rest;
   }
-  const dragKeyDown = listeners?.onKeyDown as
-    | JSX.KeyboardEventHandler<HTMLButtonElement>
-    | undefined;
+  const dragKeyDown = listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined;
 
   const dragAccessibilityProps = showDrag
     ? {
-        role: attributes.role as JSX.AriaRole,
+        role: attributes.role as ElementRole,
         tabIndex: -1,
         'aria-disabled': attributes['aria-disabled'],
         'aria-pressed': attributes['aria-pressed'],
@@ -520,13 +521,13 @@ const TagItem = ({
       }
     : undefined;
 
-  const handleDragButtonKeyDownCapture: JSX.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+  const handleDragButtonKeyDownCapture: KeyboardEventHandler<HTMLButtonElement> = (event) => {
     if (!event.altKey && !event.ctrlKey && !event.metaKey && isArrowKey(event.key)) {
       event.preventDefault();
     }
   };
 
-  const handleDragButtonKeyDown: JSX.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+  const handleDragButtonKeyDown: KeyboardEventHandler<HTMLButtonElement> = (event) => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (isKeyboardDragging) {
       if (event.key === 'ArrowLeft') {
@@ -574,7 +575,7 @@ const TagItem = ({
     }
   };
 
-  const handleLabelButtonKeyDown: JSX.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+  const handleLabelButtonKeyDown: KeyboardEventHandler<HTMLButtonElement> = (event) => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -616,7 +617,7 @@ const TagItem = ({
     }
   };
 
-  const handleRemoveButtonKeyDown: JSX.KeyboardEventHandler<HTMLButtonElement> = (event) => {
+  const handleRemoveButtonKeyDown: KeyboardEventHandler<HTMLButtonElement> = (event) => {
     if (event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Escape') {
       event.preventDefault();
@@ -642,7 +643,7 @@ const TagItem = ({
     onRemoveKey();
   };
 
-  const handleEditKeyDown: JSX.KeyboardEventHandler<HTMLInputElement> = (event) => {
+  const handleEditKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
@@ -660,7 +661,7 @@ const TagItem = ({
     }
   };
 
-  const handleEditBlur: JSX.FocusEventHandler<HTMLInputElement> = (event) => {
+  const handleEditBlur: FocusEventHandler<HTMLInputElement> = (event) => {
     if (skipEditBlur.current) {
       skipEditBlur.current = false;
       return;
@@ -1201,7 +1202,7 @@ export const TagInput = ({
     startEditing(lastEntry.id, getTagLabel(lastEntry.value));
   };
 
-  const handleFieldClick: JSX.MouseEventHandler<HTMLElement> = (event) => {
+  const handleFieldClick: MouseEventHandler<HTMLElement> = (event) => {
     if (event.target === event.currentTarget) {
       handleFieldActivate();
     }
@@ -1252,7 +1253,7 @@ export const TagInput = ({
     focusFn(focusIndex);
   };
 
-  const handleKeyDown: JSX.KeyboardEventHandler<HTMLInputElement> = (event) => {
+  const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
     if (isMobile && event.key === 'Enter') {
       event.stopPropagation();
     }
@@ -1304,7 +1305,7 @@ export const TagInput = ({
     commitDraft(event.currentTarget);
   };
 
-  const handlePaste: JSX.ClipboardEventHandler<HTMLInputElement> = (event) => {
+  const handlePaste: ClipboardEventHandler<HTMLInputElement> = (event) => {
     const pastedText = event.clipboardData?.getData('text/plain');
     if (pastedText == null || !hasPastedTagSeparators(pastedText)) return;
     event.preventDefault();
@@ -1317,7 +1318,7 @@ export const TagInput = ({
     commitTagLabels(labelsToCommit, { focusTarget: event.currentTarget, clearDraft: true });
   };
 
-  const handleBlur: JSX.FocusEventHandler<HTMLInputElement> = (event) => {
+  const handleBlur: FocusEventHandler<HTMLInputElement> = (event) => {
     if (skipBlurCommit.current) {
       skipBlurCommit.current = false;
       return;

@@ -1,7 +1,5 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import { type Value, type ValueType, ValueTypes } from '../data';
-import type { TextAreaConfig } from './input-type-config';
+import type { InputConfigEntries, TextAreaConfig } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import { readMaxLength, readShowCounter } from './text-line-descriptor';
 import type { ValidationResult } from './validation-result';
@@ -13,7 +11,7 @@ export const TextAreaDescriptor: InputTypeDescriptor<TextAreaConfig> = {
     return ValueTypes.STRING;
   },
 
-  readConfig(raw: InputConfigJson): TextAreaConfig {
+  readConfig(raw: InputConfigEntries): TextAreaConfig {
     return { maxLength: readMaxLength(raw), showCounter: readShowCounter(raw) };
   },
 

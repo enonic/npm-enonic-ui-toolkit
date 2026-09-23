@@ -67,7 +67,7 @@ export class Property {
     this.index = index;
   }
 
-  /** Replaces the value, reporting a `PropertyValueChangedEvent` when it differs, or always when `force`. */
+  /** Replaces the value, reporting a `PropertyValueChangedEvent` when it differs; `force` marks the event. */
   setValue(value: Value, force = false): void {
     const oldValue = this.value;
     this.value = value;
@@ -83,7 +83,7 @@ export class Property {
       this.array.unregisterPropertySetListeners(removed);
     }
 
-    if (force || !value.equals(oldValue)) {
+    if (!value.equals(oldValue)) {
       this.valueChangedListeners.notify(
         new PropertyValueChangedEvent(this, oldValue, value, force),
       );

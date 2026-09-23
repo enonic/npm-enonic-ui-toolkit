@@ -1,6 +1,8 @@
 import type { InputConfigJson, InputJson } from '@enonic/ui-types';
 
+import type { InputConfigEntries } from '../descriptor/input-type-config';
 import { FormItem } from './form-item';
+import { normalizeInputConfig } from './input-config';
 import { InputTypeName } from './input-type-name';
 import { Occurrences } from './occurrences';
 
@@ -12,7 +14,7 @@ export class Input extends FormItem {
   private readonly label: string;
   private readonly helpText: string | undefined;
   private readonly occurrences: Occurrences;
-  private readonly inputTypeConfig: InputConfigJson | undefined;
+  private readonly inputTypeConfig: InputConfigEntries | undefined;
 
   constructor(builder: InputBuilder) {
     super(builder.name);
@@ -47,7 +49,8 @@ export class Input extends FormItem {
     return this.occurrences;
   }
 
-  getInputTypeConfig(): InputConfigJson | undefined {
+  /** The config as entries, whichever shape it arrived in; see `normalizeInputConfig`. */
+  getInputTypeConfig(): InputConfigEntries | undefined {
     return this.inputTypeConfig;
   }
 
@@ -71,7 +74,9 @@ export class Input extends FormItem {
       ...(this.helpText === undefined ? {} : { helpText: this.helpText }),
       inputType: this.inputType.toJson(),
       occurrences: this.occurrences.toJson(),
-      ...(this.inputTypeConfig === undefined ? {} : { config: this.inputTypeConfig }),
+      ...(this.inputTypeConfig === undefined
+        ? {}
+        : { config: this.inputTypeConfig as unknown as InputConfigJson }),
     };
   }
 }
@@ -82,7 +87,7 @@ export class InputBuilder {
   label = '';
   helpText: string | undefined;
   occurrences = Occurrences.minmax(0, 1);
-  inputTypeConfig: InputConfigJson | undefined;
+  inputTypeConfig: InputConfigEntries | undefined;
 
   setName(value: string): this {
     this.name = value;
@@ -109,8 +114,8 @@ export class InputBuilder {
     return this;
   }
 
-  setInputTypeConfig(value: InputConfigJson | undefined): this {
-    this.inputTypeConfig = value;
+  setInputTypeConfig(value: InputConfigJson | InputConfigEntries | undefined): this {
+    this.inputTypeConfig = normalizeInputConfig(value);
     return this;
   }
 
@@ -120,7 +125,7 @@ export class InputBuilder {
     this.label = json.label;
     this.helpText = json.helpText;
     this.occurrences = Occurrences.fromJson(json.occurrences);
-    this.inputTypeConfig = json.config;
+    this.inputTypeConfig = normalizeInputConfig(json.config);
     return this;
   }
 

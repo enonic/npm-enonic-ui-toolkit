@@ -12,7 +12,7 @@ export type LocalDateTimeFields = {
   readonly fractions?: number;
 };
 
-const PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?$/;
+const PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/;
 
 /**
  * A date and time with no zone — XP's `LocalDateTime`, `2015-04-17T06:00:30.250` on the wire. It

@@ -88,6 +88,12 @@ describe('parseTime', () => {
       fractions: 250,
     });
     expect(parseTime('00:00:00.007')).toEqual({ hours: 0, minutes: 0, seconds: 0, fractions: 7 });
+    expect(parseTime('12:00:00.123456')).toEqual({
+      hours: 12,
+      minutes: 0,
+      seconds: 0,
+      fractions: 123,
+    });
   });
 
   it('insists on two digits and a valid range', () => {
@@ -95,7 +101,6 @@ describe('parseTime', () => {
     expect(parseTime('24:00')).toBeUndefined();
     expect(parseTime('12:60')).toBeUndefined();
     expect(parseTime('12:00:60')).toBeUndefined();
-    expect(parseTime('12:00:00.1234')).toBeUndefined();
     expect(parseTime('')).toBeUndefined();
   });
 });

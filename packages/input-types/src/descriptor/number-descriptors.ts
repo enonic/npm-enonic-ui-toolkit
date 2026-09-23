@@ -1,11 +1,9 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import { type Value, type ValueType, ValueTypes } from '../data';
-import type { NumberConfig } from './input-type-config';
+import type { InputConfigEntries, NumberConfig } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import { invalidValue, type ValidationResult } from './validation-result';
 
-function readNumberConfig(raw: InputConfigJson): NumberConfig {
+function readNumberConfig(raw: InputConfigEntries): NumberConfig {
   return { min: readBound(raw.min?.[0]?.value), max: readBound(raw.max?.[0]?.value) };
 }
 

@@ -57,7 +57,7 @@ what arrives.
 | `FormItemJson`        | one item — `InputJson`, `ItemSetJson`, `OptionSetJson`, `LayoutJson` or `FormFragmentJson`, by `formItemType` |
 | `FormItemType`        | the discriminant: `Input`, `ItemSet`, `OptionSet`, `Layout`, `FormFragment`                                   |
 | `OccurrencesJson`     | `minimum` and `maximum`; a maximum of 0 is unbounded                                                          |
-| `InputConfigJson`     | an input type's config, every property a list of `InputConfigEntryJson` — `value` plus attributes             |
+| `InputConfigJson`     | an input type's config as XP's libraries emit it — a scalar, a list or an object under each property          |
 | `OptionSetOptionJson` | one option: `name`, `label`, `default`, its `items`                                                           |
 | `PropertyTreeJson`    | a property tree: its arrays                                                                                   |
 | `PropertyArrayJson`   | a named array of one `ValueTypeName`, its `values`                                                            |

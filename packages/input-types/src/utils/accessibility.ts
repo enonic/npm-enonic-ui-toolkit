@@ -61,13 +61,15 @@ export function handleMobileCompletionKeyDown<T extends HTMLElement>(
   event: {
     key: string;
     isComposing?: boolean;
+    nativeEvent?: { isComposing?: boolean };
     currentTarget: T;
     preventDefault: () => void;
     stopPropagation: () => void;
   },
   onMobileComplete?: (element: HTMLElement) => void,
 ): void {
-  if (event.key !== 'Enter' || event.isComposing === true || onMobileComplete == null) {
+  const composing = event.isComposing === true || event.nativeEvent?.isComposing === true;
+  if (event.key !== 'Enter' || composing || onMobileComplete == null) {
     return;
   }
   event.preventDefault();

@@ -1,7 +1,5 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import { type Value, type ValueType, ValueTypes } from '../data';
-import type { Alignment, CheckboxConfig } from './input-type-config';
+import type { Alignment, CheckboxConfig, InputConfigEntries } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import type { ValidationResult } from './validation-result';
 
@@ -14,7 +12,7 @@ export const CheckboxDescriptor: InputTypeDescriptor<CheckboxConfig> = {
     return ValueTypes.BOOLEAN;
   },
 
-  readConfig(raw: InputConfigJson): CheckboxConfig {
+  readConfig(raw: InputConfigEntries): CheckboxConfig {
     const value = raw.alignment?.[0]?.value;
     const normalized = typeof value === 'string' ? value.toUpperCase() : '';
     return { alignment: ALIGNMENTS.includes(normalized) ? (normalized as Alignment) : 'LEFT' };

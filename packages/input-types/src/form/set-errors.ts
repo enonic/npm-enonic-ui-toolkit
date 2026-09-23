@@ -89,7 +89,6 @@ export function useItemSetChildErrors(
   propertySets: PropertySet[],
 ): Map<number, boolean> {
   const tick = useOccurrenceChangeTick(propertySets);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tick re-reads the tree
   return useMemo(() => {
     if (propertySets.length === 0) return EMPTY;
     const next = new Map<number, boolean>();
@@ -127,7 +126,6 @@ export function useOptionSetChildErrors(
   propertySets: PropertySet[],
 ): Map<number, boolean> {
   const tick = useOccurrenceChangeTick(propertySets);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tick re-reads the tree
   return useMemo(() => {
     if (propertySets.length === 0) return EMPTY;
     const next = new Map<number, boolean>();
@@ -230,7 +228,6 @@ export function useSetChildShowErrors(
     };
   }, [propertyArray, validationVisibility, occurrenceInteractions, getOrInit]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tick re-reads the interactions
   const childValidationVisibility = useMemo(() => {
     const map = new Map<number, ValidationVisibility>();
     propertySets.forEach((set, index) => {
@@ -239,7 +236,6 @@ export function useSetChildShowErrors(
     return map;
   }, [propertySets, tick, validationVisibility, getOrInit]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: tick re-reads the interactions
   const childShowErrors = useMemo(() => {
     const map = new Map<number, boolean>();
     propertySets.forEach((set, index) => {

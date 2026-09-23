@@ -43,7 +43,6 @@ export function useOccurrenceManager<C extends InputTypeConfig = InputTypeConfig
 }: UseOccurrenceManagerParams<C>): UseOccurrenceManagerResult {
   const minFill = autoSeed ? Math.max(occurrences.getMinimum(), 1) : 0;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initialValues seed the manager once
   const manager = useMemo(() => {
     const created = new OccurrenceManager<C>(occurrences, descriptor, config, initialValues);
     // Eager fill, so the first render shows the minimum; the fill stops when add() is refused.
@@ -61,7 +60,7 @@ export function useOccurrenceManager<C extends InputTypeConfig = InputTypeConfig
 
   const add = useCallback(
     (value?: Value): boolean => {
-      const added = manager.add(value ?? defaultValue);
+      const added = manager.add(value);
       if (added) setState(manager.validate());
       return added;
     },

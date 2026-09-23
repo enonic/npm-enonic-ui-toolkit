@@ -1,4 +1,3 @@
-import type { InputConfigJson } from '@enonic/ui-types';
 import {
   DateTime,
   dateFromTime,
@@ -11,7 +10,13 @@ import {
 } from '@enonic/ui-utils';
 
 import { Value, type ValueType, ValueTypes } from '../data';
-import type { DateConfig, DateTimeConfig, InstantConfig, TimeConfig } from './input-type-config';
+import type {
+  DateConfig,
+  DateTimeConfig,
+  InputConfigEntries,
+  InstantConfig,
+  TimeConfig,
+} from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import { invalidValue, type ValidationResult } from './validation-result';
 
@@ -29,7 +34,7 @@ function validDate(date: Date | undefined): Date | undefined {
 
 /** A default from the schema: an absolute value in the type's own form, or `now` with offsets. */
 function readDefault(
-  raw: InputConfigJson,
+  raw: InputConfigEntries,
   parse: (str: string) => Date | undefined,
 ): Date | undefined {
   const value = raw.default?.[0]?.value;
@@ -102,7 +107,7 @@ export const DateDescriptor: InputTypeDescriptor<DateConfig> = {
     return ValueTypes.LOCAL_DATE;
   },
 
-  readConfig(raw: InputConfigJson): DateConfig {
+  readConfig(raw: InputConfigEntries): DateConfig {
     return { default: readDefault(raw, parseDateDefault) };
   },
 
@@ -135,7 +140,7 @@ export const TimeDescriptor: InputTypeDescriptor<TimeConfig> = {
     return ValueTypes.LOCAL_TIME;
   },
 
-  readConfig(raw: InputConfigJson): TimeConfig {
+  readConfig(raw: InputConfigEntries): TimeConfig {
     return { default: readDefault(raw, parseTimeDefault) };
   },
 
@@ -168,7 +173,7 @@ export const DateTimeDescriptor: InputTypeDescriptor<DateTimeConfig> = {
     return ValueTypes.LOCAL_DATE_TIME;
   },
 
-  readConfig(raw: InputConfigJson): DateTimeConfig {
+  readConfig(raw: InputConfigEntries): DateTimeConfig {
     return { default: readDefault(raw, parseDateTimeDefault) };
   },
 
@@ -203,7 +208,7 @@ export const InstantDescriptor: InputTypeDescriptor<InstantConfig> = {
     return ValueTypes.DATE_TIME;
   },
 
-  readConfig(raw: InputConfigJson): InstantConfig {
+  readConfig(raw: InputConfigEntries): InstantConfig {
     return { default: readDefault(raw, parseInstantDefault) };
   },
 

@@ -58,6 +58,22 @@ export const fieldPhrases = {
   'enonic.inputTypes.field.timeTrigger': 'Open time picker',
 } as const;
 
+export const dateTimeRangePhrases = {
+  'enonic.inputTypes.dateTimeRange.from': 'Date from',
+  'enonic.inputTypes.dateTimeRange.to': 'Date to',
+  'enonic.inputTypes.dateTimeRange.noStart': '{0} is required when {1} is set',
+  'enonic.inputTypes.dateTimeRange.endInPast': '{1} cannot be in the past',
+  'enonic.inputTypes.dateTimeRange.endBeforeStart': '{1} cannot be before {0}',
+  'enonic.inputTypes.dateTimeRange.startEqualsEnd': '{0} and {1} cannot be equal',
+  'enonic.inputTypes.dateTimeRange.noStartDefault':
+    'A start date is required when an end date is set',
+  'enonic.inputTypes.dateTimeRange.endInPastDefault': 'The end date cannot be in the past',
+  'enonic.inputTypes.dateTimeRange.endBeforeStartDefault':
+    'The end date cannot be before the start date',
+  'enonic.inputTypes.dateTimeRange.startEqualsEndDefault':
+    'The start and end dates cannot be equal',
+} as const;
+
 export const actionPhrases = {
   'enonic.inputTypes.action.edit': 'Edit',
   'enonic.inputTypes.action.ok': 'OK',
@@ -72,6 +88,7 @@ export const inputTypesPhrases = mergePhrases([
   fieldPhrases,
   actionPhrases,
   setPhrases,
+  dateTimeRangePhrases,
 ]);
 
 export type InputTypesPhraseKey = keyof typeof inputTypesPhrases;

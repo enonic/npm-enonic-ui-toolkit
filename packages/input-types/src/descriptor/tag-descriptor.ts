@@ -1,7 +1,5 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import type { Value, ValueType } from '../data';
-import type { TextLineConfig } from './input-type-config';
+import type { InputConfigEntries, TextLineConfig } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import { TextLineDescriptor } from './text-line-descriptor';
 import type { ValidationResult } from './validation-result';
@@ -14,7 +12,7 @@ export const TagDescriptor: InputTypeDescriptor<TextLineConfig> = {
     return TextLineDescriptor.getValueType();
   },
 
-  readConfig(raw: InputConfigJson): TextLineConfig {
+  readConfig(raw: InputConfigEntries): TextLineConfig {
     return TextLineDescriptor.readConfig(raw);
   },
 

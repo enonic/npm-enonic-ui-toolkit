@@ -31,6 +31,10 @@ export const FormRenderProvider = ({
 };
 FormRenderProvider.displayName = 'FormRenderProvider';
 
+/** The form's settings when inside a `FormRenderProvider`; `undefined` when a hook is used outside one. */
+export const useOptionalFormRender = (): FormRenderContextValue | undefined =>
+  useContext(FormRenderContext);
+
 export const useFormRender = (): FormRenderContextValue => {
   const context = useContext(FormRenderContext);
   if (context === undefined) {

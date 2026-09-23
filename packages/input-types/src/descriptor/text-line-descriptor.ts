@@ -1,16 +1,14 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import { type Value, type ValueType, ValueTypes } from '../data';
-import type { TextLineConfig } from './input-type-config';
+import type { InputConfigEntries, TextLineConfig } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import type { ValidationResult } from './validation-result';
 
-export function readMaxLength(raw: InputConfigJson): number {
+export function readMaxLength(raw: InputConfigEntries): number {
   const maxLength = Number(raw.maxLength?.[0]?.value);
   return maxLength > 0 ? maxLength : -1;
 }
 
-export function readShowCounter(raw: InputConfigJson): boolean {
+export function readShowCounter(raw: InputConfigEntries): boolean {
   const value = raw.showCounter?.[0]?.value;
   return value === true || value === 'true';
 }
@@ -22,7 +20,7 @@ export const TextLineDescriptor: InputTypeDescriptor<TextLineConfig> = {
     return ValueTypes.STRING;
   },
 
-  readConfig(raw: InputConfigJson): TextLineConfig {
+  readConfig(raw: InputConfigEntries): TextLineConfig {
     const regexpStr = raw.regexp?.[0]?.value;
     let regexp: RegExp | undefined;
     if (typeof regexpStr === 'string' && regexpStr.trim() !== '') {

@@ -1,5 +1,11 @@
 import { Checkbox, RadioGroup } from '@enonic/ui';
-import { type JSX, type ReactElement, useCallback, useMemo, useState } from 'react';
+import {
+  type KeyboardEventHandler,
+  type ReactElement,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 
 import { FieldError } from '../components/field-error';
 import {
@@ -37,7 +43,7 @@ const RadioBody = ({
 
   // A handed-in onKeyDown replaces the group's roving arrow navigation, which would otherwise
   // also take the arrows typed into the nested inputs; the arrows stay inert on the radios.
-  const handleKeyDown: JSX.KeyboardEventHandler<HTMLDivElement> = (event) => {
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
     const isArrowKey =
       event.key === 'ArrowUp' ||
       event.key === 'ArrowDown' ||

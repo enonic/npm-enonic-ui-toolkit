@@ -87,13 +87,14 @@ describe('PropertyTree', () => {
     expect(tree.getProperty('count', 0)?.getIndex()).toBe(0);
   });
 
-  it('does not report a value set to an equal value unless forced', () => {
+  it('does not report a value set to an equal value, and marks a forced change', () => {
     const tree = PropertyTree.fromJson(json);
     const listener = vi.fn();
     tree.onPropertyValueChanged(listener);
     tree.setString('title', 0, 'Hello');
-    expect(listener).not.toHaveBeenCalled();
     tree.getProperty('title', 0)?.setValue(ValueTypes.STRING.newValue('Hello'), true);
+    expect(listener).not.toHaveBeenCalled();
+    tree.getProperty('title', 0)?.setValue(ValueTypes.STRING.newValue('Changed'), true);
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener.mock.calls[0]?.[0].isForce()).toBe(true);
   });

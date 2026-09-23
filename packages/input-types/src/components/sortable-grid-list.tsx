@@ -16,9 +16,10 @@ import {
 } from '@dnd-kit/sortable';
 import { cn } from '@enonic/ui';
 import { GripVertical } from 'lucide-react';
-import type { JSX, ReactElement, ReactNode } from 'react';
+import type { FocusEventHandler, KeyboardEventHandler, ReactElement, ReactNode } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
+import type { ElementRole } from '../types';
 import {
   FULL_ROW_TOUCH_SENSOR_OPTIONS,
   HANDLE_TOUCH_SENSOR_OPTIONS,
@@ -297,7 +298,7 @@ const SortableGridListItem = <T,>({
     syncRowNavigationTargetsTabIndex(rowRef.current, isNavigable);
   }, [isNavigable]);
 
-  const handleKeyDown: JSX.KeyboardEventHandler<HTMLDivElement> = (e) => {
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     syncRowNavigationTargetsTabIndex(e.currentTarget, isNavigable);
     const isKeyboardDragging = isKeyboardDragPressed(attributes['aria-pressed']);
     const targetIndex = getRowNavigationTargetIndex(e.currentTarget, e.target);
@@ -332,7 +333,7 @@ const SortableGridListItem = <T,>({
       }
     }
     if (e.target !== e.currentTarget) return;
-    (listeners?.onKeyDown as JSX.KeyboardEventHandler<HTMLDivElement> | undefined)?.(e);
+    (listeners?.onKeyDown as KeyboardEventHandler<HTMLDivElement> | undefined)?.(e);
   };
 
   // With the whole row draggable, dnd-kit's own key handler must not replace the guarded one.
@@ -342,13 +343,13 @@ const SortableGridListItem = <T,>({
     rowListeners = rest;
   }
 
-  const handleFocus: JSX.FocusEventHandler<HTMLDivElement> = (e) => {
+  const handleFocus: FocusEventHandler<HTMLDivElement> = (e) => {
     syncRowNavigationTargetsTabIndex(e.currentTarget, isNavigable);
     setIsFocused(true);
     onFocusRow(index, getRowNavigationTargetIndex(e.currentTarget, e.target));
   };
 
-  const handleBlur: JSX.FocusEventHandler<HTMLDivElement> = (e) => {
+  const handleBlur: FocusEventHandler<HTMLDivElement> = (e) => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsFocused(false);
   };
 
@@ -370,7 +371,7 @@ const SortableGridListItem = <T,>({
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      role={isMovable ? (attributes.role as JSX.AriaRole) : undefined}
+      role={isMovable ? (attributes.role as ElementRole) : undefined}
       tabIndex={isNavigable ? (isTabStop ? 0 : -1) : undefined}
       aria-disabled={isMovable ? attributes['aria-disabled'] : undefined}
       aria-pressed={isMovable ? attributes['aria-pressed'] : undefined}
@@ -485,7 +486,7 @@ export const SortableGridList = <T,>({
     hasFocusWithinRef.current = true;
   }, []);
 
-  const handleListBlur: JSX.FocusEventHandler<HTMLDivElement> = useCallback((e) => {
+  const handleListBlur: FocusEventHandler<HTMLDivElement> = useCallback((e) => {
     if (e.relatedTarget != null && !e.currentTarget.contains(e.relatedTarget as Node)) {
       pendingBlurClearVersionRef.current += 1;
       hasFocusWithinRef.current = false;

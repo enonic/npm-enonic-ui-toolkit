@@ -22,9 +22,10 @@ import {
 } from '@dnd-kit/sortable';
 import { cn } from '@enonic/ui';
 import { GripVertical } from 'lucide-react';
-import type { JSX, ReactElement, ReactNode } from 'react';
+import type { FocusEventHandler, KeyboardEventHandler, ReactElement, ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
+import type { ElementRole } from '../types';
 import {
   getProjectionDragInfo,
   getProjectionPlaceholderIndex,
@@ -63,12 +64,12 @@ export type SortableDropHint = {
 };
 
 export type SortableListContainerProps = {
-  role?: JSX.AriaRole;
+  role?: ElementRole;
   'aria-label'?: string;
 };
 
 export type SortableListItemProps = {
-  role?: JSX.AriaRole;
+  role?: ElementRole;
   tabIndex?: number;
   'aria-disabled'?: boolean;
   'aria-expanded'?: boolean;
@@ -237,9 +238,9 @@ const SortableListItem = <T,>({
     animateLayoutChanges,
   });
 
-  const handleKeyDown: JSX.KeyboardEventHandler<HTMLDivElement> = (e) => {
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.target !== e.currentTarget) return;
-    (listeners?.onKeyDown as JSX.KeyboardEventHandler<HTMLDivElement> | undefined)?.(e);
+    (listeners?.onKeyDown as KeyboardEventHandler<HTMLDivElement> | undefined)?.(e);
   };
 
   // With the whole row draggable, dnd-kit's own key handler must not replace the guarded one.
@@ -250,7 +251,7 @@ const SortableListItem = <T,>({
   }, [fullRowDraggable, isMovable, listeners]);
 
   const handleFocus = (): void => setIsFocused(true);
-  const handleBlur: JSX.FocusEventHandler<HTMLDivElement> = (e) => {
+  const handleBlur: FocusEventHandler<HTMLDivElement> = (e) => {
     if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsFocused(false);
   };
 
@@ -297,7 +298,7 @@ const SortableListItem = <T,>({
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
       onBlur={handleBlur}
-      role={itemProps?.role ?? (attributes.role as JSX.AriaRole)}
+      role={itemProps?.role ?? (attributes.role as ElementRole)}
       tabIndex={itemProps?.tabIndex ?? (isMovable && enabled ? attributes.tabIndex : undefined)}
       aria-disabled={itemProps?.['aria-disabled'] ?? defaultAriaDisabled}
       aria-pressed={hasCustomRole ? undefined : attributes['aria-pressed']}

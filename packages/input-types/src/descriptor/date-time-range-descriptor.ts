@@ -1,17 +1,19 @@
-import type { InputConfigJson } from '@enonic/ui-types';
 import { LocalDateTime } from '@enonic/ui-utils';
 
 import { type Value, type ValueType, ValueTypes } from '../data';
 import { configText } from './config-text';
-import type { DateTimeRangeConfig } from './input-type-config';
+import type { DateTimeRangeConfig, InputConfigEntries } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
-import type { ValidationResult } from './validation-result';
+import type { ValidationMessage, ValidationResult } from './validation-result';
 
 const RANGE_TYPES: readonly string[] = ['DateTime', 'LocalDateTime'];
 
+type RangeErrorKey = 'noStart' | 'endInPast' | 'endBeforeStart' | 'startEqualsEnd';
+
 /**
- * A `from` and a `to` in one nested set. The error texts come from the schema config, so they are
- * messages, not phrases; the English fallbacks are XP's own.
+ * A `from` and a `to` in one nested set. A schema may name the two dates and word the errors
+ * itself; where it does not, the package's phrases speak, with the schema's labels in them
+ * when it gave any.
  */
 export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> = {
   name: 'DateTimeRange',
@@ -20,7 +22,7 @@ export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> =
     return ValueTypes.DATA;
   },
 
-  readConfig(raw: InputConfigJson): DateTimeRangeConfig {
+  readConfig(raw: InputConfigEntries): DateTimeRangeConfig {
     const read = (name: string): string => configText(raw[name]?.[0]?.value);
     const readTime = (name: string): { hours: number; minutes: number } | undefined => {
       const time = read(name);
@@ -33,18 +35,31 @@ export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> =
         minutes: Number.parseInt(minutes, 10) || 0,
       };
     };
-    const fromLabel = read('fromLabel') || 'Date from';
-    const toLabel = read('toLabel') || 'Date to';
+    const custom = (name: string): string | undefined => {
+      const text = read(name);
+      return text === '' ? undefined : text;
+    };
+    const fromLabel = custom('fromLabel');
+    const toLabel = custom('toLabel');
+    const error = (name: string, key: RangeErrorKey): ValidationMessage => {
+      const text = custom(name);
+      if (text !== undefined) return { message: text };
+      if (fromLabel === undefined && toLabel === undefined) {
+        return { key: `enonic.inputTypes.dateTimeRange.${key}Default` };
+      }
+      return {
+        key: `enonic.inputTypes.dateTimeRange.${key}`,
+        values: [fromLabel ?? 'Date from', toLabel ?? 'Date to'],
+      };
+    };
     return {
       useTimezone: read('timezone') === 'true',
       fromLabel,
       toLabel,
-      errorNoStart: read('errorNoStart') || `${fromLabel} is required when ${toLabel} is set`,
-      errorEndInPast: read('errorEndInPast') || `${toLabel} cannot be in the past`,
-      errorEndBeforeStart:
-        read('errorEndBeforeStart') || `${toLabel} cannot be before ${fromLabel}`,
-      errorStartEqualsEnd:
-        read('errorStartEqualsEnd') || `${fromLabel} and ${toLabel} cannot be equal`,
+      errorNoStart: error('errorNoStart', 'noStart'),
+      errorEndInPast: error('errorEndInPast', 'endInPast'),
+      errorEndBeforeStart: error('errorEndBeforeStart', 'endBeforeStart'),
+      errorStartEqualsEnd: error('errorStartEqualsEnd', 'startEqualsEnd'),
       defaultFromTime: readTime('defaultFromTime'),
       defaultToTime: readTime('defaultToTime'),
       fromPlaceholder: read('fromPlaceholder'),
@@ -71,7 +86,7 @@ export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> =
     const from = set.getProperty('from', 0)?.getLocalDateTime();
     const to = set.getProperty('to', 0)?.getLocalDateTime();
     if (to !== undefined && from === undefined && !config.optionalFrom) {
-      return [{ message: config.errorNoStart }];
+      return [config.errorNoStart];
     }
     if (to === undefined) {
       return [];
@@ -79,14 +94,14 @@ export const DateTimeRangeDescriptor: InputTypeDescriptor<DateTimeRangeConfig> =
     const toDate = to.toDate();
     const now = new Date();
     if (toDate < now) {
-      return [{ message: config.errorEndInPast }];
+      return [config.errorEndInPast];
     }
     const effectiveFrom = from ?? LocalDateTime.fromDate(now);
     if (toDate < effectiveFrom.toDate()) {
-      return [{ message: config.errorEndBeforeStart }];
+      return [config.errorEndBeforeStart];
     }
     if (to.equals(effectiveFrom)) {
-      return [{ message: config.errorStartEqualsEnd }];
+      return [config.errorStartEqualsEnd];
     }
     return [];
   },

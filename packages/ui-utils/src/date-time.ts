@@ -1,6 +1,6 @@
 import { pad } from './date';
 
-const PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?Z$/;
+const PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$/;
 
 /**
  * An instant — XP's `DateTime`, `2015-04-17T06:00:30.250Z` on the wire. Its fields are UTC; it
