@@ -13,6 +13,6 @@ export { FormOptionSetOption, type FormOptionSetOptionInit } from './form-option
 export { FormSet, type FormSetInit } from './form-set';
 export { formItemFromJson, formItemsFromJson } from './from-json';
 export { Input, InputBuilder } from './input';
-export { normalizeInputConfig } from './input-config';
+export { denormalizeInputConfig, normalizeInputConfig } from './input-config';
 export { InputTypeName } from './input-type-name';
 export { Occurrences } from './occurrences';

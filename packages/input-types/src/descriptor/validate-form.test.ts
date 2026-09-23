@@ -956,6 +956,25 @@ describe('validateForm', () => {
     }
   });
 
+  it('attaches an indexed server error to its own occurrence', () => {
+    const input = makeInput('tags', 0, 5);
+    const form = new Form([input]);
+    const tree = new PropertyTree();
+    tree.getRoot().addProperty('tags', ValueTypes.STRING.newValue('a'));
+    tree.getRoot().addProperty('tags', ValueTypes.STRING.newValue('b'));
+
+    const result = looseValidate(form, tree.getRoot(), {
+      serverErrors: [{ path: 'tags[1]', message: 'Second is bad' }],
+    });
+
+    const node = result.children[0]!;
+    expect(node.type).toBe('input');
+    if (node.type === 'input') {
+      expect(node.errors[0]).toEqual([]);
+      expect(node.errors[1]).toEqual([{ message: 'Second is bad', custom: true, server: true }]);
+    }
+  });
+
   it('keeps an optional Input valid when it has a client-only custom error (not server)', () => {
     mocks.getDefinition.mockReturnValue(
       makeDefinition({ validate: () => [{ message: 'Client custom', custom: true }] }),

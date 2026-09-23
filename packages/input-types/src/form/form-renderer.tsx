@@ -50,8 +50,12 @@ export const FormRenderer = ({
   const rendered = (
     <FormRenderProvider enabled={enabled} applicationKey={applicationKey} notify={notify}>
       <div className="flex flex-col gap-7.5" data-component="FormRenderer">
-        {items.map((item) => (
-          <FormItemRenderer key={item.getName()} formItem={item} propertySet={propertySet} />
+        {items.map((item, index) => (
+          <FormItemRenderer
+            key={`${index}:${item.getName()}`}
+            formItem={item}
+            propertySet={propertySet}
+          />
         ))}
       </div>
     </FormRenderProvider>

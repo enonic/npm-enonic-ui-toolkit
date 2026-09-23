@@ -1,4 +1,4 @@
-import type { InputConfigJson } from '@enonic/ui-types';
+import type { InputConfigJson, InputConfigValueJson } from '@enonic/ui-types';
 
 import type { InputConfigEntries, InputConfigEntry } from '../descriptor/input-type-config';
 
@@ -22,4 +22,27 @@ export function normalizeInputConfig(
     entries[property] = Array.isArray(value) ? value.map(toEntry) : [toEntry(value)];
   }
   return entries;
+}
+
+function fromEntry(entry: InputConfigEntry): InputConfigValueJson {
+  const keys = Object.keys(entry);
+  return (keys.length === 1 && keys[0] === 'value' ? entry.value : entry) as InputConfigValueJson;
+}
+
+/**
+ * Entries back to XP's raw values: a lone `{ value }` is its value, an entry with attributes stays
+ * an object, several entries are a list. What `toJson` writes when the input was not read from
+ * XP's JSON, whose config it keeps as it came.
+ */
+export function denormalizeInputConfig(
+  entries: InputConfigEntries | undefined,
+): InputConfigJson | undefined {
+  if (entries === undefined) return undefined;
+  const config: Record<string, InputConfigValueJson> = {};
+  for (const [property, list] of Object.entries(entries)) {
+    const [only] = list;
+    config[property] =
+      list.length === 1 && only !== undefined ? fromEntry(only) : list.map(fromEntry);
+  }
+  return config;
 }

@@ -105,7 +105,9 @@ export class PropertyPath {
   }
 
   getParentPath(): PropertyPath | undefined {
-    return this.elements.length === 0 ? undefined : new PropertyPath(this.elements.slice(0, -1));
+    return this.elements.length === 0
+      ? undefined
+      : new PropertyPath(this.elements.slice(0, -1), this.absolute);
   }
 
   isAbsolute(): boolean {

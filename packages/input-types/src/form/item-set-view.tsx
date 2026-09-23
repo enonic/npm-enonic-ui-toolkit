@@ -146,9 +146,9 @@ export const ItemSetView = ({ itemSet, propertySet }: ItemSetViewProps): ReactEl
                   (childShowErrors.get(index) ?? false) && (childErrors.get(index) ?? false)
                 }
               >
-                {formItems.map((formItem) => (
+                {formItems.map((formItem, index) => (
                   <FormItemRenderer
-                    key={formItem.getName()}
+                    key={`${index}:${formItem.getName()}`}
                     formItem={formItem}
                     propertySet={item}
                   />

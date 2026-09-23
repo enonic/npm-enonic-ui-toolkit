@@ -77,9 +77,9 @@ const RadioBody = ({
               </RadioGroup.Item>
               {isChecked && formItems.length > 0 && optionDataSet && (
                 <div className="ml-1.5 flex flex-col gap-7.5 border-l border-l-bdr-soft pl-5">
-                  {formItems.map((formItem) => (
+                  {formItems.map((formItem, index) => (
                     <FormItemRenderer
-                      key={formItem.getName()}
+                      key={`${index}:${formItem.getName()}`}
                       formItem={formItem}
                       propertySet={optionDataSet}
                     />
@@ -155,9 +155,9 @@ const CheckboxBody = ({
             {checked && formItems.length > 0 && optionDataSet && (
               <ValidationVisibilityProvider visibility={optionVisibility}>
                 <div className="ml-1.75 flex flex-col gap-7.5 border-l border-l-bdr-soft pl-5">
-                  {formItems.map((formItem) => (
+                  {formItems.map((formItem, index) => (
                     <FormItemRenderer
-                      key={formItem.getName()}
+                      key={`${index}:${formItem.getName()}`}
                       formItem={formItem}
                       propertySet={optionDataSet}
                     />
@@ -197,9 +197,9 @@ const SelectedOptionBody = ({
   if (optionDataSet === undefined) return null;
   return (
     <div className="flex flex-col gap-7.5">
-      {formItems.map((formItem) => (
+      {formItems.map((formItem, index) => (
         <FormItemRenderer
-          key={formItem.getName()}
+          key={`${index}:${formItem.getName()}`}
           formItem={formItem}
           propertySet={optionDataSet}
         />

@@ -81,7 +81,9 @@ export class FormItemPath {
   }
 
   getParentPath(): FormItemPath | undefined {
-    return this.elements.length === 0 ? undefined : new FormItemPath(this.elements.slice(0, -1));
+    return this.elements.length === 0
+      ? undefined
+      : new FormItemPath(this.elements.slice(0, -1), this.absolute);
   }
 
   isAbsolute(): boolean {

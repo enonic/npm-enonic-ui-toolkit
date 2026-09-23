@@ -21,6 +21,8 @@ describe('PropertyPath', () => {
     expect(child.removeFirstPathElement().toString()).toBe('.b[2]');
     expect(child.getParentPath()?.toString()).toBe('.a');
     expect(child.asRelative().toString()).toBe('a.b[2]');
+    expect(child.asRelative().getParentPath()?.toString()).toBe('a');
+    expect(child.asRelative().getParentPath()?.isAbsolute()).toBe(false);
     expect(() => parent.removeFirstPathElement()).toThrow();
     expect(PropertyPath.ROOT.isRoot()).toBe(true);
     expect(PropertyPath.ROOT.getParentPath()).toBeUndefined();
