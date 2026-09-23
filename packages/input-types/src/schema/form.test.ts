@@ -7,7 +7,7 @@ import { Form } from './form';
 import { FormItemSet } from './form-item-set';
 import { FormOptionSet } from './form-option-set';
 import { Input } from './input';
-import { normalizeInputConfig } from './input-config';
+import { denormalizeInputConfig, normalizeInputConfig } from './input-config';
 import { InputTypeName } from './input-type-name';
 import { Occurrences } from './occurrences';
 
@@ -199,6 +199,43 @@ describe('input config', () => {
       { label: 'Option One', value: 'one' },
       { label: 'Option Two', value: 'two' },
     ]);
+  });
+
+  it('writes the config back as XP gave it', () => {
+    const input: FormJson = [
+      {
+        formItemType: 'Input',
+        name: 'size',
+        label: 'Size',
+        inputType: 'ComboBox',
+        occurrences: { minimum: 0, maximum: 1 },
+        config: {
+          maxLength: 11,
+          allowPath: ['/a'],
+          options: [{ value: 'one', label: 'Option One' }],
+        },
+      },
+    ];
+    expect(Form.fromJson(input).toJson()).toEqual(input);
+  });
+
+  it('writes entries built by hand as XP values', () => {
+    expect(
+      denormalizeInputConfig({
+        maxLength: [{ value: 11 }],
+        allowPath: [{ value: '/a' }, { value: '/b' }],
+        options: [{ value: 'Option One', '@value': 'one' }],
+      }),
+    ).toEqual({
+      maxLength: 11,
+      allowPath: ['/a', '/b'],
+      options: { value: 'Option One', '@value': 'one' },
+    });
+    const input = Input.create()
+      .setName('size')
+      .setInputTypeConfig({ maxLength: [{ value: 11 }] })
+      .build();
+    expect(input.toJson().config).toEqual({ maxLength: 11 });
   });
 
   it('leaves Content Studio entries as they are', () => {

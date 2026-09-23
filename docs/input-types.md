@@ -314,6 +314,17 @@ reaches its parent through the same `setParent` as the sets, a path no caller ta
 Nothing releases until `@enonic/ui` ships `usePhrases` (npm-enonic-ui#542) and the toolkit
 publishes; both consumers declare `^0.2.0` and get bumped then.
 
+Copilot's pass over PR #25 added: `Input.toJson` writes the config XP gave it, or denormalizes
+entries built by hand (`denormalizeInputConfig`), where it had written the entries as if they
+were XP's shape; `validateForm` buckets a server error by the occurrence its path names, as
+`InputField` already did for display, instead of piling every match on the first; a relative
+`PropertyPath` or `FormItemPath` stays relative through `getParentPath`; an item's key in the
+renderer carries its index, since XP's layouts have no name and two would share one; a
+`FieldSet`'s heading is a `legend`; an option's `equals` compares `helpText`. Accepted as
+inherited from `form2`: only `TextLineInput` and `TextAreaInput` honour the processing lock, the
+other leaves and the `internal`-mode selectors never did — the lock was made for text being
+written by the assistant.
+
 ## Open questions
 
 - **Tests for the components.** `form2` tests components by mocking `@enonic/ui` and asserting on

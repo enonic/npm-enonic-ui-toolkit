@@ -1,7 +1,7 @@
 import { type PropertySet, PropertyPath, PropertyPathElement } from '../data';
 import { inputTypeRegistry, type InputTypeRegistry } from '../registry';
 import type { FieldSet, Form, FormItem, FormItemSet, FormOptionSet, Input } from '../schema';
-import { matchesFieldPath } from '../utils/server-errors';
+import { bucketServerErrorsByOccurrence, mergeServerErrors } from '../utils/server-errors';
 import type {
   FieldSetValidationNode,
   FormValidationNode,
@@ -31,15 +31,6 @@ const SELECTED = '_selected';
 
 function stripLeadingDot(path: string): string {
   return path.startsWith('.') ? path.slice(1) : path;
-}
-
-function matchServerErrors(
-  dataPath: string,
-  serverErrors: readonly ServerError[],
-): ValidationResult[] {
-  return serverErrors
-    .filter((error) => matchesFieldPath(error.path, dataPath))
-    .map((error) => ({ message: error.message, custom: true, server: true }));
 }
 
 function isNodeValid(node: FormValidationNode): boolean {
@@ -120,10 +111,10 @@ function validateInput(
         new PropertyPathElement(name, 0),
       ).toString(),
     );
-    const matched = matchServerErrors(dataPath, serverErrors);
-    if (matched.length > 0) {
-      errors[0] = [...(errors[0] ?? []), ...matched];
-    }
+    const byOccurrence = bucketServerErrorsByOccurrence(serverErrors, dataPath);
+    mergeServerErrors(occurrenceValidation, byOccurrence).forEach((entry, index) => {
+      errors[index] = entry.validationResults;
+    });
   }
 
   const totalValid = occurrenceValidation.filter(

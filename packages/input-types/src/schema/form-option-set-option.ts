@@ -64,6 +64,7 @@ export class FormOptionSetOption extends FormItem {
       super.equals(other) &&
       other instanceof FormOptionSetOption &&
       other.label === this.label &&
+      other.helpText === this.helpText &&
       other.defaultOption === this.defaultOption &&
       formItemsEqual(this.formItems, other.formItems)
     );

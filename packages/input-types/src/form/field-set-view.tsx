@@ -16,14 +16,18 @@ export const FieldSetView = ({ fieldSet, propertySet }: FieldSetViewProps): Reac
   return (
     <fieldset className="flex flex-col" data-component="FieldSetView">
       {label && (
-        <span className="mb-7.5 text-base font-normal uppercase leading-3.5 tracking-[0.96px]">
+        <legend className="mb-7.5 p-0 text-base font-normal uppercase leading-3.5 tracking-[0.96px]">
           {label}
-        </span>
+        </legend>
       )}
       {formItems.length > 0 && (
         <div className="flex flex-col gap-7.5 border-l border-l-bdr-soft pl-5">
-          {formItems.map((item) => (
-            <FormItemRenderer key={item.getName()} formItem={item} propertySet={propertySet} />
+          {formItems.map((item, index) => (
+            <FormItemRenderer
+              key={`${index}:${item.getName()}`}
+              formItem={item}
+              propertySet={propertySet}
+            />
           ))}
         </div>
       )}

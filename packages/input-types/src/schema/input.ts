@@ -2,7 +2,7 @@ import type { InputConfigJson, InputJson } from '@enonic/ui-types';
 
 import type { InputConfigEntries } from '../descriptor/input-type-config';
 import { FormItem } from './form-item';
-import { normalizeInputConfig } from './input-config';
+import { denormalizeInputConfig, normalizeInputConfig } from './input-config';
 import { InputTypeName } from './input-type-name';
 import { Occurrences } from './occurrences';
 
@@ -15,6 +15,7 @@ export class Input extends FormItem {
   private readonly helpText: string | undefined;
   private readonly occurrences: Occurrences;
   private readonly inputTypeConfig: InputConfigEntries | undefined;
+  private readonly rawConfig: InputConfigJson | undefined;
 
   constructor(builder: InputBuilder) {
     super(builder.name);
@@ -23,6 +24,7 @@ export class Input extends FormItem {
     this.helpText = builder.helpText;
     this.occurrences = builder.occurrences;
     this.inputTypeConfig = builder.inputTypeConfig;
+    this.rawConfig = builder.rawConfig;
   }
 
   static create(): InputBuilder {
@@ -76,7 +78,7 @@ export class Input extends FormItem {
       occurrences: this.occurrences.toJson(),
       ...(this.inputTypeConfig === undefined
         ? {}
-        : { config: this.inputTypeConfig as unknown as InputConfigJson }),
+        : { config: this.rawConfig ?? denormalizeInputConfig(this.inputTypeConfig) }),
     };
   }
 }
@@ -88,6 +90,7 @@ export class InputBuilder {
   helpText: string | undefined;
   occurrences = Occurrences.minmax(0, 1);
   inputTypeConfig: InputConfigEntries | undefined;
+  rawConfig: InputConfigJson | undefined;
 
   setName(value: string): this {
     this.name = value;
@@ -116,6 +119,7 @@ export class InputBuilder {
 
   setInputTypeConfig(value: InputConfigJson | InputConfigEntries | undefined): this {
     this.inputTypeConfig = normalizeInputConfig(value);
+    this.rawConfig = undefined;
     return this;
   }
 
@@ -126,6 +130,7 @@ export class InputBuilder {
     this.helpText = json.helpText;
     this.occurrences = Occurrences.fromJson(json.occurrences);
     this.inputTypeConfig = normalizeInputConfig(json.config);
+    this.rawConfig = json.config;
     return this;
   }
 
