@@ -10,6 +10,7 @@ import {
 
 import type { PropertySet } from '../data';
 import type { FormItem, FormOptionSet } from '../schema';
+import type { ComponentWithRef } from '../types';
 import { ItemLabel } from './item-label';
 import {
   isLockedSingleOccurrence,
@@ -54,7 +55,7 @@ export type OptionSetOccurrenceViewProps = {
  * One occurrence of an option set. Adding next to a radio occurrence asks which option first,
  * since a radio occurrence without a choice is nothing yet.
  */
-export const OptionSetOccurrenceView = forwardRef<HTMLDivElement, OptionSetOccurrenceViewProps>(
+const OptionSetOccurrenceViewImpl = forwardRef<HTMLDivElement, OptionSetOccurrenceViewProps>(
   (
     {
       index,
@@ -203,4 +204,9 @@ export const OptionSetOccurrenceView = forwardRef<HTMLDivElement, OptionSetOccur
     );
   },
 );
-OptionSetOccurrenceView.displayName = OPTION_SET_OCCURRENCE_VIEW_NAME;
+OptionSetOccurrenceViewImpl.displayName = OPTION_SET_OCCURRENCE_VIEW_NAME;
+
+export const OptionSetOccurrenceView: ComponentWithRef<
+  OptionSetOccurrenceViewProps,
+  HTMLDivElement
+> = OptionSetOccurrenceViewImpl;

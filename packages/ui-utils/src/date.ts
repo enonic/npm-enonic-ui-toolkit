@@ -13,7 +13,7 @@ export type TimeOfDay = {
 };
 
 const DATE_PATTERN = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
-const TIME_PATTERN = /^(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/;
+const TIME_PATTERN = /^(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?$/;
 
 export function pad(num: number, length = 2): string {
   return String(num).padStart(length, '0');
@@ -77,7 +77,7 @@ export function parseTime(value: string): TimeOfDay | undefined {
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
   const seconds = match[3] == null ? 0 : Number(match[3]);
-  const fractions = match[4] == null ? 0 : Number(match[4].padEnd(3, '0'));
+  const fractions = match[4] == null ? 0 : Number(match[4].slice(0, 3).padEnd(3, '0'));
   if (!isValidHours(hours) || !isValidMinutes(minutes) || !isValidMinutes(seconds)) {
     return undefined;
   }

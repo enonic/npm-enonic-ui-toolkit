@@ -5,8 +5,8 @@ import type {
   FormItemJson,
   FormItemType,
   FormJson,
-  InputConfigEntryJson,
   InputConfigJson,
+  InputConfigValueJson,
   InputJson,
   ItemSetJson,
   LayoutJson,
@@ -22,14 +22,17 @@ expectTypeOf<OccurrencesJson>().toEqualTypeOf<{
   readonly maximum: number;
 }>();
 
-expectTypeOf<InputConfigEntryJson>().toEqualTypeOf<{
-  readonly value?: unknown;
-  readonly [attribute: string]: unknown;
+expectTypeOf<InputConfigJson>().toEqualTypeOf<{
+  readonly [property: string]: InputConfigValueJson;
 }>();
 
-expectTypeOf<InputConfigJson>().toEqualTypeOf<{
-  readonly [property: string]: readonly InputConfigEntryJson[];
-}>();
+// What XP's YAML descriptors carry: scalars, a list of option objects, a nested label object.
+expectTypeOf<{
+  maxLength: number;
+  showCounter: boolean;
+  default: string;
+  options: { value: string; label: string | { text: string; i18n: string } }[];
+}>().toExtend<InputConfigJson>();
 
 expectTypeOf<InputJson>().toEqualTypeOf<{
   readonly formItemType: 'Input';
@@ -101,9 +104,10 @@ if (item.formItemType === 'OptionSet') {
 }
 
 // What `@enonic-types/core` declares as `FormItem` is assignable here — the same wire, with
-// every field present and every config value a string — so a server typed against XP's own
-// types produces this contract without a cast. The shape is copied rather than imported: this
-// package has no dependencies.
+// every field present — so a server typed against XP's own types produces this contract without
+// a cast. Its config shape is Content Studio's REST wrapper, which XP's own libraries do not
+// emit but which the raw shape admits. Copied rather than imported: this package has no
+// dependencies.
 type CoreFormItemInput = {
   formItemType: 'Input';
   name: string;

@@ -1,7 +1,5 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import type { Value, ValueType } from '../data';
-import type { InputTypeConfig } from './input-type-config';
+import type { InputConfigEntries, InputTypeConfig } from './input-type-config';
 import type { ValidationResult } from './validation-result';
 
 /**
@@ -15,7 +13,7 @@ export type InputTypeDescriptor<C extends InputTypeConfig = InputTypeConfig> = {
   getValueType(): ValueType;
 
   /** The typed config from the schema's raw entries. */
-  readConfig(raw: InputConfigJson): C;
+  readConfig(raw: InputConfigEntries): C;
 
   /** A typed default from the schema's raw `default` entry. */
   createDefaultValue(raw: unknown): Value;

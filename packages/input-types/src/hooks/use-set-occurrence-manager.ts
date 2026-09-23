@@ -19,7 +19,6 @@ export function useSetOccurrenceManager(
   occurrences: Occurrences,
   propertySets: PropertySet[],
 ): UseSetOccurrenceManagerResult {
-  // biome-ignore lint/correctness/useExhaustiveDependencies: propertySets seed the manager once
   const manager = useMemo(() => new SetOccurrenceManager(occurrences, propertySets), [occurrences]);
   const [state, setState] = useState<SetOccurrenceManagerState>(() => manager.getState());
 

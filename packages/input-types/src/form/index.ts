@@ -5,6 +5,7 @@ export {
   FormRenderProvider,
   type FormRenderProviderProps,
   useFormRender,
+  useOptionalFormRender,
 } from './form-render-context';
 export { FormRenderer, type FormRendererProps } from './form-renderer';
 export { ItemLabel, type ItemLabelProps } from './item-label';

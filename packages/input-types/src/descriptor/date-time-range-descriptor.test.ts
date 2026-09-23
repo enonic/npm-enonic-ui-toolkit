@@ -1,15 +1,22 @@
-import { LocalDateTime } from '@enonic/ui-utils';
+import { LocalDateTime, localize, type PhraseValue } from '@enonic/ui-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PropertyTree } from '../data';
 import { Value } from '../data';
 import { ValueTypes } from '../data';
+import { inputTypesPhrases } from '../i18n/phrases';
 import { DateTimeRangeDescriptor } from './date-time-range-descriptor';
-import type { ValidationResult } from './validation-result';
-
-const messageOf = (result: ValidationResult | undefined): string | undefined =>
-  result !== undefined && 'message' in result ? result.message : undefined;
 import type { DateTimeRangeConfig } from './input-type-config';
+import {
+  type ResolvePhrase,
+  resolveValidationMessage,
+  type ValidationResult,
+} from './validation-result';
+
+const t = (key: string, ...values: PhraseValue[]): string =>
+  localize(inputTypesPhrases, key, ...values);
+const messageOf = (result: ValidationResult | undefined): string | undefined =>
+  result === undefined ? undefined : resolveValidationMessage(result, t as ResolvePhrase);
 
 function makeRangeValue(from?: string | null, to?: string | null): Value {
   const tree = new PropertyTree();
@@ -26,12 +33,12 @@ function makeRangeValue(from?: string | null, to?: string | null): Value {
 function makeDefaultConfig(overrides: Partial<DateTimeRangeConfig> = {}): DateTimeRangeConfig {
   return {
     useTimezone: false,
-    fromLabel: 'Date from',
-    toLabel: 'Date to',
-    errorNoStart: 'Date from is required when Date to is set',
-    errorEndInPast: 'Date to cannot be in the past',
-    errorEndBeforeStart: 'Date to cannot be before Date from',
-    errorStartEqualsEnd: 'Date from and Date to cannot be equal',
+    fromLabel: undefined,
+    toLabel: undefined,
+    errorNoStart: { key: 'enonic.inputTypes.dateTimeRange.noStartDefault' },
+    errorEndInPast: { key: 'enonic.inputTypes.dateTimeRange.endInPastDefault' },
+    errorEndBeforeStart: { key: 'enonic.inputTypes.dateTimeRange.endBeforeStartDefault' },
+    errorStartEqualsEnd: { key: 'enonic.inputTypes.dateTimeRange.startEqualsEndDefault' },
     defaultFromTime: undefined,
     defaultToTime: undefined,
     fromPlaceholder: '',
@@ -52,12 +59,16 @@ describe('DateTimeRangeDescriptor', () => {
     it('returns all defaults with empty config', () => {
       const config = DateTimeRangeDescriptor.readConfig({});
       expect(config.useTimezone).toBe(false);
-      expect(config.fromLabel).toBe('Date from');
-      expect(config.toLabel).toBe('Date to');
-      expect(config.errorNoStart).toBe('Date from is required when Date to is set');
-      expect(config.errorEndInPast).toBe('Date to cannot be in the past');
-      expect(config.errorEndBeforeStart).toBe('Date to cannot be before Date from');
-      expect(config.errorStartEqualsEnd).toBe('Date from and Date to cannot be equal');
+      expect(config.fromLabel).toBeUndefined();
+      expect(config.toLabel).toBeUndefined();
+      expect(messageOf(config.errorNoStart)).toBe(
+        'A start date is required when an end date is set',
+      );
+      expect(messageOf(config.errorEndInPast)).toBe('The end date cannot be in the past');
+      expect(messageOf(config.errorEndBeforeStart)).toBe(
+        'The end date cannot be before the start date',
+      );
+      expect(messageOf(config.errorStartEqualsEnd)).toBe('The start and end dates cannot be equal');
       expect(config.defaultFromTime).toBeUndefined();
       expect(config.defaultToTime).toBeUndefined();
       expect(config.fromPlaceholder).toBe('');
@@ -86,9 +97,9 @@ describe('DateTimeRangeDescriptor', () => {
         fromLabel: [{ value: 'Start' }],
         toLabel: [{ value: 'End' }],
       });
-      expect(config.errorNoStart).toBe('Start is required when End is set');
-      expect(config.errorEndBeforeStart).toBe('End cannot be before Start');
-      expect(config.errorStartEqualsEnd).toBe('Start and End cannot be equal');
+      expect(messageOf(config.errorNoStart)).toBe('Start is required when End is set');
+      expect(messageOf(config.errorEndBeforeStart)).toBe('End cannot be before Start');
+      expect(messageOf(config.errorStartEqualsEnd)).toBe('Start and End cannot be equal');
     });
 
     it('parses custom error messages (override auto-generated)', () => {
@@ -96,8 +107,8 @@ describe('DateTimeRangeDescriptor', () => {
         errorNoStart: [{ value: 'Custom no start' }],
         errorEndInPast: [{ value: 'Custom end past' }],
       });
-      expect(config.errorNoStart).toBe('Custom no start');
-      expect(config.errorEndInPast).toBe('Custom end past');
+      expect(config.errorNoStart).toEqual({ message: 'Custom no start' });
+      expect(config.errorEndInPast).toEqual({ message: 'Custom end past' });
     });
 
     it('parses defaultFromTime', () => {
@@ -199,7 +210,7 @@ describe('DateTimeRangeDescriptor', () => {
       const value = makeRangeValue(null, '2025-07-01T18:00');
       const results = DateTimeRangeDescriptor.validate(value, config);
       expect(results).toHaveLength(1);
-      expect(messageOf(results[0]!)).toBe('Date from is required when Date to is set');
+      expect(messageOf(results[0]!)).toBe('A start date is required when an end date is set');
     });
 
     it('does not return errorNoStart when optionalFrom=true', () => {
@@ -207,7 +218,7 @@ describe('DateTimeRangeDescriptor', () => {
       const value = makeRangeValue(null, '2025-07-01T18:00');
       const results = DateTimeRangeDescriptor.validate(value, config);
       // Should not have the "no start" error
-      const noStartErrors = results.filter((r) => messageOf(r) === config.errorNoStart);
+      const noStartErrors = results.filter((r) => messageOf(r) === messageOf(config.errorNoStart));
       expect(noStartErrors).toHaveLength(0);
     });
 
@@ -216,7 +227,7 @@ describe('DateTimeRangeDescriptor', () => {
       const value = makeRangeValue('2025-01-01T10:00', '2025-01-01T18:00');
       const results = DateTimeRangeDescriptor.validate(value, config);
       expect(results).toHaveLength(1);
-      expect(messageOf(results[0]!)).toBe('Date to cannot be in the past');
+      expect(messageOf(results[0]!)).toBe('The end date cannot be in the past');
     });
 
     it('returns errorEndBeforeStart when to < from (both in future)', () => {
@@ -224,7 +235,7 @@ describe('DateTimeRangeDescriptor', () => {
       const value = makeRangeValue('2025-07-10T18:00', '2025-07-10T10:00');
       const results = DateTimeRangeDescriptor.validate(value, config);
       expect(results).toHaveLength(1);
-      expect(messageOf(results[0]!)).toBe('Date to cannot be before Date from');
+      expect(messageOf(results[0]!)).toBe('The end date cannot be before the start date');
     });
 
     it('returns errorStartEqualsEnd when from equals to', () => {
@@ -232,7 +243,7 @@ describe('DateTimeRangeDescriptor', () => {
       const value = makeRangeValue('2025-07-01T10:00', '2025-07-01T10:00');
       const results = DateTimeRangeDescriptor.validate(value, config);
       expect(results).toHaveLength(1);
-      expect(messageOf(results[0]!)).toBe('Date from and Date to cannot be equal');
+      expect(messageOf(results[0]!)).toBe('The start and end dates cannot be equal');
     });
 
     it('returns empty when only from is set (no to)', () => {

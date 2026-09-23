@@ -1,11 +1,13 @@
 import type { FormJson } from '@enonic/ui-types';
 import { describe, expect, it } from 'vitest';
 
+import { readOptions } from '../descriptor/option-descriptors';
 import { FieldSet } from './field-set';
 import { Form } from './form';
 import { FormItemSet } from './form-item-set';
 import { FormOptionSet } from './form-option-set';
 import { Input } from './input';
+import { normalizeInputConfig } from './input-config';
 import { InputTypeName } from './input-type-name';
 import { Occurrences } from './occurrences';
 
@@ -164,5 +166,47 @@ describe('Form', () => {
     expect(InputTypeName.parseInputTypeName('TextLine').equals(new InputTypeName('TextLine'))).toBe(
       true,
     );
+  });
+});
+
+describe('input config', () => {
+  it('reads XP raw config values as the entries a descriptor expects', () => {
+    const form = Form.fromJson([
+      {
+        formItemType: 'Input',
+        name: 'size',
+        label: 'Size',
+        inputType: 'ComboBox',
+        occurrences: { minimum: 0, maximum: 1 },
+        config: {
+          maxLength: 11,
+          showCounter: true,
+          default: 'one',
+          allowPath: ['/a', '/b'],
+          options: [
+            { value: 'one', label: 'Option One' },
+            { value: 'two', label: { text: 'Option Two', i18n: 'combobox.option2' } },
+          ],
+        },
+      },
+    ]);
+    const config = form.getInputByName('size')?.getInputTypeConfig();
+    expect(config?.maxLength).toEqual([{ value: 11 }]);
+    expect(config?.showCounter).toEqual([{ value: true }]);
+    expect(config?.default).toEqual([{ value: 'one' }]);
+    expect(config?.allowPath).toEqual([{ value: '/a' }, { value: '/b' }]);
+    expect(readOptions(config ?? {})).toEqual([
+      { label: 'Option One', value: 'one' },
+      { label: 'Option Two', value: 'two' },
+    ]);
+  });
+
+  it('leaves Content Studio entries as they are', () => {
+    const entries = {
+      maxLength: [{ value: 11 }],
+      options: [{ value: 'Option One', '@value': 'one' }],
+    };
+    expect(normalizeInputConfig(entries)).toEqual(entries);
+    expect(readOptions(entries)).toEqual([{ label: 'Option One', value: 'one' }]);
   });
 });

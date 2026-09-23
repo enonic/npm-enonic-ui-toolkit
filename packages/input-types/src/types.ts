@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react';
+import type { ComponentPropsWithoutRef, ComponentType, ReactNode, Ref } from 'react';
 
 import type { PropertyPath, Value } from './data';
 import type { InputTypeConfig } from './descriptor/input-type-config';
@@ -13,6 +13,15 @@ import type { Input, Occurrences } from './schema';
  * component that manages its own occurrences — a selector, a tag list.
  */
 export type InputTypeMode = 'list' | 'single' | 'internal';
+
+/** An element's `role`, as React and Preact both type it; Preact's `JSX.AriaRole` is not React's. */
+export type ElementRole = ComponentPropsWithoutRef<'div'>['role'];
+
+/**
+ * A component taking a `ref` to its root element. What `forwardRef` returns, named in React's
+ * terms so the published declarations carry no Preact type when the workspace builds on Preact.
+ */
+export type ComponentWithRef<P, T> = (props: P & { ref?: Ref<T> }) => ReactNode;
 
 /** What every occurrence component receives, one per occurrence. */
 export type InputTypeComponentProps<C extends InputTypeConfig = InputTypeConfig> = {

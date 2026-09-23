@@ -11,7 +11,12 @@ export {
 export { DoubleInput, type DoubleInputProps, getStep } from './double-input';
 export { FieldError, type FieldErrorProps } from './field-error';
 export { GeoPointInput, type GeoPointInputProps } from './geo-point-input';
-export { InputField, type InputFieldProps, InputFieldResolved } from './input-field';
+export {
+  InputField,
+  type InputFieldProps,
+  InputFieldResolved,
+  type InputFieldResolvedProps,
+} from './input-field';
 export { InputLabel, type InputLabelActionProps, type InputLabelRootProps } from './input-label';
 export {
   formatTimezoneLabel,

@@ -11,7 +11,7 @@ export type {
   FormItemJson,
   FormItemType,
   FormJson,
-  InputConfigEntryJson,
+  InputConfigValueJson,
   InputConfigJson,
   InputJson,
   ItemSetJson,

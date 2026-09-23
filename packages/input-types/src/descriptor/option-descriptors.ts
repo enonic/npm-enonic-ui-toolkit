@@ -1,17 +1,28 @@
-import type { InputConfigJson } from '@enonic/ui-types';
-
 import { type Value, type ValueType, ValueTypes } from '../data';
 import { configText } from './config-text';
-import type { ComboBoxConfig, OptionConfig, RadioButtonConfig } from './input-type-config';
+import type {
+  ComboBoxConfig,
+  InputConfigEntries,
+  OptionConfig,
+  RadioButtonConfig,
+} from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import type { ValidationResult } from './validation-result';
 
-/** An option entry: the text under `value`, the stored value under the `@value` attribute. */
-export function readOptions(raw: InputConfigJson): OptionConfig[] {
-  return (raw.options ?? []).map((entry) => ({
-    label: configText(entry.value),
-    value: configText(entry['@value']),
-  }));
+/**
+ * An option entry as XP emits it — `{ value: 'a', label: 'A' }`, the label a text or
+ * `{ text, i18n }` — or as Content Studio's REST wraps it, `{ '@value': 'a', value: 'A' }`.
+ */
+export function readOptions(raw: InputConfigEntries): OptionConfig[] {
+  return (raw.options ?? []).map((entry) => {
+    const stored = '@value' in entry ? entry['@value'] : entry.value;
+    const label = entry.label ?? ('@value' in entry ? entry.value : undefined);
+    const labelText =
+      typeof label === 'object' && label !== null && 'text' in label
+        ? (label as { text?: unknown }).text
+        : label;
+    return { label: configText(labelText ?? stored), value: configText(stored) };
+  });
 }
 
 function optionDescriptor(
@@ -24,7 +35,7 @@ function optionDescriptor(
       return ValueTypes.STRING;
     },
 
-    readConfig(raw: InputConfigJson): ComboBoxConfig {
+    readConfig(raw: InputConfigEntries): ComboBoxConfig {
       return { options: readOptions(raw) };
     },
 

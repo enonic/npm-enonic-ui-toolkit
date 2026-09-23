@@ -1,8 +1,8 @@
-import type { InputConfigJson, PrincipalType } from '@enonic/ui-types';
+import type { PrincipalType } from '@enonic/ui-types';
 
 import { type Value, type ValueType, ValueTypes } from '../data';
 import { configText } from './config-text';
-import type { PrincipalSelectorConfig } from './input-type-config';
+import type { InputConfigEntries, PrincipalSelectorConfig } from './input-type-config';
 import type { InputTypeDescriptor } from './input-type-descriptor';
 import type { ValidationResult } from './validation-result';
 
@@ -19,7 +19,7 @@ export const PrincipalSelectorDescriptor: InputTypeDescriptor<PrincipalSelectorC
     return ValueTypes.REFERENCE;
   },
 
-  readConfig(raw: InputConfigJson): PrincipalSelectorConfig {
+  readConfig(raw: InputConfigEntries): PrincipalSelectorConfig {
     const principalTypes = (raw.principalType ?? [])
       .map((entry) => configText(entry.value).toLowerCase())
       .filter((type): type is PrincipalType => PRINCIPAL_TYPES.includes(type));

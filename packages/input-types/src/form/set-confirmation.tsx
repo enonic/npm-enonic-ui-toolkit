@@ -17,14 +17,15 @@ import { createPortal } from 'react-dom';
 
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { FormOptionSet } from '../schema';
+import type { ComponentWithRef } from '../types';
 import { ItemLabel } from './item-label';
 
 export type ConfirmPosition = { top: number; left: number; width: number };
 
 type UseConfirmPositionParams = {
   enabled: boolean;
-  anchorRef: RefObject<HTMLElement>;
-  confirmationRef: RefObject<HTMLElement>;
+  anchorRef: RefObject<HTMLElement | null>;
+  confirmationRef: RefObject<HTMLElement | null>;
 };
 
 /** Fixed coordinates for a bar centred above its anchor, following it through resize and scroll. */
@@ -164,7 +165,7 @@ export type SetConfirmDeleteProps = {
 };
 
 /** Cancel or Delete, floating above the occurrence about to go. */
-export const SetConfirmDelete = forwardRef<HTMLDivElement, SetConfirmDeleteProps>(
+const SetConfirmDeleteImpl = forwardRef<HTMLDivElement, SetConfirmDeleteProps>(
   ({ position, onCancel, onConfirm }, ref): ReactElement => {
     const t = useInputTypesPhrases();
     useConfirmKeyboard(onCancel);
@@ -186,7 +187,10 @@ export const SetConfirmDelete = forwardRef<HTMLDivElement, SetConfirmDeleteProps
     );
   },
 );
-SetConfirmDelete.displayName = 'SetConfirmDelete';
+SetConfirmDeleteImpl.displayName = 'SetConfirmDelete';
+
+export const SetConfirmDelete: ComponentWithRef<SetConfirmDeleteProps, HTMLDivElement> =
+  SetConfirmDeleteImpl;
 
 export type OptionSetConfirmAddProps = {
   optionSet: FormOptionSet;
@@ -196,7 +200,7 @@ export type OptionSetConfirmAddProps = {
 };
 
 /** The option to select for a new radio occurrence, chosen before the occurrence exists. */
-export const OptionSetConfirmAdd = forwardRef<HTMLDivElement, OptionSetConfirmAddProps>(
+const OptionSetConfirmAddImpl = forwardRef<HTMLDivElement, OptionSetConfirmAddProps>(
   ({ optionSet, position, onCancel, onConfirm }, ref): ReactElement => {
     const t = useInputTypesPhrases();
     const [value, setValue] = useState('');
@@ -268,4 +272,7 @@ export const OptionSetConfirmAdd = forwardRef<HTMLDivElement, OptionSetConfirmAd
     );
   },
 );
-OptionSetConfirmAdd.displayName = 'OptionSetConfirmAdd';
+OptionSetConfirmAddImpl.displayName = 'OptionSetConfirmAdd';
+
+export const OptionSetConfirmAdd: ComponentWithRef<OptionSetConfirmAddProps, HTMLDivElement> =
+  OptionSetConfirmAddImpl;

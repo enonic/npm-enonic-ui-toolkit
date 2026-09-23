@@ -58,7 +58,7 @@ type SupportedInputTypeDefinition =
       component: SelfManagedInputTypeComponent;
     };
 
-type InputFieldResolvedProps = InputFieldProps & {
+export type InputFieldResolvedProps = InputFieldProps & {
   definition: SupportedInputTypeDefinition;
 };
 
@@ -272,7 +272,6 @@ export const InputFieldResolved = ({
 
   // `values` is the trigger; the live array is what is read: under fast typing the hook's
   // snapshot lags the manager, and a stale sync would blank the input.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: values triggers, propertyArray is read
   useEffect(() => {
     sync(propertyArray.getProperties().map((property) => property.getValue()));
     while (propertyArray.getSize() < minFill) {

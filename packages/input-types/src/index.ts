@@ -19,6 +19,7 @@ export * from './form';
 export * from './hooks';
 export {
   actionPhrases,
+  dateTimeRangePhrases,
   fieldPhrases,
   inputTypesPhrases,
   type InputTypesPhraseKey,
@@ -30,6 +31,8 @@ export { type InputTypesTranslate, useInputTypesPhrases } from './i18n/use-phras
 export { createInputTypeRegistry, InputTypeRegistry, inputTypeRegistry } from './registry';
 export { registerBuiltInTypes } from './register-built-in-types';
 export type {
+  ComponentWithRef,
+  ElementRole,
   InputTypeComponent,
   InputTypeComponentProps,
   InputTypeDefinition,

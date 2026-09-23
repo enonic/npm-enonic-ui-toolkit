@@ -1,11 +1,17 @@
 import { cn, ContextMenu, FilledOctagonAlert } from '@enonic/ui';
 import { MoreVertical } from 'lucide-react';
-import { type JSX, type ReactElement, type ReactNode, type RefObject, useCallback } from 'react';
+import {
+  type MouseEventHandler,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+} from 'react';
 
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 
 export type SetOccurrenceHeaderProps = {
-  anchorRef: RefObject<HTMLDivElement>;
+  anchorRef: RefObject<HTMLDivElement | null>;
   grip: ReactNode;
   expanded: boolean;
   /** Whether the header takes the expanded look; an occurrence without a body never does. */
@@ -44,7 +50,7 @@ export const SetOccurrenceHeader = ({
   const t = useInputTypesPhrases();
 
   // The dots open the same menu a right click does, at the same place.
-  const handleDotsClick: JSX.MouseEventHandler<HTMLButtonElement> = useCallback((event) => {
+  const handleDotsClick: MouseEventHandler<HTMLButtonElement> = useCallback((event) => {
     event.stopPropagation();
     event.currentTarget.dispatchEvent(
       new MouseEvent('contextmenu', {
@@ -72,7 +78,7 @@ export const SetOccurrenceHeader = ({
       <ContextMenu open={menuOpen} onOpenChange={onMenuOpenChange}>
         <ContextMenu.Trigger className="flex w-full">
           <div
-            ref={anchorRef}
+            ref={anchorRef as RefObject<HTMLDivElement>}
             className={cn(
               'grid min-w-0 flex-1 grid-cols-[1fr_auto] items-center rounded',
               expandedChrome && 'rounded-b-none text-alt',

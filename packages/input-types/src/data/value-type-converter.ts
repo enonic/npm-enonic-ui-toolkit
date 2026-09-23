@@ -31,6 +31,9 @@ function convertTo(value: Value, toType: ValueType): Value {
   if (value.getType().equals(toType)) {
     return value;
   }
+  if (value.getType().equals(ValueTypes.DATA)) {
+    return toType.newNullValue();
+  }
   switch (toType.getName()) {
     case 'PropertySet':
       return convertToData(value);

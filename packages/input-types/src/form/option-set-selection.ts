@@ -4,7 +4,7 @@ import { PropertyArray, type PropertySet, Value, ValueTypes } from '../data';
 import { usePropertyArray } from '../hooks/use-property-array';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { FormOptionSet } from '../schema';
-import { useFormRender } from './form-render-context';
+import { useOptionalFormRender } from './form-render-context';
 
 /** The string array on an option set occurrence naming its selected options. */
 export const SELECTED_NAME = '_selected';
@@ -59,7 +59,7 @@ function writeRadioSelection(selectedArray: PropertyArray, name: string): void {
 /** Appends and moves into alphabetical place: one add and one move, not a rewrite of the array. */
 function insertMultiSelection(selectedArray: PropertyArray, name: string, current: string[]): void {
   if (current.includes(name)) return;
-  const nextSorted = [...current, name].sort((a, b) => a.localeCompare(b));
+  const nextSorted = [...current, name].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
   const targetIndex = nextSorted.indexOf(name);
   selectedArray.add(new Value(name, ValueTypes.STRING));
   const appendedIndex = selectedArray.getSize() - 1;
@@ -91,7 +91,7 @@ export function useOptionSetSelection(
   occurrence: PropertySet,
 ): UseOptionSetSelectionResult {
   const t = useInputTypesPhrases();
-  const { notify } = useFormRender();
+  const notify = useOptionalFormRender()?.notify;
   const isRadio = optionSet.isRadioSelection();
   const schemaOptionNames = useMemo(
     () => optionSet.getOptions().map((o) => o.getName()),

@@ -22,18 +22,24 @@ export type OccurrencesJson = {
 };
 
 /**
- * One entry of an input type's config: what the schema's `<max-length>42</max-length>` or
- * `<option value="a">A</option>` becomes. The text is `value`; an attribute is a property of its
- * own name. A `default` entry is where an input's default value travels.
+ * A value in an input type's config as XP's JS libraries emit it — `GenericValue.toRawJs()` in
+ * `lib-content` and `lib-schema`: a scalar, a list of values, or an object of them.
  */
-export type InputConfigEntryJson = {
-  readonly value?: unknown;
-  readonly [attribute: string]: unknown;
-};
+export type InputConfigValueJson =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly InputConfigValueJson[]
+  | { readonly [property: string]: InputConfigValueJson };
 
-/** An input type's config: every property a list, because any of them may repeat. */
+/**
+ * An input type's config, one property per element of the schema's config: `maxLength: 11`,
+ * `default: 'x'`, `options: [{ value: 'a', label: 'A' }]`. Content Studio's own REST wraps every
+ * property in a list of `{ value }` entries instead; `@enonic/input-types` reads both.
+ */
 export type InputConfigJson = {
-  readonly [property: string]: readonly InputConfigEntryJson[];
+  readonly [property: string]: InputConfigValueJson;
 };
 
 export type InputJson = {
