@@ -181,7 +181,7 @@ For `architecture.md`'s table, the row this package was waiting for, filled in:
 | ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
 
-`@enonic/ui`'s floor is the release that ships `I18nProvider` and `usePhrases` (npm-enonic-ui#542),
+`@enonic/ui`'s floor is 1.3.0, the release that ships `I18nProvider` and `usePhrases` (npm-enonic-ui#542),
 for the same reason it is `ui-kit`'s. The `@dnd-kit` pair is a peer for the reason
 `react-resizable-panels` is: a sortable finds its `DndContext` through a context, and two copies
 are two contexts. Content Studio and lib-admin-ui both carry the pair already. `focus-trap-react`
@@ -311,7 +311,7 @@ writes XP's dialect, and its two callers (the AI bridge, logging) follow; `remov
 event per removed property and `removeEmptySets` recurses as Content Studio's did;
 per-occurrence visibility is decided once, as Content Studio decided it; a named `FieldSet`
 reaches its parent through the same `setParent` as the sets, a path no caller takes yet.
-Nothing releases until `@enonic/ui` ships `usePhrases` (npm-enonic-ui#542) and the toolkit
+`@enonic/ui` 1.3.0 ships `usePhrases` (npm-enonic-ui#542); nothing else releases until the toolkit
 publishes; both consumers declare `^0.2.0` and get bumped then.
 
 Copilot's pass over PR #25 added: `Input.toJson` writes the config XP gave it, or denormalizes
