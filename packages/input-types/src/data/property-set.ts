@@ -688,7 +688,8 @@ export class PropertySet {
     return array;
   }
 
-  private removeEmptyArrays(): void {
+  /** Drops the arrays of this set with no properties left; `removeEmptySets` does it all the way down. */
+  removeEmptyArrays(): void {
     for (const [name, array] of this.arraysByName) {
       if (array.isEmpty()) {
         this.arraysByName.delete(name);
