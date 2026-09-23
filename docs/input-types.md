@@ -265,8 +265,25 @@ dependency order — nothing in a step imports a later one.
    Content Studio's factory.
 7. **lib-admin-ui re-exports the package** (in that repository): `data/`, the schema classes and
    `form2/` become re-exports; `BaseInputType` and the legacy views stay.
+   What the port settled (lib-admin-ui#4692, branch `issue-4692`): every moved file stays as a
+   re-export at its old path, so nothing importing the library moves at once; `Form` there is a
+   subclass whose `fromJson` reads both dialects, since Content Studio's REST still speaks
+   `{Input: {…}}`, and `FormItemFactoryImpl` builds the toolkit's classes from it;
+   `OccurrencesBuilder` stays as a builder over `Occurrences.minmax`; `BaseInputType` resolves a
+   descriptor's keys through the library's bundle with the toolkit's English as fallback; the
+   `ignoreChange` flag and the sets' help-text toggle, UI state the model used to carry, moved to
+   the views that read them. Storybook and vitest left with the code they served. The legacy
+   `DateHelper` and `RelativeTimeParser` stay: legacy callers want their static class API, and the
+   value classes they produce are the toolkit's.
 8. **Content Studio switches** (in that repository): the import pass, its input types registering
    into the package's registry, its `Translate` handed to `@enonic/ui`'s provider.
+   What the port settled (app-contentstudio#11437, branch `issue-11437`): the v6 tree imports the
+   package directly and the legacy `app/` keeps lib-admin-ui's paths; `FormRenderer` stays as the
+   shell — HTML area context, locale, `I18nProvider` from `phrases.properties` through
+   `fromLookup`, `notify` into the message bus; `getValuesAsString` became a helper; the AI
+   bridge's form JSON is XP's dialect now, since the toolkit's `Form.toJson` writes it — the
+   assistant reading it has to follow. Tests moved with the sets; the rest adjusted to
+   `undefined` where `null` was.
 
 ## Open questions
 
