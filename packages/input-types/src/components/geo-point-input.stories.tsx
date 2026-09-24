@@ -2,7 +2,7 @@ import { Input } from '@enonic/ui';
 import type { Meta, StoryObj } from '@storybook/preact-vite';
 
 import { ValueTypes } from '../data';
-import type { GeoPointConfig } from '../descriptor';
+import type { GeoPointConfig } from '../descriptor/input-type-config';
 import { type Input as SchemaInput, InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

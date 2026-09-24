@@ -4,11 +4,11 @@ import type { ReactElement } from 'react';
 import { useMemo } from 'react';
 
 import { ValueTypes } from '../data';
-import { CheckboxDescriptor } from '../descriptor';
-import { getEffectiveOccurrences } from '../descriptor';
-import type { CheckboxConfig, TextLineConfig } from '../descriptor';
-import { OccurrenceManager, type OccurrenceManagerState } from '../descriptor';
-import { TextLineDescriptor } from '../descriptor';
+import { CheckboxDescriptor } from '../descriptor/checkbox-descriptor';
+import { getEffectiveOccurrences } from '../descriptor/get-effective-occurrences';
+import type { CheckboxConfig, TextLineConfig } from '../descriptor/input-type-config';
+import { OccurrenceManager, type OccurrenceManagerState } from '../descriptor/occurrence-manager';
+import { TextLineDescriptor } from '../descriptor/text-line-descriptor';
 import { useOccurrenceManager } from '../hooks/use-occurrence-manager';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';

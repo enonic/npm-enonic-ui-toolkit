@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
-import type { RadioButtonConfig } from '../descriptor';
+import type { RadioButtonConfig } from '../descriptor/input-type-config';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

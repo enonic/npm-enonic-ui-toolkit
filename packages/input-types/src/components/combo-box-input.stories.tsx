@@ -4,9 +4,9 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
-import { ComboBoxDescriptor } from '../descriptor';
-import type { ComboBoxConfig } from '../descriptor';
-import { OccurrenceManager, type OccurrenceManagerState } from '../descriptor';
+import type { ComboBoxConfig } from '../descriptor/input-type-config';
+import { OccurrenceManager, type OccurrenceManagerState } from '../descriptor/occurrence-manager';
+import { ComboBoxDescriptor } from '../descriptor/option-descriptors';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

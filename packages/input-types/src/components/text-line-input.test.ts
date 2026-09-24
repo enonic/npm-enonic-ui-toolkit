@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Value } from '../data';
 import { ValueTypes } from '../data';
-import type { ValidationResult } from '../descriptor';
+import type { ValidationResult } from '../descriptor/validation-result';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';
-import { getFirstError } from '../utils';
+import { getFirstError } from '../utils/validation';
 import { TextLineInput, type TextLineInputProps } from './text-line-input';
 
 const mocks = vi.hoisted(() => ({

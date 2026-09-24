@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
-import type { OccurrenceManagerState } from '../descriptor';
+import type { OccurrenceManagerState } from '../descriptor/occurrence-manager';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

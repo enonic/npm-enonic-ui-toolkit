@@ -3,13 +3,14 @@ import { useMemo, useState } from 'react';
 
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
-import type { TextLineConfig } from '../descriptor';
-import { OccurrenceManager, TagDescriptor } from '../descriptor';
+import type { TextLineConfig } from '../descriptor/input-type-config';
+import { OccurrenceManager } from '../descriptor/occurrence-manager';
+import { TagDescriptor } from '../descriptor/tag-descriptor';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';
-import { getOccurrenceErrorMessage } from '../utils';
+import { getOccurrenceErrorMessage } from '../utils/validation';
 import { FieldError } from './field-error';
 import { TagInput } from './tag-input';
 

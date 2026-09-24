@@ -5,14 +5,13 @@
  */
 export { FieldSet, type FieldSetInit } from './field-set';
 export { Form } from './form';
-export { FormItem, type FormItemKind, formItemsEqual, toFormItemJson } from './form-item';
+export { FormItem, type FormItemKind } from './form-item';
 export { FormItemPath, FormItemPathElement } from './form-item-path';
 export { FormItemSet, type FormItemSetInit } from './form-item-set';
 export { FormOptionSet, type FormOptionSetInit } from './form-option-set';
 export { FormOptionSetOption, type FormOptionSetOptionInit } from './form-option-set-option';
 export { FormSet, type FormSetInit } from './form-set';
-export { formItemFromJson, formItemsFromJson } from './from-json';
+export { formItemsFromJson } from './from-json';
 export { Input, InputBuilder } from './input';
-export { denormalizeInputConfig, normalizeInputConfig } from './input-config';
 export { InputTypeName } from './input-type-name';
 export { Occurrences } from './occurrences';

@@ -4,10 +4,9 @@
  * test imports it without the components. Mutable and observed — every change reports through the
  * set it happened in and every set above it, up to the root.
  */
-export { Property, PropertyBuilder, type PropertyInit } from './property';
-export { PropertyArray, PropertyArrayBuilder, type PropertyArrayInit } from './property-array';
+export { Property, PropertyBuilder } from './property';
+export { PropertyArray, PropertyArrayBuilder } from './property-array';
 export {
-  Listeners,
   PropertyAddedEvent,
   PropertyEvent,
   type PropertyEventType,
@@ -16,7 +15,7 @@ export {
   PropertyValueChangedEvent,
 } from './property-event';
 export { PropertyPath, PropertyPathElement } from './property-path';
-export { PropertySet, type PropertyTreeDiff } from './property-set';
+export { PropertySet } from './property-set';
 export { PropertyTree } from './property-tree';
 export { Value, type ValueData } from './value';
 export { ValueType } from './value-type';
