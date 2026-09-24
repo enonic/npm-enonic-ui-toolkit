@@ -2,7 +2,7 @@ import { Input } from '@enonic/ui';
 import type { Meta, StoryObj } from '@storybook/preact-vite';
 
 import { ValueTypes } from '../data';
-import type { NumberConfig } from '../descriptor';
+import type { NumberConfig } from '../descriptor/input-type-config';
 import { type Input as SchemaInput, InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

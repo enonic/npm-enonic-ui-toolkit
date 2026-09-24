@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ValueTypes } from '../data';
-import type { OccurrenceValidationState } from '../descriptor';
+import type { OccurrenceValidationState } from '../descriptor/occurrence-manager';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';
-import { getOccurrenceErrorMessage } from '../utils';
+import { getOccurrenceErrorMessage } from '../utils/validation';
 import { TagInput, type TagInputProps } from './tag-input';
 import {
   getPastedTagLabels,

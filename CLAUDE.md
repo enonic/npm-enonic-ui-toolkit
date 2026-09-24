@@ -58,6 +58,10 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 
 - Tests sit next to the code as `*.test.ts`. The vitest environment is `node` with no DOM library,
   so keep testable logic in pure helpers; component rendering is not tested yet.
+- A package entry names every export explicitly, each from the file that defines it — no
+  `export *`, no barrel between the entry and the code. The entry carries what a consumer imports and
+  the surface an extension is built from; what only the package uses stays a module export,
+  reached by relative path.
 - No explanatory comments that restate the code. Comment a genuine non-obvious constraint.
 - `AGENTS.md` is a symlink to this file. Edit only this file.
 

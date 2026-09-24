@@ -6,7 +6,7 @@ import { FieldRegistryProvider } from '../context/field-registry-context';
 import { LocaleProvider } from '../context/locale';
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
-import type { TextAreaConfig } from '../descriptor';
+import type { TextAreaConfig } from '../descriptor/input-type-config';
 import { FieldRegistry, generateProcessingToken, type ProcessingToken } from '../field-registry';
 import { type Input, InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';

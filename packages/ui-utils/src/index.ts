@@ -3,19 +3,7 @@
  * helpers that parse and format them. The transport, which needs `neverthrow`, is its own entry,
  * `@enonic/ui-utils/request`.
  */
-export {
-  dateFromTime,
-  daysInMonth,
-  formatDate,
-  formatDateTime,
-  formatTime,
-  formatTimeOfDay,
-  isValidDate,
-  pad,
-  parseDate,
-  parseDateTime,
-  parseTime,
-} from './date';
+export { dateFromTime, formatDate, formatTime, pad, parseDateTime, parseTime } from './date';
 export type { TimeOfDay } from './date';
 export { DateTime } from './date-time';
 export { AppError, RequestAbortedError, RequestError } from './errors';
@@ -27,8 +15,7 @@ export { LocalTime } from './local-time';
 export { localize } from './localize';
 export type { Phrases, PhraseValue } from './localize';
 export { BinaryReference, Link, Reference } from './reference';
-export { add, isRelativeTime, parseRelativeTime } from './relative-time';
-export type { RelativeTimeUnit } from './relative-time';
+export { isRelativeTime, parseRelativeTime } from './relative-time';
 export {
   bindPhrases,
   comparePhrases,

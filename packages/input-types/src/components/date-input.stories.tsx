@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/preact-vite';
 
 import { ValueTypes } from '../data';
-import type { DateConfig } from '../descriptor';
+import type { DateConfig } from '../descriptor/input-type-config';
 import { type Input, InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
 import { Occurrences } from '../schema';

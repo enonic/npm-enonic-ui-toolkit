@@ -325,6 +325,25 @@ inherited from `form2`: only `TextLineInput` and `TextAreaInput` honour the proc
 other leaves and the `internal`-mode selectors never did — the lock was made for text being
 written by the assistant.
 
+The public surface is what the two consumers import. After step 8 the root entry re-exported six
+directories wholesale, 298 names; lib-admin-ui and Content Studio import 149 of them, and the root
+`index.ts` now names those and nothing else, each from the file that defines it — no `export *`,
+no barrel between the entry and the code. Two things stay public that no consumer imports yet:
+`createInputTypeRegistry`, because `FormRenderer`, `validateForm`, `seedFormDefaults` and
+`registerBuiltInTypes` all take a registry and an entry that accepts one has to hand one out; and
+the surface an input type written outside the package is built from, as the built-in ones are —
+the hook behind each provider, the occurrence and property-array hooks, `useInputTypeDescriptor`,
+`computeDefaultValue`, `displayValue`, the accessibility and `lang` helpers, the phrase key types.
+What only the package itself uses stays exported from its module, where a test reaches it by
+relative path: the set views and their hooks, the tag and drag helpers, the date patterns, the
+phrase fragments. The same trim on `data` (`Listeners`, the `*Init` types, `PropertyTreeDiff`), on `schema`
+(`formItemsEqual`, `toFormItemJson`, `formItemFromJson`, the config normalizers) and on
+`ui-utils`, whose date helpers nobody outside the workspace calls left the entry (`parseDate`,
+`formatDateTime`, `formatTimeOfDay`, `daysInMonth`, `isValidDate`, the relative-time `add`).
+`ui-types` is untouched: a contract is complete or it is nothing, and a type costs a bundle
+nothing. A name a consumer comes to need is added to the entry — the entry is a list one reads,
+not a directory one ships.
+
 ## Open questions
 
 - **Tests for the components.** `form2` tests components by mocking `@enonic/ui` and asserting on
