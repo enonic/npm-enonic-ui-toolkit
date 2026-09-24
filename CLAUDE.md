@@ -33,8 +33,10 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 - Package sources import `react`, never `preact/compat` — the workspace alias serves lint and
   tests only, and the published artifact carries bare `react` imports. `react`, `react-dom` and
   `preact` become **optional** peers with the first component; the consumer picks one framework.
-- A package's own tsconfig keeps **no** `paths`: `vp lint` and `vp pack` read it, and mapping
-  siblings to source would inline their types into the published declarations.
+- A package's tsconfig never maps a **sibling** in `paths`: `vp lint` and `vp pack` read it, and
+  mapping siblings to source would inline their types into the published declarations. The only
+  `paths` a package sees are `tsconfig.base.json`'s `react` → `preact/compat` mappings, which type
+  the sources and leave bare `react` imports in `dist`.
 - After changing a version in the catalog: `rm -rf node_modules pnpm-lock.yaml && pnpm install`,
   never an incremental update — a stale lock keeps auto-installed peers alive and still passes
   `--frozen-lockfile`.
@@ -79,6 +81,7 @@ Sibling checkouts, read-only.
 
 | Repo                   | What to read it for                                                                                                                                                                    |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../npm-enonic-ui`     | `@enonic/ui` itself — the base components this toolkit composes, and the precedent for how a package here is built, packaged and released.                                             |
+| `../enonic-ui`         | `@enonic/ui` itself — the base components this toolkit composes, and the precedent for how a package here is built, packaged and released.                                             |
 | `../app-settings`      | The first consumer. `docs/extensions/` is the admin-section work whose contract lands in `ui-types`; its `widgets/` and `shared/` are what `ui-kit` and `ui-utils` are extracted from. |
 | `../app-contentstudio` | `modules/lib/src/main/resources/assets/js/v6/` — the same widgets solved a second time, and the toolkit's other intended consumer.                                                     |
+| `../lib-admin-ui`      | `js/form2/`, `js/form/`, `js/data/` — where `input-types` came from; they now re-export it, so its imports are the package's public surface.                                           |

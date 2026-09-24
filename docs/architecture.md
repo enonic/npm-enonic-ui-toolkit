@@ -43,12 +43,12 @@ before.
 Where that rule lands for the code these packages are waiting for (\* = optional peer, see the
 next section):
 
-| Package       | Peer                                                                                                         | Dependency                                                                   |
-| ------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `ui-types`    | —                                                                                                            | —                                                                            |
-| `ui-utils`    | `neverthrow`\*                                                                                               | `nanostores`                                                                 |
-| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels`               | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react`                       |
+| Package       | Peer                                                                                                                             | Dependency                                                                   |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ui-types`    | —                                                                                                                                | —                                                                            |
+| `ui-utils`    | `neverthrow`\*                                                                                                                   | `nanostores`                                                                 |
+| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels`                                   | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                                           |
 
 The calls that are not obvious from the rule alone:
 
@@ -67,10 +67,13 @@ The calls that are not obvious from the rule alone:
   mirrors `@enonic/ui`'s own manifest, the second finds its panel group through a context.
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not
   ours. They appear here only as devDependencies of the packages that build against it.
-- **The workspace packages are dependencies, not peers.** Lockstep versions plus a `^` range
-  deduplicate to one copy, and none of them holds module-level state or a React context: the i18n
-  adapters in `ui-utils` read the application's store through a closure, never one of their own, and
-  the one context every layer's labels resolve through lives in `@enonic/ui`, already a peer.
+- **A workspace package is a peer where its identity crosses the consumer's boundary, and a
+  dependency everywhere else.** Lockstep versions and a `^` range deduplicate inside one install,
+  but not across a linked library that resolves its own `node_modules` — lib-admin-ui in Content
+  Studio. `ui-utils` is a peer of `input-types`: `Value` checks its date, geo and reference classes
+  with `instanceof` and throws on a second copy's instance. `input-types` is a peer of whatever
+  re-exports it, for its registry singleton and its contexts. `ui-kit` only calls `ui-utils`'
+  functions, so there it stays a dependency, as does `ui-types`, which has no runtime at all.
 - **Auto-installed peers are off** (`autoInstallPeers: false`). With it on, an optional `react` peer
   put the real React into the lockfile next to preact, and a regenerated lock put it back.
 - **`@tanstack/react-router` appears nowhere.** Routing belongs to the host application; extracted
@@ -133,6 +136,15 @@ directly in package sources.
 
 - **ESM only.** Every consumer bundles. If server-side XP code ever needs one of these packages, a
   `cjs` output is a one-line change to that package's `pack` config — worth doing then, not now.
+- **A component package ships one file per module** (`unbundle: true`). In one bundled chunk,
+  every top-level `forwardRef`, `createContext` and descriptor factory is a call a consumer's
+  bundler must keep, so `sideEffects: false` drops nothing: importing `validateForm` alone
+  pulled in 134 KB of `input-types`, and 6.7 KB unbundled.
+- **The root entry names what it exports**; no `export *`, no internal barrels. It carries what
+  a consumer imports, the surface an extension is built from, and every type those exports take,
+  so a consumer never has to reach for `Parameters<typeof …>`. `exports.test.ts` fails on any
+  entry export that is not `export { … } from` a module; which names are exported is the entry's
+  own diff, and the typecheck holds each `type` marker.
 - **No CSS is published yet.** How `ui-kit` reaches a consumer's Tailwind build is an open
   question tracked on the epic.
 
@@ -151,7 +163,8 @@ One program for the whole workspace: the root `tsconfig.json` includes every pac
 maps `@enonic/*` to sibling **sources** through `paths`, so a typecheck needs no build and a change
 in `ui-utils` is seen immediately by `ui-kit`.
 
-A package's own `tsconfig.json` deliberately has **no** path mapping. What decides whether a
+A package's own `tsconfig.json` deliberately maps **no sibling** in `paths` — the only mappings
+it inherits are `tsconfig.base.json`'s `react` → `preact/compat`. What decides whether a
 sibling stays an import in the emitted `.d.ts` is the package's own `dependencies` and
 `peerDependencies` — everything declared there is external to the build. Mapped to source, a
 package compiles against a sibling it never declared, and that sibling's types are **copied** into

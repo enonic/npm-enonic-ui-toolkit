@@ -177,16 +177,17 @@ the package stands on its own.
 
 For `architecture.md`'s table, the row this package was waiting for, filled in:
 
-| Package       | Peer                                                                                                         | Dependency                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
+| Package       | Peer                                                                                                                             | Dependency                         |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react` |
 
 `@enonic/ui`'s floor is 1.3.0, the release that ships `I18nProvider` and `usePhrases` (npm-enonic-ui#542),
 for the same reason it is `ui-kit`'s. The `@dnd-kit` pair is a peer for the reason
 `react-resizable-panels` is: a sortable finds its `DndContext` through a context, and two copies
 are two contexts. Content Studio and lib-admin-ui both carry the pair already. `focus-trap-react`
 is what the set confirmations trap focus with, as `@enonic/ui`'s dialog does; a consumer with the
-dialog has it.
+dialog has it. `@enonic/ui-utils` is a peer because the property tree checks its value classes
+with `instanceof`: a `Reference` built by lib-admin-ui's copy is rejected by the form's.
 
 The components carry Tailwind classes, as `ui-kit`'s dialogs will; how they reach a consumer's
 build is decided once, in #14, and this package follows it.
@@ -241,8 +242,8 @@ dependency order — nothing in a step imports a later one.
    package's `t` does; `DateTimeInput` and `InstantInput` read the typed text through
    `parseDisplayDateTime`, which admits minutes and nothing finer, where `ui-utils`'s
    `parseDateTime` stays general and accepts XP's stored seconds; their converters carry the
-   component's name (`dateTimeDisplayToValue`, `instantDisplayToValue`) since both are exported
-   from one entry. `TagInput` keeps `useSyncExternalStore` for the mobile flag rather than
+   component's name (`dateTimeDisplayToValue`, `instantDisplayToValue`), and neither is part of
+   the public entry. `TagInput` keeps `useSyncExternalStore` for the mobile flag rather than
    `useIsMobile`, so the hooks fire in the order its tests were written against. The Storybook
    sits at the root: `.storybook/` aliases `react` to `preact/compat` as the tests do, pre-bundles
    `@enonic/ui` with Preact so one instance serves every hook, and the root manifest carries what
