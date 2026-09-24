@@ -13,7 +13,11 @@ export { DoubleInput, type DoubleInputProps } from './components/double-input';
 export { FieldError, type FieldErrorProps } from './components/field-error';
 export { GeoPointInput, type GeoPointInputProps } from './components/geo-point-input';
 export { InputField, type InputFieldProps } from './components/input-field';
-export { InputLabel, type InputLabelRootProps } from './components/input-label';
+export {
+  InputLabel,
+  type InputLabelActionProps,
+  type InputLabelRootProps,
+} from './components/input-label';
 export { InstantInput, type InstantInputProps } from './components/instant-input';
 export { LongInput, type LongInputProps } from './components/long-input';
 export { OccurrenceList, type OccurrenceListRootProps } from './components/occurrence-list';
@@ -40,24 +44,39 @@ export { TagInput, type TagInputProps, type TagSuggester } from './components/ta
 export { TextAreaInput, type TextAreaInputProps } from './components/text-area-input';
 export { TextLineInput, type TextLineInputProps } from './components/text-line-input';
 export { TimeInput, type TimeInputProps } from './components/time-input';
-export { type DropNode, type DropProjection, projectTreeDrop } from './components/tree-projection';
+export {
+  type DropDirection,
+  type DropNode,
+  type DropNodeKind,
+  type DropProjection,
+  type ProjectTreeDropParams,
+  projectTreeDrop,
+} from './components/tree-projection';
 export { UnsupportedInput, type UnsupportedInputProps } from './components/unsupported-input';
-export { FieldRegistryProvider, useFieldRegistry } from './context/field-registry-context';
+export {
+  FieldRegistryProvider,
+  type FieldRegistryProviderProps,
+  useFieldRegistry,
+} from './context/field-registry-context';
 export {
   InputTypeRegistryProvider,
+  type InputTypeRegistryProviderProps,
   useInputTypeRegistry,
 } from './context/input-type-registry-context';
-export { LocaleProvider, useLocale } from './context/locale';
-export { RawValueProvider, useRawValueMap } from './context/raw-value';
+export { LocaleProvider, type LocaleProviderProps, useLocale } from './context/locale';
+export { RawValueProvider, type RawValueProviderProps, useRawValueMap } from './context/raw-value';
 export {
   type ServerErrorEntry,
   ServerErrorsProvider,
+  type ServerErrorsProviderProps,
+  type ServerErrorsValue,
   useServerErrors,
 } from './context/server-errors';
 export {
   useValidationVisibility,
   type ValidationVisibility,
   ValidationVisibilityProvider,
+  type ValidationVisibilityProviderProps,
 } from './context/validation-visibility';
 export { CheckboxDescriptor } from './descriptor/checkbox-descriptor';
 export {
@@ -83,17 +102,20 @@ export type {
   Alignment,
   CheckboxConfig,
   ComboBoxConfig,
+  ComboBoxOptionConfig,
   DateConfig,
   DateTimeConfig,
   DateTimeRangeConfig,
   GeoPointConfig,
   InputConfigEntries,
+  InputConfigEntry,
   InputTypeConfig,
   InstantConfig,
   NumberConfig,
   OptionConfig,
   PrincipalSelectorConfig,
   RadioButtonConfig,
+  RadioButtonOptionConfig,
   TextAreaConfig,
   TextLineConfig,
   TimeConfig,
@@ -132,24 +154,53 @@ export {
   type ValidationMessage,
   type ValidationResult,
 } from './descriptor/validation-result';
-export { FieldRegistry } from './field-registry';
-export { FormItemRenderer } from './form/form-item-renderer';
-export { FormRenderProvider, useFormRender } from './form/form-render-context';
+export {
+  FieldRegistry,
+  type FieldHandle,
+  type FieldRegistration,
+  type ProcessingToken,
+  type RevealOptions,
+} from './field-registry';
+export { FormItemRenderer, type FormItemRendererProps } from './form/form-item-renderer';
+export {
+  type FormRenderContextValue,
+  FormRenderProvider,
+  type FormRenderProviderProps,
+  useFormRender,
+} from './form/form-render-context';
 export { FormRenderer, type FormRendererProps } from './form/form-renderer';
-export { normalizeFormValueTypes } from './form/normalize-form-value-types';
+export {
+  normalizeFormValueTypes,
+  type NormalizeFormValueTypesOptions,
+} from './form/normalize-form-value-types';
 export { pruneUnselectedOptionData } from './form/option-set-selection';
-export { seedFormDefaults } from './form/seed-form-defaults';
-export { useInputTypeDescriptor } from './hooks/use-input-type-descriptor';
+export { seedFormDefaults, type SeedFormDefaultsOptions } from './form/seed-form-defaults';
+export {
+  useInputTypeDescriptor,
+  type UseInputTypeDescriptorResult,
+} from './hooks/use-input-type-descriptor';
 export { useIsMobile } from './hooks/use-is-mobile';
-export { useOccurrenceManager } from './hooks/use-occurrence-manager';
-export { usePropertyArray } from './hooks/use-property-array';
-export { usePropertySetArray } from './hooks/use-property-set-array';
-export { useSetOccurrenceManager } from './hooks/use-set-occurrence-manager';
+export {
+  useOccurrenceManager,
+  type UseOccurrenceManagerParams,
+  type UseOccurrenceManagerResult,
+} from './hooks/use-occurrence-manager';
+export { usePropertyArray, type UsePropertyArrayResult } from './hooks/use-property-array';
+export {
+  usePropertySetArray,
+  type UsePropertySetArrayResult,
+} from './hooks/use-property-set-array';
+export {
+  useSetOccurrenceManager,
+  type UseSetOccurrenceManagerResult,
+} from './hooks/use-set-occurrence-manager';
 export { inputTypesPhrases, type InputTypesPhraseKey } from './i18n/phrases';
 export { type InputTypesTranslate, useInputTypesPhrases } from './i18n/use-phrases';
 export { registerBuiltInTypes } from './register-built-in-types';
 export { createInputTypeRegistry, InputTypeRegistry, inputTypeRegistry } from './registry';
 export type {
+  ComponentWithRef,
+  ElementRole,
   InputTypeComponent,
   InputTypeComponentProps,
   InputTypeDefinition,
@@ -159,7 +210,7 @@ export type {
 } from './types';
 export { getInputAccessibleName, handleMobileCompletionKeyDown } from './utils/accessibility';
 export { displayValue } from './utils/display-value';
-export { getLangAttributes } from './utils/lang-attributes';
+export { getLangAttributes, type LangAttributes } from './utils/lang-attributes';
 export {
   bucketServerErrorsByOccurrence,
   matchesFieldPath,

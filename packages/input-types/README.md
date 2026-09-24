@@ -176,7 +176,9 @@ const { isValid, children } = validateForm(form, tree.getRoot(), { rawValues, se
 | `FieldRegistry`                                                                           | reaches a field from outside the form by its data path: an error to show, an occurrence to lock while something works on it, a field to reveal                                                                                                                             |
 | `inputTypesPhrases`                                                                       | every text the package renders, under `enonic.inputTypes.*`, translated through `@enonic/ui`'s `I18nProvider`                                                                                                                                                              |
 
-The components need `react`, `@enonic/ui` and the `@dnd-kit` pair as peers; the model entries need
-none of them.
+The components need `react`, `@enonic/ui` and the `@dnd-kit` pair as peers; the model entries
+import none of them, but peers are the package's, not an entry's, so an install still asks for all
+of them. `@enonic/ui-utils` is a peer of both: the model's value classes come from it and must be
+the application's one copy.
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).
