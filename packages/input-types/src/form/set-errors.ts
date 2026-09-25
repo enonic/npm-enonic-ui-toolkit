@@ -14,6 +14,7 @@ import type { SetOccurrenceManagerState } from '../descriptor/set-occurrence-man
 import { validateFormItemsValid } from '../descriptor/validate-form';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { FormItem, FormOptionSet, Occurrences } from '../schema';
+import { useOptionalFormRender } from './form-render-context';
 import { SELECTED_NAME } from './option-set-selection';
 
 const EMPTY = new Map<number, boolean>();
@@ -146,15 +147,29 @@ export type UseSetChildShowErrorsResult = {
 };
 
 /**
+ * The visibility an occurrence renders with: what was recorded for it, or the form-wide `all`
+ * when the form reveals fresh occurrences — a refused save then shows every error, the untouched
+ * occurrences' included.
+ */
+export function effectiveOccurrenceVisibility(
+  formWide: ValidationVisibility,
+  recorded: ValidationVisibility,
+  revealFresh: boolean,
+): ValidationVisibility {
+  return revealFresh && formWide === 'all' ? 'all' : recorded;
+}
+
+/**
  * Per-occurrence error visibility: an occurrence added during the session shows nothing until
  * the user edits it, whatever the form-wide visibility says, since the form's setting is not
- * per occurrence.
+ * per occurrence — unless the form's `revealFreshOccurrences` lets `all` through.
  */
 export function useSetChildShowErrors(
   propertyArray: PropertyArray,
   propertySets: PropertySet[],
 ): UseSetChildShowErrorsResult {
   const validationVisibility = useValidationVisibility();
+  const revealFresh = useOptionalFormRender()?.revealFreshOccurrences ?? false;
   const [tick, setTick] = useState(0);
   const [setInteracted, setSetInteracted] = useState(false);
   const occurrenceInteractions = useMemo(
@@ -231,19 +246,21 @@ export function useSetChildShowErrors(
   const childValidationVisibility = useMemo(() => {
     const map = new Map<number, ValidationVisibility>();
     propertySets.forEach((set, index) => {
-      map.set(index, getOrInit(set, validationVisibility).validationVisibility);
+      const { validationVisibility: recorded } = getOrInit(set, validationVisibility);
+      map.set(index, effectiveOccurrenceVisibility(validationVisibility, recorded, revealFresh));
     });
     return map;
-  }, [propertySets, tick, validationVisibility, getOrInit]);
+  }, [propertySets, tick, validationVisibility, revealFresh, getOrInit]);
 
   const childShowErrors = useMemo(() => {
     const map = new Map<number, boolean>();
     propertySets.forEach((set, index) => {
-      const { interacted, validationVisibility: vv } = getOrInit(set, validationVisibility);
+      const { interacted, validationVisibility: recorded } = getOrInit(set, validationVisibility);
+      const vv = effectiveOccurrenceVisibility(validationVisibility, recorded, revealFresh);
       map.set(index, vv === 'all' || (vv === 'interactive' && interacted));
     });
     return map;
-  }, [propertySets, tick, validationVisibility, getOrInit]);
+  }, [propertySets, tick, validationVisibility, revealFresh, getOrInit]);
 
   return { childValidationVisibility, childShowErrors, setInteracted };
 }

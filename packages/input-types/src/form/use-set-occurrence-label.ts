@@ -33,10 +33,13 @@ export function useSetOccurrenceLabel(
   formItems: FormItem[],
   fallbackLabel: string,
 ): SetOccurrenceLabel {
-  const [label, setLabel] = useState(() => resolveLabel(propertySet, formItems, fallbackLabel));
+  const [label, setLabel] = useState(() =>
+    resolveSetOccurrenceLabel(propertySet, formItems, fallbackLabel),
+  );
 
   useEffect(() => {
-    const update = (): void => setLabel(resolveLabel(propertySet, formItems, fallbackLabel));
+    const update = (): void =>
+      setLabel(resolveSetOccurrenceLabel(propertySet, formItems, fallbackLabel));
     update();
     propertySet.onPropertyValueChanged(update);
     propertySet.onPropertyAdded(update);
@@ -51,12 +54,14 @@ export function useSetOccurrenceLabel(
   return label;
 }
 
+// The type first: `getString()` throws for a `DATA` value, and a selected option's data set is one.
 function isAllowedValueAndType(property: Property): boolean {
   if (property.getValue().isNull()) return false;
   const propertyType = property.getType();
+  if (!ALLOWED_VALUE_TYPES.some((vt) => vt.equals(propertyType))) return false;
   const text = property.getString() ?? '';
   if (ValueTypes.LOCAL_TIME.equals(propertyType) && text === '00:00') return false;
-  return ALLOWED_VALUE_TYPES.some((vt) => vt.equals(propertyType)) && text.length > 0;
+  return text.length > 0;
 }
 
 function sanitizeValue(value: string): string {
@@ -164,7 +169,8 @@ function getSelectedOptionsLabel(propertySet: PropertySet, formItems: FormItem[]
   return labels.join(', ');
 }
 
-function resolveLabel(
+/** What `useSetOccurrenceLabel` reads off the occurrence, without the subscription. */
+export function resolveSetOccurrenceLabel(
   propertySet: PropertySet,
   formItems: FormItem[],
   fallbackLabel: string,

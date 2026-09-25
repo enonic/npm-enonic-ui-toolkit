@@ -1,4 +1,12 @@
-import { Button, Combobox, FocusContainerContext, Listbox } from '@enonic/ui';
+import {
+  Button,
+  Combobox,
+  FocusContainerContext,
+  type FocusContainerRegistry,
+  Listbox,
+  useFocusContainerRegistry,
+  usePortalContainer,
+} from '@enonic/ui';
 import { FocusTrap } from 'focus-trap-react';
 import {
   type CSSProperties,
@@ -90,8 +98,32 @@ type ConfirmFocusTrapProps = {
 };
 
 /**
+ * A registry that answers to the enclosing one as well as its own: what the confirmation's popup
+ * registers with has to reach the dialog around the form, or the dialog reads a click in that
+ * popup as one outside itself and closes.
+ */
+export function chainFocusContainerRegistry(
+  parent: FocusContainerRegistry | null,
+  own: FocusContainerRegistry,
+): FocusContainerRegistry {
+  if (parent === null) return own;
+  return {
+    register: (element) => {
+      parent.register(element);
+      own.register(element);
+    },
+    unregister: (element) => {
+      parent.unregister(element);
+      own.unregister(element);
+    },
+  };
+}
+
+/**
  * A focus trap around a confirmation's portal, with `@enonic/ui`'s focus container so a popup it
- * opens in another portal stays reachable by Tab — as `Dialog.Content` does it.
+ * opens in another portal stays reachable by Tab — as `Dialog.Content` does it. Both the trap and
+ * that popup also register with the enclosing container, so a dialog around the form keeps them
+ * as its own.
  */
 const ConfirmFocusTrap = forwardRef<HTMLDivElement, ConfirmFocusTrapProps>(
   ({ className, style, children }, ref): ReactElement => {
@@ -107,15 +139,23 @@ const ConfirmFocusTrap = forwardRef<HTMLDivElement, ConfirmFocusTrapProps>(
       [ref],
     );
 
+    const parentRegistry = useFocusContainerRegistry();
     const registry = useMemo(
-      () => ({
-        register: (el: HTMLElement) =>
-          setPortalContainers((prev) => (prev.includes(el) ? prev : [...prev, el])),
-        unregister: (el: HTMLElement) =>
-          setPortalContainers((prev) => prev.filter((e) => e !== el)),
-      }),
-      [],
+      () =>
+        chainFocusContainerRegistry(parentRegistry, {
+          register: (el: HTMLElement) =>
+            setPortalContainers((prev) => (prev.includes(el) ? prev : [...prev, el])),
+          unregister: (el: HTMLElement) =>
+            setPortalContainers((prev) => prev.filter((e) => e !== el)),
+        }),
+      [parentRegistry],
     );
+
+    useEffect(() => {
+      if (container === null || parentRegistry === null) return undefined;
+      parentRegistry.register(container);
+      return () => parentRegistry.unregister(container);
+    }, [container, parentRegistry]);
 
     const containerElements = useMemo(() => {
       const all: HTMLElement[] = container
@@ -168,6 +208,7 @@ export type SetConfirmDeleteProps = {
 const SetConfirmDeleteImpl = forwardRef<HTMLDivElement, SetConfirmDeleteProps>(
   ({ position, onCancel, onConfirm }, ref): ReactElement => {
     const t = useInputTypesPhrases();
+    const portalTarget = usePortalContainer() ?? document.body;
     useConfirmKeyboard(onCancel);
     return createPortal(
       <ConfirmFocusTrap
@@ -183,7 +224,7 @@ const SetConfirmDeleteImpl = forwardRef<HTMLDivElement, SetConfirmDeleteProps>(
           className="bg-btn-error hover:bg-btn-error-hover focus-visible:ring-error/50 active:bg-btn-error-active"
         />
       </ConfirmFocusTrap>,
-      document.body,
+      portalTarget,
     );
   },
 );
@@ -203,6 +244,7 @@ export type OptionSetConfirmAddProps = {
 const OptionSetConfirmAddImpl = forwardRef<HTMLDivElement, OptionSetConfirmAddProps>(
   ({ optionSet, position, onCancel, onConfirm }, ref): ReactElement => {
     const t = useInputTypesPhrases();
+    const portalTarget = usePortalContainer() ?? document.body;
     const [value, setValue] = useState('');
     const filteredOptions = useMemo(
       () =>
@@ -268,7 +310,7 @@ const OptionSetConfirmAddImpl = forwardRef<HTMLDivElement, OptionSetConfirmAddPr
           </Combobox.Content>
         </Combobox.Root>
       </ConfirmFocusTrap>,
-      document.body,
+      portalTarget,
     );
   },
 );

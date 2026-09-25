@@ -126,7 +126,10 @@ The renderer renders the items and nothing around them. What surrounds a form is
 application's: its locale, when to show errors, the server's errors and a field registry go in
 as providers; a `registry` prop names another registry than the shared one; `excludeInputTypes`
 leaves types out, as a nested form leaves out its host's; `notify` is where the one warning the
-form raises goes — a deselected option's data is dropped on save.
+form raises goes — a deselected option's data is dropped on save; `revealFreshOccurrences` lets a
+form-wide `all` visibility reach the occurrences added during the session, for an application
+that refuses to save an invalid form and has to show why — off, a new occurrence stays quiet
+until it is edited.
 
 | Piece                              | What it is                                                                                                                                                      |
 | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
