@@ -18,6 +18,8 @@ export type FormRendererProps = {
   /** The registry to render from; the shared one, or the nearest provider's, when absent. */
   registry?: InputTypeRegistry;
   notify?: (message: string) => void;
+  /** Lets a form-wide `all` reach the occurrences added during the session; see `FormRenderContextValue`. */
+  revealFreshOccurrences?: boolean;
 };
 
 /**
@@ -33,6 +35,7 @@ export const FormRenderer = ({
   excludeInputTypes,
   registry,
   notify,
+  revealFreshOccurrences,
 }: FormRendererProps): ReactElement => {
   const excluded = useMemo(
     () => new Set((excludeInputTypes ?? []).map((name) => name.toLowerCase())),
@@ -48,7 +51,12 @@ export const FormRenderer = ({
         });
 
   const rendered = (
-    <FormRenderProvider enabled={enabled} applicationKey={applicationKey} notify={notify}>
+    <FormRenderProvider
+      enabled={enabled}
+      applicationKey={applicationKey}
+      notify={notify}
+      revealFreshOccurrences={revealFreshOccurrences}
+    >
       <div className="flex flex-col gap-7.5" data-component="FormRenderer">
         {items.map((item, index) => (
           <FormItemRenderer

@@ -9,6 +9,12 @@ export type FormRenderContextValue = {
    * save, for one. Nothing is shown without it.
    */
   notify?: (message: string) => void;
+  /**
+   * Whether a form-wide `all` visibility also reaches the occurrences added during the session.
+   * Off by default: an application that saves an invalid form lets a new occurrence stay quiet
+   * until it is edited. One that refuses to save turns it on, so the refusal shows its reasons.
+   */
+  revealFreshOccurrences?: boolean;
 };
 
 const FormRenderContext = createContext<FormRenderContextValue | undefined>(undefined);
@@ -21,11 +27,12 @@ export const FormRenderProvider = ({
   enabled,
   applicationKey,
   notify,
+  revealFreshOccurrences,
   children,
 }: FormRenderProviderProps): ReactElement => {
   const value = useMemo(
-    () => ({ enabled, applicationKey, notify }),
-    [enabled, applicationKey, notify],
+    () => ({ enabled, applicationKey, notify, revealFreshOccurrences }),
+    [enabled, applicationKey, notify, revealFreshOccurrences],
   );
   return <FormRenderContext.Provider value={value}>{children}</FormRenderContext.Provider>;
 };
