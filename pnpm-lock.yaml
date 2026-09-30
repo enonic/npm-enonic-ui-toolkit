@@ -32,6 +32,8 @@ overrides:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vitest: 4.1.10
 
+pnpmfileChecksum: sha256-kYMC49MqO487X/sJ6nHlmoaG+pu8Y1ZJabYtTo7m5j4=
+
 importers:
 
   .:
@@ -183,6 +185,10 @@ importers:
         version: 4.1.10(@types/node@26.6.2)(@vitest/browser-preview@4.1.10)(@voidzero-dev/vite-plus-core@0.2.9(@types/node@26.6.2)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2))
 
   packages/ui-utils:
+    dependencies:
+      '@enonic/ui-types':
+        specifier: workspace:^
+        version: link:../ui-types
     devDependencies:
       neverthrow:
         specifier: ^8.2.0

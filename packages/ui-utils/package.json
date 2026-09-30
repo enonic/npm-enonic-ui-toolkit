@@ -1,7 +1,7 @@
 {
   "name": "@enonic/ui-utils",
   "version": "0.4.0",
-  "description": "Framework-free helpers for Enonic UIs: the request transport and phrase lookup",
+  "description": "Framework-free helpers for Enonic UIs: the request transport, phrase lookup and the admin events hub",
   "keywords": [
     "enonic",
     "i18n",
@@ -34,6 +34,10 @@
     "./request": {
       "types": "./src/request.ts",
       "import": "./src/request.ts"
+    },
+    "./admin-events": {
+      "types": "./src/admin-events.ts",
+      "import": "./src/admin-events.ts"
     }
   },
   "publishConfig": {
@@ -47,6 +51,10 @@
       "./request": {
         "types": "./dist/request.d.ts",
         "import": "./dist/request.js"
+      },
+      "./admin-events": {
+        "types": "./dist/admin-events.d.ts",
+        "import": "./dist/admin-events.js"
       }
     },
     "access": "public",
@@ -55,6 +63,9 @@
   "scripts": {
     "build": "vp pack && node ../../scripts/assert-externals.mjs",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@enonic/ui-types": "workspace:^"
   },
   "devDependencies": {
     "neverthrow": "^8.2.0",

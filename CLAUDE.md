@@ -5,12 +5,12 @@ application. **Read `docs/architecture.md` before adding code to a package or mo
 packages** — what belongs where, the dependency direction, and the peer-versus-dependency rule are
 decided there.
 
-| Package               | Contains                                                                                   | May depend on                        |
-| --------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `@enonic/ui-types`    | types only — base domain types, contracts between separately released applications         | nothing                              |
-| `@enonic/ui-utils`    | strings, URLs, dates, formatting, the request transport, the i18n core — **no view layer** | `ui-types`                           |
-| `@enonic/input-types` | XP input types as React components, and the form that composes them                        | `ui-types`, `ui-utils`, `@enonic/ui` |
-| `@enonic/ui-kit`      | composite React components with behaviour: layouts, split panels, toolbars, browse screens | `ui-types`, `ui-utils`, `@enonic/ui` |
+| Package               | Contains                                                                                          | May depend on                        |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `@enonic/ui-types`    | types only — base domain types, contracts between separately released applications                | nothing                              |
+| `@enonic/ui-utils`    | dates, formatting, the request transport, the i18n core, the admin events hub — **no view layer** | `ui-types`                           |
+| `@enonic/input-types` | XP input types as React components, and the form that composes them                               | `ui-types`, `ui-utils`, `@enonic/ui` |
+| `@enonic/ui-kit`      | composite React components with behaviour: layouts, split panels, toolbars, browse screens        | `ui-types`, `ui-utils`, `@enonic/ui` |
 
 ## Commands
 
