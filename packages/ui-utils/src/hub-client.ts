@@ -56,8 +56,15 @@ export function createAdminEvents(
   let connection: HubConnection | undefined;
   let connecting = false;
 
+  // A loss is reported once, so one subscriber's throw must not cost the others theirs.
   const dispatch = (topic: string, deliver: (handlers: TopicHandlers) => void): void => {
-    registry.get(topic)?.forEach(({ handlers }) => deliver(handlers));
+    registry.get(topic)?.forEach(({ handlers }) => {
+      try {
+        deliver(handlers);
+      } catch (cause: unknown) {
+        console.error(`An admin events handler of '${topic}' failed:`, cause);
+      }
+    });
   };
 
   return {
@@ -80,7 +87,10 @@ export function createAdminEvents(
         .catch((cause: unknown) => {
           // ! Unlatch, or one transient failure would kill live updates for the page's life: the
           // ! next connect() — a section re-entered, a later start — retries the import.
-          connecting = false;
+          // A throw after the connection was made stays latched: a retry would open a second one.
+          if (connection === undefined) {
+            connecting = false;
+          }
           console.error('Failed to load the admin events client:', cause);
         });
     },
