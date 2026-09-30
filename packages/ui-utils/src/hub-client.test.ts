@@ -113,6 +113,23 @@ describe('createAdminEvents', () => {
     expect(onMessage).not.toHaveBeenCalled();
   });
 
+  it('gives each subscription of one handlers object its own teardown', async () => {
+    const { events, emit, arrive } = harness();
+    const onMessage = vi.fn();
+    const handlers: TopicHandlers = { onMessage };
+    const first = events.subscribeTopic('app:mine', handlers);
+    events.subscribeTopic('app:mine', handlers);
+    events.connect();
+    await arrive();
+
+    emit('app:mine', { n: 1 });
+    expect(onMessage).toHaveBeenCalledTimes(2);
+
+    first();
+    emit('app:mine', { n: 2 });
+    expect(onMessage).toHaveBeenCalledTimes(3);
+  });
+
   it('keeps a later subscriber when a stale unsubscribe is called twice', async () => {
     const { events, emit, arrive } = harness();
     const early = vi.fn();
