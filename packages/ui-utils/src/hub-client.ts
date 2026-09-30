@@ -49,12 +49,15 @@ export function createAdminEvents(
   // ? @vite-ignore: the specifier is a runtime url served by the platform.
   importModule: ImportModule = (url) => import(/* @vite-ignore */ url),
 ): AdminEvents {
-  const registry = new Map<string, Set<TopicHandlers>>();
+  // One registration per call, however many calls share a handlers object: each teardown
+  // removes only what its own call added.
+  type Registration = { handlers: TopicHandlers };
+  const registry = new Map<string, Set<Registration>>();
   let connection: HubConnection | undefined;
   let connecting = false;
 
   const dispatch = (topic: string, deliver: (handlers: TopicHandlers) => void): void => {
-    registry.get(topic)?.forEach(deliver);
+    registry.get(topic)?.forEach(({ handlers }) => deliver(handlers));
   };
 
   return {
@@ -82,18 +85,19 @@ export function createAdminEvents(
         });
     },
     subscribeTopic: (topic, handlers) => {
+      const registration: Registration = { handlers };
       let set = registry.get(topic);
       if (set == null) {
         set = new Set();
         registry.set(topic, set);
       }
-      set.add(handlers);
+      set.add(registration);
 
       // Idempotent on the hub client, so a second subscriber costs nothing.
       connection?.subscribe(topic);
 
       return () => {
-        set.delete(handlers);
+        set.delete(registration);
         // ! Identity-checked: a stale unsubscribe must not evict a later subscriber's set.
         if (set.size === 0 && registry.get(topic) === set) {
           registry.delete(topic);
