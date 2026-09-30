@@ -61,6 +61,9 @@ export default defineConfig({
       '@enonic/ui-utils/request': fileURLToPath(
         new URL('packages/ui-utils/src/request.ts', import.meta.url),
       ),
+      '@enonic/ui-utils/admin-events': fileURLToPath(
+        new URL('packages/ui-utils/src/admin-events.ts', import.meta.url),
+      ),
       '@enonic/ui-utils': source('ui-utils'),
       '@enonic/ui-kit': source('ui-kit'),
       '@enonic/input-types/data': fileURLToPath(

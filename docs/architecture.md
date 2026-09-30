@@ -46,7 +46,7 @@ next section):
 | Package       | Peer                                                                                                                             | Dependency                                                                   |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `ui-types`    | —                                                                                                                                | —                                                                            |
-| `ui-utils`    | `neverthrow`\*                                                                                                                   | `nanostores`                                                                 |
+| `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                                           |
 | `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels`                                   | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                                           |
 
@@ -60,7 +60,9 @@ The calls that are not obvious from the rule alone:
   only the transport needs it: a consumer of `localize` alone must not have it pulled in.
 - **`nanostores` is a dependency because an atom has no identity to share** — a structural
   `{get, subscribe}` object. Icon packs are dependencies for the same reason: leaf components,
-  nothing to match against.
+  nothing to match against. `ui-utils` itself declares no store library: where it reads one, as
+  the topic reaction reads visibility, it takes the `Readable` from `ui-types`, which an atom
+  satisfies as it is.
 - **`@nanostores/preact` needs a revisit** before the first store-bound component lands: a hard
   Preact dependency contradicts the React target below.
 - **`react-virtuoso` and `react-resizable-panels` are peers** for the same two reasons: the first
@@ -93,7 +95,9 @@ root. The pieces sit where a React context can reach them:
   its `I18nProvider` for the same reason. A context here and one there would leave a supported
   combination with two disconnected contexts and the base labels silently English.
 - **`ui-utils` owns the framework-free core**, on the package's root entry, which resolves nothing
-  outside the package; the transport and its `neverthrow` sit behind `@enonic/ui-utils/request`: the `Translate` type — structurally the one
+  outside the package; the transport and its `neverthrow` sit behind `@enonic/ui-utils/request`,
+  and the admin events hub — the one code that imports a module from a runtime url — behind
+  `@enonic/ui-utils/admin-events`: the `Translate` type — structurally the one
   `@enonic/ui` declares, which takes no dependency on this workspace — and the adapters over an
   application's phrase source (`fromPhrases`, `fromLookup`, `passthrough`), `bindPhrases` for a
   store, `mergePhrases` for a package's catalogue, `comparePhrases` for an application's check.
