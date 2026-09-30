@@ -43,10 +43,7 @@ export function createTopicReaction<M>({
     scheduled = undefined;
     const batch = gathered;
     gathered = [];
-
-    if (batch.length > 0) {
-      apply(batch);
-    }
+    apply(batch);
   }
 
   // The refresh re-reads everything the window holds, so applying the window after it would only

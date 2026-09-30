@@ -7,7 +7,9 @@ import { createTopicReaction } from './topic-reaction';
 const WINDOW_MS = 300;
 
 /** A `Readable<boolean>` with a setter: what a nanostores atom is, without the dependency. */
-function readable(initial: boolean): Readable<boolean> & { set: (next: boolean) => void } {
+function readable(
+  initial: boolean,
+): Readable<boolean> & { set: (next: boolean) => void; listeners: () => number } {
   let value = initial;
   const listeners = new Set<(next: boolean) => void>();
   return {
@@ -20,6 +22,7 @@ function readable(initial: boolean): Readable<boolean> & { set: (next: boolean) 
       value = next;
       listeners.forEach((listener) => listener(next));
     },
+    listeners: () => listeners.size,
   };
 }
 
@@ -27,6 +30,7 @@ function setup(shown = true) {
   const visible = readable(shown);
   const apply = vi.fn();
   const refresh = vi.fn();
+  const parse = vi.fn((data: unknown) => (typeof data === 'string' ? data : undefined));
   const unsubscribe = vi.fn();
   const subscribeTopic = vi.fn<(topic: string, handlers: TopicHandlers) => () => void>(
     () => unsubscribe,
@@ -35,7 +39,7 @@ function setup(shown = true) {
   const reaction = createTopicReaction<string>({
     events: { subscribeTopic },
     topic: 'topic',
-    parse: (data) => (typeof data === 'string' ? data : undefined),
+    parse,
     visible,
     apply,
     refresh,
@@ -50,7 +54,7 @@ function setup(shown = true) {
     return handlers;
   };
 
-  return { visible, apply, refresh, unsubscribe, subscribeTopic, reaction, hub };
+  return { visible, apply, refresh, parse, unsubscribe, subscribeTopic, reaction, hub };
 }
 
 beforeEach(() => {
@@ -118,6 +122,21 @@ describe('createTopicReaction', () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it('owes one refresh for a message that arrived while hidden, without parsing it', () => {
+    const { visible, apply, refresh, parse, hub } = setup(false);
+
+    hub().onMessage('a');
+    hub().onMessage('b');
+    vi.advanceTimersByTime(WINDOW_MS);
+
+    expect(parse).not.toHaveBeenCalled();
+    expect(apply).not.toHaveBeenCalled();
+
+    visible.set(true);
+
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
   it('does not refresh a reveal nothing happened during', () => {
     const { visible, refresh } = setup(false);
 
@@ -138,6 +157,30 @@ describe('createTopicReaction', () => {
     visible.set(true);
 
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('owes no refresh for a hide that closed an empty window', () => {
+    const { visible, refresh, hub } = setup();
+
+    hub().onMessage('a');
+    vi.advanceTimersByTime(WINDOW_MS);
+    visible.set(false);
+    visible.set(true);
+
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it('owes nothing after stop: it stops watching visibility, and a stale reveal does not refresh', () => {
+    const { visible, refresh, reaction, hub } = setup(false);
+
+    hub().onMessage('a');
+    reaction.stop();
+
+    expect(visible.listeners()).toBe(0);
+
+    visible.set(true);
+
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it('stops cleanly: the subscription goes and a pending window never applies', () => {

@@ -100,6 +100,45 @@ describe('createAdminEvents', () => {
     expect(onLoss).toHaveBeenNthCalledWith(2, null);
   });
 
+  it('delivers a message past a subscriber that throws on it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { events, emit, arrive } = harness();
+    const next = vi.fn();
+    events.subscribeTopic('app:mine', {
+      onMessage: () => {
+        throw new Error('broken section');
+      },
+    });
+    events.subscribeTopic('app:mine', { onMessage: next });
+    events.connect();
+    await arrive();
+
+    expect(() => emit('app:mine', { n: 1 })).not.toThrow();
+    expect(next).toHaveBeenCalledWith({ n: 1 });
+    expect(error).toHaveBeenCalledTimes(1);
+    error.mockRestore();
+  });
+
+  it('reports a loss past a subscriber that throws on it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { events, lose, arrive } = harness();
+    const next = vi.fn();
+    events.subscribeTopic('app:mine', {
+      onMessage: () => {},
+      onLoss: () => {
+        throw new Error('broken refresh');
+      },
+    });
+    events.subscribeTopic('app:mine', { onMessage: () => {}, onLoss: next });
+    events.connect();
+    await arrive();
+
+    expect(() => lose('app:mine', null)).not.toThrow();
+    expect(next).toHaveBeenCalledWith(null);
+    expect(error).toHaveBeenCalledTimes(1);
+    error.mockRestore();
+  });
+
   it('stops delivering once unsubscribed', async () => {
     const { events, emit, arrive } = harness();
     const onMessage = vi.fn();
@@ -215,6 +254,68 @@ describe('createAdminEvents', () => {
 
     expect(attempts).toBe(2);
     expect(subscribed).toEqual(['app:mine']);
+    error.mockRestore();
+  });
+
+  it('logs a client whose connect throws, and retries it on the next connect', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const subscribed: string[] = [];
+    let attempts = 0;
+    const events = createAdminEvents('/hub', () =>
+      Promise.resolve({
+        connect: () => {
+          attempts += 1;
+          if (attempts === 1) {
+            throw new Error('no worker');
+          }
+          return { subscribe: (t: string) => subscribed.push(t) };
+        },
+      }),
+    );
+    events.subscribeTopic('app:mine', { onMessage: () => {} });
+
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(subscribed).toEqual([]);
+
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(attempts).toBe(2);
+    expect(subscribed).toEqual(['app:mine']);
+    error.mockRestore();
+  });
+
+  it('keeps the one connection when a replayed subscribe throws', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let connections = 0;
+    const events = createAdminEvents('/hub', () =>
+      Promise.resolve({
+        connect: () => {
+          connections += 1;
+          return {
+            subscribe: () => {
+              throw new Error('port closed');
+            },
+          };
+        },
+      }),
+    );
+    events.subscribeTopic('app:mine', { onMessage: () => {} });
+
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(connections).toBe(1);
     error.mockRestore();
   });
 });
