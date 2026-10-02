@@ -7,12 +7,12 @@ of it, plus the helpers and types that have no view layer at all.
 
 Four packages, one version, published to npm from one tag.
 
-| Package               | What it is                                                                                       | May depend on                        |
-| --------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| `@enonic/ui-types`    | Types only — base domain types and the behavioural contracts between applications                | nothing                              |
-| `@enonic/ui-utils`    | Helpers with no view layer: dates, formatting, the request transport, i18n, the admin events hub | `ui-types`                           |
-| `@enonic/ui-kit`      | Composite React components that carry behaviour: layouts, split panels, toolbars, browse screens | `ui-types`, `ui-utils`, `@enonic/ui` |
-| `@enonic/input-types` | XP's input types as React components, and the form that composes them from a schema              | `ui-types`, `ui-utils`, `@enonic/ui` |
+| Package               | What it is                                                                                              | May depend on                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `@enonic/ui-types`    | Types only — base domain types and the behavioural contracts between applications                       | nothing                              |
+| `@enonic/ui-utils`    | Helpers with no view layer: dates, formatting, the request transport, i18n, the admin events hub        | `ui-types`                           |
+| `@enonic/ui-kit`      | Composite React components that carry behaviour: the dialog shell and its confirmations, browse screens | `ui-types`, `ui-utils`, `@enonic/ui` |
+| `@enonic/input-types` | XP's input types as React components, and the form that composes them from a schema                     | `ui-types`, `ui-utils`, `@enonic/ui` |
 
 The packages are scaffolding right now: the manifests, the build and the release path work end to
 end, and the code moves in package by package. `docs/architecture.md` is what belongs where and why.

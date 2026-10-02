@@ -10,7 +10,7 @@ decided there.
 | `@enonic/ui-types`    | types only — base domain types, contracts between separately released applications                | nothing                              |
 | `@enonic/ui-utils`    | dates, formatting, the request transport, the i18n core, the admin events hub — **no view layer** | `ui-types`                           |
 | `@enonic/input-types` | XP input types as React components, and the form that composes them                               | `ui-types`, `ui-utils`, `@enonic/ui` |
-| `@enonic/ui-kit`      | composite React components with behaviour: layouts, split panels, toolbars, browse screens        | `ui-types`, `ui-utils`, `@enonic/ui` |
+| `@enonic/ui-kit`      | composite React components with behaviour: the dialog shell and its confirmations, browse screens | `ui-types`, `ui-utils`, `@enonic/ui` |
 
 ## Commands
 
