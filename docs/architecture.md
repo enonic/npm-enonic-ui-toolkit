@@ -47,7 +47,7 @@ next section):
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `ui-types`    | —                                                                                                                                | —                                                                            |
 | `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                                           |
-| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `react-virtuoso`, `react-resizable-panels`                                   | `@enonic/ui-types`, `@enonic/ui-utils`, `@nanostores/preact`, `lucide-react` |
+| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                                                               | `@enonic/ui-utils`, `lucide-react`; `@enonic/ui-types` with its first import |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                                           |
 
 The calls that are not obvious from the rule alone:
@@ -65,8 +65,8 @@ The calls that are not obvious from the rule alone:
   satisfies as it is.
 - **`@nanostores/preact` needs a revisit** before the first store-bound component lands: a hard
   Preact dependency contradicts the React target below.
-- **`react-virtuoso` and `react-resizable-panels` are peers** for the same two reasons: the first
-  mirrors `@enonic/ui`'s own manifest, the second finds its panel group through a context.
+- **A list or a panel library joins as a peer when a component needs it**, not before: the first
+  dialogs needed neither `react-virtuoso` nor `react-resizable-panels`, so the kit declares neither.
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not
   ours. They appear here only as devDependencies of the packages that build against it.
 - **A workspace package is a peer where its identity crosses the consumer's boundary, and a
@@ -149,8 +149,11 @@ directly in package sources.
   so a consumer never has to reach for `Parameters<typeof …>`. `exports.test.ts` fails on any
   entry export that is not `export { … } from` a module; which names are exported is the entry's
   own diff, and the typecheck holds each `type` marker.
-- **No CSS is published yet.** How `ui-kit` reaches a consumer's Tailwind build is an open
-  question tracked on the epic.
+- **A component package publishes no CSS.** Its Tailwind classes sit in `dist`, and the consumer's
+  Tailwind build generates the utilities it finds there: `input-types` by a `@source` line the
+  consumer writes, `ui-kit` by `@enonic/ui-kit/preset.css`, one `@import` that carries
+  `@source './dist'` itself. The tokens those classes use are `@enonic/ui`'s; neither package
+  declares any.
 
 ## What a package declares
 
