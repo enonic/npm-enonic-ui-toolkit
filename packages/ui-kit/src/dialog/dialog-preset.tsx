@@ -49,7 +49,7 @@ const DialogPresetConfirm = ({
         <ActionDialog.DefaultHeader title={title} description={description} />
         {(question !== undefined || children !== undefined) && (
           <ActionDialog.Body>
-            {question !== undefined && <p>{question}</p>}
+            {question !== undefined && <div>{question}</div>}
             {children}
           </ActionDialog.Body>
         )}

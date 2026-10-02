@@ -124,7 +124,7 @@ const DeleteConfirmParts = ({
       <ActionDialog.DefaultHeader title={title} />
       <ActionDialog.Body>
         <div className="flex flex-col gap-2.5">
-          <p>{question}</p>
+          <div>{question}</div>
           {targets.length > 0 && (
             <ul className="flex flex-col gap-2.5 py-1.5">
               {targets.map(({ key, label }) => (

@@ -89,8 +89,8 @@ const GateInput = forwardRef<HTMLInputElement, GateInputProps>(
     }, [matched, setConfirmEnabled]);
 
     useEffect(() => {
+      setShowError(false);
       if (entered === '' || matched) {
-        setShowError(false);
         return;
       }
       const timer = setTimeout(() => setShowError(true), ERROR_DELAY_MS);

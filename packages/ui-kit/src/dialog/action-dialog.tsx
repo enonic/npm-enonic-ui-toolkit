@@ -105,14 +105,14 @@ const ActionDialogBody = forwardRef<HTMLDivElement, ActionDialogBodyProps>(
       <Dialog.Body
         ref={ref}
         data-component={BODY_NAME}
-        // ! `inert`, not a disabled overlay: the form stays in sight but takes no click, no focus.
-        inert={asking}
         className={cn(
           '-mx-2 flex flex-col gap-7 px-2 py-1 transition-opacity',
           asking && 'opacity-50',
           className,
         )}
         {...props}
+        // ! `inert`, not a disabled overlay: the form stays in sight but takes no click, no focus.
+        inert={asking || props.inert}
       />
     );
   },
@@ -280,7 +280,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
             className="flex flex-1 flex-wrap items-center justify-end gap-x-5 gap-y-2.5"
           >
             {/* Announced as it appears, and read with either answer the focus lands on. */}
-            <p id={questionId} role="alert" className="mr-auto flex items-center gap-2 text-sm">
+            <div id={questionId} role="alert" className="mr-auto flex items-center gap-2 text-sm">
               <TriangleAlert
                 className={cn(
                   'size-4 shrink-0',
@@ -288,7 +288,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
                 )}
               />
               {question.text}
-            </p>
+            </div>
             <div className="flex shrink-0 gap-2.5">
               <Button
                 ref={keepButtonRef}
