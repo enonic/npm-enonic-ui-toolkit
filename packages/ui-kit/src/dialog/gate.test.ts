@@ -14,7 +14,8 @@ describe('matchesExpected', () => {
   });
 
   it('is never matched by nothing', () => {
-    expect(matchesExpected('', '')).toBe(true);
+    expect(matchesExpected('', '')).toBe(false);
+    expect(matchesExpected('  ', '')).toBe(false);
     expect(matchesExpected('', 'ada')).toBe(false);
   });
 

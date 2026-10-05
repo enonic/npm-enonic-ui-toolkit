@@ -16,6 +16,9 @@ import { matchesExpected, normalizeTyped } from './gate-match';
 // Held back: a wrong entry is what a right one looks like halfway through.
 const ERROR_DELAY_MS = 500;
 
+// A translation may repeat `{0}`; each occurrence renders its own keyed node.
+const VALUE = Symbol('value');
+
 //
 // * Root
 //
@@ -51,7 +54,9 @@ const GateHint = forwardRef<HTMLParagraphElement, GateHintProps>(
 
     return (
       <p ref={ref} data-component={HINT_NAME} className={cn('text-xl', className)} {...props}>
-        {fillPhrase(t('enonic.uiKit.gate.hint'), [<strong key="value">{value}</strong>])}
+        {fillPhrase(t('enonic.uiKit.gate.hint'), [VALUE]).map((part, index) =>
+          part === VALUE ? <strong key={index}>{value}</strong> : part,
+        )}
       </p>
     );
   },

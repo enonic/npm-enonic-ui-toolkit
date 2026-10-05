@@ -13,6 +13,7 @@ export type DialogPresetConfirmProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
+  /** Cancel, `Escape`, the mask and the close button alike. */
   onCancel?: () => void;
   /** Why the dialog is still open after a confirm that did not close it. */
   error?: string;
@@ -42,7 +43,15 @@ const DialogPresetConfirm = ({
   children,
   'data-component': componentName = CONFIRM_NAME,
 }: DialogPresetConfirmProps): ReactElement => (
-  <ActionDialog.Root open={open} onOpenChange={onOpenChange}>
+  <ActionDialog.Root
+    open={open}
+    onOpenChange={(next, details) => {
+      if (!next && details === undefined) {
+        onCancel?.();
+      }
+      onOpenChange(next);
+    }}
+  >
     <ActionDialog.Portal>
       <ActionDialog.Overlay />
       <ActionDialog.Content data-component={componentName} size={size}>
@@ -59,7 +68,6 @@ const DialogPresetConfirm = ({
           confirmLabel={confirmLabel}
           cancelLabel={cancelLabel}
           onConfirm={onConfirm}
-          onCancel={onCancel}
           error={error}
           closeOnConfirm={closeOnConfirm}
         />

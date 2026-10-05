@@ -15,6 +15,8 @@ export type ActionDialogContextValue = {
   setAsking: (next: boolean) => void;
   /** The way back from the question, for `Escape`. */
   keepRef: MutableRefObject<(() => void) | undefined>;
+  /** The element inside the content that last had the focus, for the way back from the question. */
+  lastFocusRef: MutableRefObject<HTMLElement | null>;
 };
 
 const ActionDialogContext = createContext<ActionDialogContextValue | undefined>(undefined);
@@ -39,3 +41,18 @@ export const useActionDialog = (): ActionDialogContextValue => {
   }
   return context;
 };
+
+/** Why `onOpenChange` closes: `action` when an `Action` or the footer's Confirm took the outcome. */
+export type ActionDialogOpenChangeDetails = { reason: 'action' };
+
+export type ActionDialogRootContextValue = {
+  /** Set by an action that closes, read by the close it causes. */
+  actionCloseRef: MutableRefObject<boolean>;
+};
+
+const ActionDialogRootContext = createContext<ActionDialogRootContextValue | undefined>(undefined);
+
+export const ActionDialogRootProvider = ActionDialogRootContext.Provider;
+
+export const useActionDialogRoot = (): ActionDialogRootContextValue | undefined =>
+  useContext(ActionDialogRootContext);

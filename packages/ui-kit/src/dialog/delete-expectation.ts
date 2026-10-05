@@ -8,9 +8,14 @@ export type DeleteTarget = {
   label: ReactNode;
 };
 
-/** What to type back: the one item's name, or the count of a batch nobody would retype name by name. */
+/**
+ * What to type back: the one item's name, or the count of a batch nobody would retype name by name
+ * — and of an item with no name to type.
+ */
 export function deleteExpectation(targets: readonly DeleteTarget[]): string | number {
   const [only] = targets;
 
-  return targets.length === 1 && only !== undefined ? only.name : targets.length;
+  return targets.length === 1 && only !== undefined && only.name.trim() !== ''
+    ? only.name
+    : targets.length;
 }

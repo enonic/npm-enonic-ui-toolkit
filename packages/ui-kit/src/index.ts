@@ -5,13 +5,17 @@
  */
 
 export { useActionDialog } from './dialog/action-dialog-context';
-export type { ActionDialogContextValue } from './dialog/action-dialog-context';
+export type {
+  ActionDialogContextValue,
+  ActionDialogOpenChangeDetails,
+} from './dialog/action-dialog-context';
 export { ActionDialog } from './dialog/action-dialog';
 export type {
   ActionDialogActionProps,
   ActionDialogBodyProps,
   ActionDialogContentProps,
   ActionDialogFooterProps,
+  ActionDialogRootProps,
   DialogIntent,
   DialogSize,
   FooterQuestion,

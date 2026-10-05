@@ -49,23 +49,31 @@ function Opener({
 
 export const PlainQuestion: Story = {
   name: 'Presets / Confirm',
-  render: () => (
-    <Opener
-      label="Publish"
-      description="DialogPreset.Confirm, the plain question: a title, the question, and two answers of equal weight. Confirm and Cancel both close; Escape and the mask are Cancel."
-    >
-      {(open, setOpen) => (
-        <DialogPreset.Confirm
-          open={open}
-          onOpenChange={setOpen}
-          title="Publish 3 items?"
-          question="They go live as soon as the publish completes."
-          confirmLabel="Publish"
-          onConfirm={() => setOpen(false)}
-        />
-      )}
-    </Opener>
-  ),
+  render: () => {
+    const [outcome, setOutcome] = useState('none yet');
+
+    return (
+      <Opener
+        label="Publish"
+        description="DialogPreset.Confirm, the plain question: a title, the question, and two answers of equal weight. Confirm and Cancel both close; Escape and the mask are Cancel."
+      >
+        {(open, setOpen) => (
+          <>
+            <DialogPreset.Confirm
+              open={open}
+              onOpenChange={setOpen}
+              title="Publish 3 items?"
+              question="They go live as soon as the publish completes."
+              confirmLabel="Publish"
+              onConfirm={() => setOutcome('published')}
+              onCancel={() => setOutcome('cancelled')}
+            />
+            <div className="text-subtle text-sm">Last answer: {outcome}</div>
+          </>
+        )}
+      </Opener>
+    );
+  },
 };
 
 export const DeleteOne: Story = {
@@ -222,7 +230,7 @@ export const FormWithFooterConfirmation: Story = {
         <div className="text-subtle max-w-120 text-sm">
           Edit the name, then close by the mask, the X, Escape or Cancel: the question takes the
           footer, the form stays in sight but inert, Escape keeps editing, and the focus comes back
-          where it left.
+          where it left. Save closes without asking.
         </div>
         <Button variant="solid" label="Edit profile" onClick={() => setOpen(true)} />
 
@@ -245,12 +253,8 @@ export const FormWithFooterConfirmation: Story = {
               <ActionDialog.Footer
                 confirmLabel="Save"
                 closeOnCancel={false}
-                closeOnConfirm={false}
                 onCancel={guard.requestClose}
-                onConfirm={() => {
-                  setSaved(name);
-                  setOpen(false);
-                }}
+                onConfirm={() => setSaved(name)}
                 question={
                   guard.asking
                     ? {

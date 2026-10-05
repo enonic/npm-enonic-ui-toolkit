@@ -1,4 +1,11 @@
-import { Button, type ButtonVariant, cn, Dialog, usePrefixedId } from '@enonic/ui';
+import {
+  Button,
+  type ButtonVariant,
+  cn,
+  Dialog,
+  type DialogRootProps,
+  usePrefixedId,
+} from '@enonic/ui';
 import { TriangleAlert } from 'lucide-react';
 import {
   type ComponentPropsWithoutRef,
@@ -16,8 +23,11 @@ import {
 import { useUiKitPhrases } from '../i18n/use-phrases';
 import {
   type ActionDialogContextValue,
+  type ActionDialogOpenChangeDetails,
   ActionDialogProvider,
+  ActionDialogRootProvider,
   useActionDialog,
+  useActionDialogRoot,
 } from './action-dialog-context';
 
 export type DialogIntent = 'default' | 'danger';
@@ -35,6 +45,34 @@ const DANGER_BUTTON_CLASS_NAME =
   'bg-btn-error text-alt hover:bg-btn-error-hover active:bg-btn-error-active focus-visible:ring-error/50';
 
 //
+// * Root
+//
+
+export type ActionDialogRootProps = Omit<DialogRootProps, 'onOpenChange'> & {
+  /** `details` tells a close an action took from one that would leave without it. */
+  onOpenChange?: (open: boolean, details?: ActionDialogOpenChangeDetails) => void;
+};
+
+const ActionDialogRoot = ({ onOpenChange, ...props }: ActionDialogRootProps): ReactElement => {
+  const actionCloseRef = useRef(false);
+  const value = useMemo(() => ({ actionCloseRef }), []);
+
+  return (
+    <ActionDialogRootProvider value={value}>
+      <Dialog.Root
+        {...props}
+        onOpenChange={(open) => {
+          const byAction = actionCloseRef.current;
+          actionCloseRef.current = false;
+          onOpenChange?.(open, !open && byAction ? { reason: 'action' } : undefined);
+        }}
+      />
+    </ActionDialogRootProvider>
+  );
+};
+ActionDialogRoot.displayName = 'ActionDialog.Root';
+
+//
 // * Content
 //
 
@@ -45,6 +83,7 @@ export type ActionDialogContentProps = {
 } & ComponentPropsWithoutRef<typeof Dialog.Content>;
 
 const CONTENT_NAME = 'ActionDialog.Content';
+const QUESTION_NAME = 'ActionDialog.Question';
 
 const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>(
   (
@@ -54,6 +93,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       className,
       children,
       onEscapeKeyDown,
+      onFocusCapture,
       ...props
     },
     ref,
@@ -61,17 +101,43 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
     const [confirmEnabled, setConfirmEnabled] = useState(defaultConfirmEnabled);
     const [asking, setAsking] = useState(false);
     const keepRef = useRef<(() => void) | undefined>(undefined);
+    const lastFocusRef = useRef<HTMLElement | null>(null);
+    const wasAskingRef = useRef(false);
 
     const context = useMemo<ActionDialogContextValue>(
-      () => ({ confirmEnabled, setConfirmEnabled, asking, setAsking, keepRef }),
+      () => ({ confirmEnabled, setConfirmEnabled, asking, setAsking, keepRef, lastFocusRef }),
       [confirmEnabled, asking],
     );
+
+    // Answered, the focus goes back to the control the question left. The last focus, not the active
+    // element: a mask click has already blurred the field to the body.
+    useLayoutEffect(() => {
+      const target = lastFocusRef.current;
+      const answered = wasAskingRef.current && !asking;
+      wasAskingRef.current = asking;
+      if (!answered || target === null) {
+        return;
+      }
+      // ! A frame later: under Preact the body reads `asking` through context and lifts its `inert`
+      // ! in a render after this one, and an inert field takes no focus.
+      const frame = requestAnimationFrame(() => target.focus());
+      return () => cancelAnimationFrame(frame);
+    }, [asking]);
 
     return (
       <Dialog.Content
         ref={ref}
         data-component={CONTENT_NAME}
         className={cn('gap-5 p-5 md:p-7.5', SIZES[size], className)}
+        onFocusCapture={(event) => {
+          onFocusCapture?.(event);
+          if (
+            event.target instanceof HTMLElement &&
+            event.target.closest(`[data-component="${QUESTION_NAME}"]`) === null
+          ) {
+            lastFocusRef.current = event.target;
+          }
+        }}
         onEscapeKeyDown={(event) => {
           onEscapeKeyDown?.(event);
           // While the footer asks its question, `Escape` is the way back, not the way out.
@@ -146,11 +212,13 @@ const ActionDialogAction = forwardRef<HTMLButtonElement, ActionDialogActionProps
       closeOnClick = true,
       variant = 'solid',
       className,
+      onClick,
       ...props
     },
     ref,
   ): ReactElement => {
     const { confirmEnabled } = useActionDialog();
+    const root = useActionDialogRoot();
     const button = (
       <Button
         ref={ref}
@@ -160,6 +228,13 @@ const ActionDialogAction = forwardRef<HTMLButtonElement, ActionDialogActionProps
         label={label}
         disabled={disabled || !confirmEnabled}
         className={cn(intent === 'danger' && DANGER_BUTTON_CLASS_NAME, className)}
+        onClick={(event) => {
+          onClick?.(event);
+          // ! Runs before `Dialog.Close` closes: the close guard reads this to let the action through.
+          if (closeOnClick && root !== undefined && !event.defaultPrevented) {
+            root.actionCloseRef.current = true;
+          }
+        }}
         {...props}
       />
     );
@@ -213,7 +288,6 @@ export type ActionDialogFooterProps = {
 } & ComponentPropsWithoutRef<typeof Dialog.Footer>;
 
 const FOOTER_NAME = 'ActionDialog.Footer';
-const QUESTION_NAME = 'ActionDialog.Question';
 
 /**
  * The footer: Cancel and Confirm, or the controls it is given. While it asks a question, every
@@ -347,6 +421,7 @@ ActionDialogFooter.displayName = FOOTER_NAME;
  */
 export const ActionDialog = {
   ...Dialog,
+  Root: ActionDialogRoot,
   Content: ActionDialogContent,
   Body: ActionDialogBody,
   Footer: ActionDialogFooter,

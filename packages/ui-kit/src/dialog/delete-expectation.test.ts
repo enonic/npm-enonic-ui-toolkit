@@ -15,6 +15,11 @@ describe('deleteExpectation', () => {
     expect(deleteExpectation([target('role:one', 'one'), target('role:two', 'two')])).toBe(2);
   });
 
+  it('asks for the count of one item whose name is blank, which nothing typed could match', () => {
+    expect(deleteExpectation([target('user:system:x', '')])).toBe(1);
+    expect(deleteExpectation([target('user:system:x', '  ')])).toBe(1);
+  });
+
   it('falls back to the count when there is nothing to delete', () => {
     expect(deleteExpectation([])).toBe(0);
   });
