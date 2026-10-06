@@ -1,0 +1,6 @@
+/*
+ * The kit's components carry Tailwind classes and ship no CSS: a consumer's Tailwind build
+ * generates the utilities it finds in `dist`. `@import '@enonic/ui-kit/preset.css'` after the
+ * `@enonic/ui` preset points that build here; the tokens the classes use are `@enonic/ui`'s.
+ */
+@source './dist';
