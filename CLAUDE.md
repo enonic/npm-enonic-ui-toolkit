@@ -18,7 +18,7 @@ decided there.
 pnpm check                        # format, lint (type-aware oxlint), workspace typecheck — the gate
 pnpm check:fix                    # same, fixing format and lint
 pnpm build                        # every package in dependency order, cached
-pnpm test                         # vitest, node environment
+pnpm test                         # vitest, node; a DOM test opts into happy-dom per file
 pnpm storybook                    # every package's stories, on Preact, at :6006
 vp run -F @enonic/ui-kit build    # one package
 pnpm version:set 0.2.0            # lockstep bump of all five manifests (see README → Releasing)
@@ -58,8 +58,12 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 
 ## Conventions
 
-- Tests sit next to the code as `*.test.ts`. The vitest environment is `node` with no DOM library,
-  so keep testable logic in pure helpers; component rendering is not tested yet.
+- Tests sit next to the code as `*.test.ts`. The vitest environment is `node`, so keep testable
+  logic in pure helpers. A component test is a `*.test.tsx` that opens with
+  `// @vitest-environment happy-dom` and renders through Testing Library — `@testing-library/preact`,
+  `@testing-library/user-event` and `happy-dom` declared as that package's devDependencies. The root
+  `vite.config.ts` inlines `@enonic/ui` in tests because its dist imports `createPortal` by name from
+  `react`, which Node would resolve to preact/compat's CommonJS build.
 - A package entry names every export explicitly, each from the file that defines it — no
   `export *`, no barrel between the entry and the code. The entry carries what a consumer imports and
   the surface an extension is built from; what only the package uses stays a module export,
