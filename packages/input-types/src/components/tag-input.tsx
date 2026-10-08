@@ -14,8 +14,7 @@ import {
   sortableKeyboardCoordinates,
   useSortable,
 } from '@dnd-kit/sortable';
-import { cn, getIsMobile, IconButton, Input, subscribeToMobileChanges, Tooltip } from '@enonic/ui';
-import { GripVertical, X } from 'lucide-react';
+import { cn, getIsMobile, Input, subscribeToMobileChanges, Tag, Tooltip } from '@enonic/ui';
 import {
   type ClipboardEventHandler,
   type FocusEventHandler,
@@ -60,6 +59,10 @@ import {
 } from './tag-input-utils';
 
 const TAG_INPUT_NAME = 'TagInput';
+
+// ? No layout animation after the drop: dnd-kit's default replays the displacement there, which
+// ? read as a flicker. The displacement during the drag itself comes from `transform`, not from here.
+const animateLayoutChanges = ({ isSorting }: { isSorting: boolean }): boolean => isSorting;
 const SUGGESTION_LIST_ID = 'tag-input-suggestions';
 const SUGGESTION_DEBOUNCE_MS = 300;
 const FOCUSABLE_SELECTOR = [
@@ -481,6 +484,7 @@ const TagItem = ({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id,
     disabled: !showDrag || editing,
+    animateLayoutChanges,
   });
   const isKeyboardDragging = isKeyboardDragPressed(attributes['aria-pressed']);
 
@@ -672,39 +676,24 @@ const TagItem = ({
   const editLabel = `${t('enonic.inputTypes.action.edit')}: ${label}`;
 
   return (
-    <li
+    <Tag
       ref={setNodeRef}
+      as="li"
       style={{
         transform: toTransformCSS(transform),
         transition: transition ?? undefined,
         zIndex: isDragging ? 1 : undefined,
       }}
       title={error}
-      className={cn(
-        'inline-flex max-w-full items-center gap-1.5 rounded-sm border py-0.75',
-        showDrag ? 'pl-2' : 'pl-2.5',
-        showRemove ? 'pr-2' : 'pr-2.5',
-        'bg-surface-neutral text-sm',
-        'outline-none',
-        error
-          ? 'border-current text-error ring-error'
-          : 'border-bdr-strong text-foreground ring-ring',
-        isDragging && 'cursor-grabbing ring-1',
-        !enabled && 'cursor-default border-bdr-subtle',
-      )}
+      error={error !== undefined}
+      disabled={!enabled}
+      dragging={isDragging}
     >
       {showDrag && !editing && (
-        <IconButton
+        <Tag.Handle
           ref={registerFocusableRef}
           data-tag-drag
-          icon={GripVertical}
-          iconSize="sm"
-          variant="text"
-          className={cn(
-            'size-5 touch-none focus-visible:ring-2 focus-visible:ring-offset-2',
-            enabled && (isDragging ? 'cursor-grabbing' : 'cursor-grab'),
-          )}
-          disabled={!enabled}
+          className={cn(enabled && (isDragging ? 'cursor-grabbing' : 'cursor-grab'))}
           aria-label={t('enonic.inputTypes.occurrence.reorder')}
           onKeyDownCapture={handleDragButtonKeyDownCapture}
           onKeyDown={handleDragButtonKeyDown}
@@ -730,30 +719,23 @@ const TagItem = ({
         />
       ) : (
         <Tooltip value={tooltipValue} side="top" className="max-w-64 whitespace-normal break-words">
-          <button
+          <Tag.Label
+            as="button"
             data-tag-label
-            type="button"
-            className="font-semibold outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             tabIndex={enabled && isTabStop ? 0 : -1}
-            disabled={!enabled}
             aria-label={editLabel}
             onKeyDown={handleLabelButtonKeyDown}
             onClick={() => onEditStart()}
           >
             {visibleLabel}
-          </button>
+          </Tag.Label>
         </Tooltip>
       )}
       {showRemove && !editing && (
-        <IconButton
+        <Tag.Remove
           ref={setRemoveButtonRef}
           data-tag-remove
-          icon={X}
-          iconSize="sm"
-          variant="text"
-          className="size-5 focus-visible:ring-2 focus-visible:ring-offset-2"
           tabIndex={-1}
-          disabled={!enabled}
           aria-label={t('enonic.inputTypes.occurrence.remove')}
           onPointerDown={(event) => {
             event.preventDefault();
@@ -767,7 +749,7 @@ const TagItem = ({
           onClick={onRemove}
         />
       )}
-    </li>
+    </Tag>
   );
 };
 TagItem.displayName = 'TagItem';
