@@ -44,6 +44,12 @@ export default defineConfig({
       enabled: true,
       include: ['packages/*/src/**/*.test-d.ts'],
     },
+    // A DOM test renders `@enonic/ui`, whose dist imports `createPortal` by name from `react`. Left
+    // external, `react` resolves through Node to preact/compat's CommonJS build, which has no named
+    // exports; transformed by Vite it resolves through the aliases above to the ESM build.
+    server: {
+      deps: { inline: ['@enonic/ui'] },
+    },
   },
 
   // The workspace builds and tests on Preact; `react` is what package sources import.

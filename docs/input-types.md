@@ -349,5 +349,6 @@ not a directory one ships.
 ## Open questions
 
 - **Tests for the components.** `form2` tests components by mocking `@enonic/ui` and asserting on
-  the rendered vnode tree, without a DOM. It works and it comes along; whether the toolkit wants
-  a DOM environment for component tests at some point is a separate question.
+  the rendered vnode tree, without a DOM. It works and it comes along. The toolkit has since settled
+  how a component is tested — a `*.test.tsx` on happy-dom with Testing Library, per `CLAUDE.md` —
+  so a ported test may move to that instead.
