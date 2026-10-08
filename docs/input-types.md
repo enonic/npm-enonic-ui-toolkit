@@ -181,12 +181,13 @@ For `architecture.md`'s table, the row this package was waiting for, filled in:
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react` |
 
-`@enonic/ui`'s floor is 1.3.0, the release that ships `I18nProvider` and `usePhrases` (npm-enonic-ui#542),
-for the same reason it is `ui-kit`'s. The `@dnd-kit` pair is a peer for the reason
-`react-resizable-panels` is: a sortable finds its `DndContext` through a context, and two copies
-are two contexts. Content Studio and lib-admin-ui both carry the pair already. `focus-trap-react`
-is what the set confirmations trap focus with, as `@enonic/ui`'s dialog does; a consumer with the
-dialog has it. `@enonic/ui-utils` is a peer because the property tree checks its value classes
+`@enonic/ui`'s floor is 1.4.0, as it is `ui-kit`'s: 1.3.0 shipped `I18nProvider` and `usePhrases`
+(npm-enonic-ui#542), and the toolkit moves its floor with each release it builds against. The
+`@dnd-kit` pair is a peer for the reason `react-resizable-panels` is: a sortable finds its
+`DndContext` through a context, and two copies are two contexts. Content Studio and lib-admin-ui
+both carry the pair already. `focus-trap-react` is what the set confirmations trap focus with, as
+`@enonic/ui`'s dialog does; since 1.4.0 the dialog carries it as a dependency
+(npm-enonic-ui#564), and a peer here resolves to that same copy. `@enonic/ui-utils` is a peer because the property tree checks its value classes
 with `instanceof`: a `Reference` built by lib-admin-ui's copy is rejected by the form's.
 
 The components carry Tailwind classes, as `ui-kit`'s dialogs will; how they reach a consumer's
@@ -262,8 +263,8 @@ dependency order — nothing in a step imports a later one.
    `computeDefaultValue` in `descriptor/`; the two occurrence views share a `SetOccurrenceHeader`
    where Content Studio had the header twice; `InlineButton` became `Button size="sm"` with the
    same classes; the scroll-to-occurrence looks for a `[data-form-panel]` ancestor, not Content
-   Studio's `.form-panel`. The confirmation bars keep `focus-trap-react`, which `@enonic/ui`'s
-   dialog already asks a consumer for, so it is a peer here too. The one DOM test
+   Studio's `.form-panel`. The confirmation bars keep `focus-trap-react` and import it
+   directly, so it is a peer here — the copy `@enonic/ui`'s dialog depends on. The one DOM test
    (`LockedSingleRadioBody.test.tsx`, on `@testing-library/preact`) stays behind with the open
    question below; the tree-level tests came, on `Form.fromJson` in XP's dialect instead of
    Content Studio's factory.
