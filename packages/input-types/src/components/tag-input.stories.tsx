@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/preact-vite';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import type { Value } from '../data';
 import { ValueTypes } from '../data';
 import type { TextLineConfig } from '../descriptor/input-type-config';
-import { OccurrenceManager } from '../descriptor/occurrence-manager';
 import { TagDescriptor } from '../descriptor/tag-descriptor';
+import { useOccurrenceManager } from '../hooks/use-occurrence-manager';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import { InputBuilder } from '../schema';
 import { InputTypeName } from '../schema';
@@ -42,63 +42,46 @@ function toValues(tags: string[]): Value[] {
   return tags.map((tag) => ValueTypes.STRING.newValue(tag));
 }
 
-function moveValue(values: Value[], fromIndex: number, toIndex: number): Value[] {
-  if (
-    fromIndex < 0 ||
-    fromIndex >= values.length ||
-    toIndex < 0 ||
-    toIndex >= values.length ||
-    fromIndex === toIndex
-  ) {
-    return values;
-  }
-
-  const next = [...values];
-  const [moved] = next.splice(fromIndex, 1);
-  if (moved !== undefined) next.splice(toIndex, 0, moved);
-  return next;
-}
+// ! A module constant, not a default in the destructuring: `useOccurrenceManager` recreates its manager
+// ! when `config` changes identity, and a fresh object per render would reset the values on every one.
+const DEFAULT_CONFIG = makeConfig();
 
 function DemoTagInput({
   min,
   max,
   initialTags = [],
   enabled = true,
-  config = makeConfig(),
+  config = DEFAULT_CONFIG,
   suggestions,
 }: DemoTagInputProps) {
   const t = useInputTypesPhrases();
   const input = useMemo(() => makeInput(min, max), [min, max]);
   const occurrences = input.getOccurrences();
-  const [values, setValues] = useState<Value[]>(() => toValues(initialTags));
 
-  const state = useMemo(
-    () =>
-      new OccurrenceManager<TextLineConfig>(occurrences, TagDescriptor, config, values).validate(),
-    [config, occurrences, values],
-  );
+  // The hook the form drives the input with: an occurrence keeps its id across moves and removals,
+  // so dnd-kit sees the dragged tag land where it was dropped rather than a reshuffled list.
+  const { state, add, remove, move, set } = useOccurrenceManager({
+    occurrences,
+    descriptor: TagDescriptor,
+    config,
+    initialValues: toValues(initialTags),
+    autoSeed: false,
+  });
   const occurrenceError = getOccurrenceErrorMessage(occurrences, state.occurrenceValidation, t);
 
   return (
     <div className="flex w-[32rem] flex-col gap-y-2">
       <TagInput
         occurrenceIds={state.ids}
-        values={values}
-        onChange={(index, value) =>
-          setValues((prev) =>
-            prev.map((current, currentIndex) => (currentIndex === index ? value : current)),
-          )
-        }
+        values={state.values}
+        onChange={(index, value) => set(index, value)}
         onAdd={(value) => {
-          if (value == null) {
-            return;
+          if (value != null) {
+            add(value);
           }
-          setValues((prev) => (occurrences.maximumReached(prev.length) ? prev : [...prev, value]));
         }}
-        onRemove={(index) =>
-          setValues((prev) => prev.filter((_, currentIndex) => currentIndex !== index))
-        }
-        onMove={(fromIndex, toIndex) => setValues((prev) => moveValue(prev, fromIndex, toIndex))}
+        onRemove={remove}
+        onMove={move}
         occurrences={occurrences}
         config={config}
         input={input}

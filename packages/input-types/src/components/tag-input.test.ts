@@ -49,6 +49,27 @@ const mocks = vi.hoisted(() => ({
   button: vi.fn(),
   iconButton: vi.fn(),
   tooltip: vi.fn(({ children }: { children: unknown }) => children),
+  // The chip from `@enonic/ui`, as the elements the tree walk below looks for: the `li` it reads the
+  // item off, with the chip's state props kept on it, a `button` for the label, the mocked
+  // `IconButton` for the grip and the cross.
+  tag: Object.assign(
+    vi.fn(({ as = 'span', className, children, ...props }: Record<string, any>) => ({
+      type: as,
+      props: {
+        ...props,
+        className: ['bg-surface-neutral', className].filter(Boolean).join(' '),
+        children,
+      },
+    })),
+    {
+      Handle: (props: Record<string, any>) => ({ type: mocks.iconButton, props }),
+      Label: ({ as = 'span', children, ...props }: Record<string, any>) => ({
+        type: as,
+        props: { ...props, children },
+      }),
+      Remove: (props: Record<string, any>) => ({ type: mocks.iconButton, props }),
+    },
+  ),
   cn: vi.fn((...tokens: Array<string | false | undefined>) => tokens.filter(Boolean).join(' ')),
   useValidationVisibility: vi.fn(() => 'all'),
   getIsMobile: vi.fn(() => false),
@@ -67,15 +88,11 @@ vi.mock('react', () => ({
   useSyncExternalStore: mocks.useSyncExternalStore,
 }));
 
-vi.mock('lucide-react', () => ({
-  GripVertical: () => null,
-  X: () => null,
-}));
-
 vi.mock('@enonic/ui', () => ({
   Input: mocks.input,
   Button: mocks.button,
   IconButton: mocks.iconButton,
+  Tag: mocks.tag,
   Tooltip: mocks.tooltip,
   cn: mocks.cn,
   getIsMobile: mocks.getIsMobile,
@@ -786,6 +803,36 @@ describe('TagInput', () => {
     expect(getTagLabelButton(props).tabIndex).toBe(0);
   });
 
+  it('hands the chip its state: invalid, disabled, and dragging while it is', () => {
+    const values = [ValueTypes.STRING.newValue('alpha'), ValueTypes.STRING.newValue('beta')];
+    const occurrences = Occurrences.minmax(0, 3);
+
+    const plain = getFirstTagItemProps({ values, occurrences, errors: [] });
+    expect(plain.error).toBe(false);
+    expect(plain.disabled).toBe(false);
+    expect(plain.dragging).toBe(false);
+
+    const invalid = getFirstTagItemProps({
+      values,
+      occurrences,
+      errors: [makeOccurrenceValidation(0, 'Too long')],
+    });
+    expect(invalid.error).toBe(true);
+    expect(invalid.title).toBe('Too long');
+
+    expect(getFirstTagItemProps({ values, occurrences, enabled: false }).disabled).toBe(true);
+
+    mocks.useSortable.mockReturnValueOnce({
+      attributes: {},
+      listeners: {},
+      setNodeRef: vi.fn(),
+      transform: null,
+      transition: null,
+      isDragging: true,
+    });
+    expect(getFirstTagItemProps({ values, occurrences }).dragging).toBe(true);
+  });
+
   it('keeps tag items themselves out of the tab order when focus is within the component', () => {
     const tagItemProps = getFirstTagItemProps({
       values: [ValueTypes.STRING.newValue('alpha'), ValueTypes.STRING.newValue('beta')],
@@ -1152,7 +1199,19 @@ describe('TagInput', () => {
       ['TouchSensor', { activationConstraint: { distance: 5 } }],
       ['KeyboardSensor', { coordinateGetter: expect.any(Function) }],
     ]);
-    expect(getFirstDragButtonProps().className).toContain('touch-none');
+  });
+
+  it('animates displaced tags only while sorting, so nothing replays after the drop', () => {
+    renderDraggableTagInput();
+
+    const options = (
+      mocks.useSortable.mock.calls as unknown as Array<
+        [{ animateLayoutChanges?: (args: { isSorting: boolean; wasDragging: boolean }) => boolean }]
+      >
+    )[0]?.[0];
+
+    expect(options?.animateLayoutChanges?.({ isSorting: true, wasDragging: false })).toBe(true);
+    expect(options?.animateLayoutChanges?.({ isSorting: false, wasDragging: true })).toBe(false);
   });
 
   it('disables dnd-kit auto-scroll for tag dragging', () => {
