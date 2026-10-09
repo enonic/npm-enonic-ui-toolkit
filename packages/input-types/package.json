@@ -1,6 +1,6 @@
 {
   "name": "@enonic/input-types",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "XP input types as React components, and the form that composes them",
   "keywords": [
     "enonic",

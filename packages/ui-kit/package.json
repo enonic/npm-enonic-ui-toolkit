@@ -1,6 +1,6 @@
 {
   "name": "@enonic/ui-kit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Composite React components with behaviour: the dialog shell and its confirmations, layouts, toolbars, browse screens",
   "keywords": [
     "components",
