@@ -104,6 +104,19 @@ describe('DoubleDescriptor', () => {
       expect(DoubleDescriptor.validate(value, config)).toEqual([]);
     });
 
+    it('rejects a number beyond the safe range, which JS cannot hold exactly', () => {
+      const config = makeConfig();
+      const raw = '9007199254740991.6';
+      const value = ValueTypes.DOUBLE.newValue(raw);
+      expect(value.isNull()).toBe(true);
+      const results = DoubleDescriptor.validate(value, config, raw);
+      expect(results).toHaveLength(1);
+      expect(results[0]!).toMatchObject({ key: 'enonic.inputTypes.validation.invalid' });
+      expect(
+        DoubleDescriptor.validate(ValueTypes.DOUBLE.newValue('-9007199254740991'), config),
+      ).toEqual([]);
+    });
+
     it('returns empty for null value', () => {
       const config = makeConfig({ min: 0, max: 100 });
       const value = ValueTypes.DOUBLE.newNullValue();

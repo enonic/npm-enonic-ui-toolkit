@@ -69,9 +69,9 @@ function numberDescriptor(
 }
 
 export const LongDescriptor = numberDescriptor('Long', ValueTypes.LONG, (num) =>
-  Number.isInteger(num),
+  ValueTypes.LONG.isValid(num),
 );
 
 export const DoubleDescriptor = numberDescriptor('Double', ValueTypes.DOUBLE, (num) =>
-  Number.isFinite(num),
+  ValueTypes.DOUBLE.isValid(num),
 );

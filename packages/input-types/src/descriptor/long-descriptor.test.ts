@@ -177,6 +177,19 @@ describe('LongDescriptor', () => {
       expect(results[0]!).toMatchObject({ key: 'enonic.inputTypes.validation.invalid' });
     });
 
+    it('rejects an integer beyond the safe range, which JS cannot hold exactly', () => {
+      const config = makeConfig();
+      const raw = String(Number.MAX_SAFE_INTEGER + 2);
+      const value = ValueTypes.LONG.newValue(raw);
+      expect(value.isNull()).toBe(true);
+      const results = LongDescriptor.validate(value, config, raw);
+      expect(results).toHaveLength(1);
+      expect(results[0]!).toMatchObject({ key: 'enonic.inputTypes.validation.invalid' });
+      expect(
+        LongDescriptor.validate(ValueTypes.LONG.newValue(String(Number.MAX_SAFE_INTEGER)), config),
+      ).toEqual([]);
+    });
+
     it('returns empty for null value without rawValue (empty field)', () => {
       const config = makeConfig();
       const value = ValueTypes.LONG.newNullValue();

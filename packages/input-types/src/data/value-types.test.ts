@@ -63,6 +63,11 @@ describe('ValueTypes', () => {
     );
     expect(new Value(new GeoPoint(1, 2), ValueTypes.GEO_POINT).getString()).toBe('1,2');
     expect(new Value(undefined, ValueTypes.LONG).isNull()).toBe(true);
+    expect(ValueTypes.LONG.isValid(Number.MAX_SAFE_INTEGER)).toBe(true);
+    expect(ValueTypes.LONG.isValid(Number.MAX_SAFE_INTEGER + 2)).toBe(false);
+    expect(ValueTypes.DOUBLE.isValid(-Number.MAX_SAFE_INTEGER)).toBe(true);
+    expect(ValueTypes.DOUBLE.isValid(-Number.MAX_SAFE_INTEGER - 2)).toBe(false);
+    expect(ValueTypes.DOUBLE.isValid(Number.POSITIVE_INFINITY)).toBe(false);
   });
 
   it('compares values by type and content', () => {

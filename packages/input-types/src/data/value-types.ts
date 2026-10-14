@@ -69,13 +69,17 @@ abstract class ValueTypeNumber extends ValueType {
   }
 }
 
+function isSafeNumber(value: unknown): value is number {
+  return typeof value === 'number' && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
+}
+
 class ValueTypeLong extends ValueTypeNumber {
   constructor() {
     super('Long');
   }
 
   override isValid(value: unknown): boolean {
-    return typeof value === 'number' && Number.isInteger(value);
+    return Number.isSafeInteger(value);
   }
 }
 
@@ -85,7 +89,7 @@ class ValueTypeDouble extends ValueTypeNumber {
   }
 
   override isValid(value: unknown): boolean {
-    return typeof value === 'number' && Number.isFinite(value);
+    return isSafeNumber(value);
   }
 }
 
