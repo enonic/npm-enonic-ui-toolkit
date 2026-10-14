@@ -259,7 +259,8 @@ export function useSetPropertyArray(
     if (!seedMin) return;
     const min = occurrences.getMinimum();
     while (propertyArray.getSize() < min) {
-      onCreateOccurrence?.(propertyArray.addSet());
+      const occurrence = propertyArray.addSet();
+      onCreateOccurrence?.(occurrence);
     }
   }, [propertyArray, occurrences, onCreateOccurrence, seedMin]);
 
