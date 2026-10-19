@@ -22,6 +22,8 @@
  * How a particular shell behaves behind these types is documented with that shell.
  */
 
+import type { ResolvedTheme } from './theme';
+
 /**
  * Anything mutable the host hands over.
  *
@@ -63,7 +65,7 @@ export type Host = {
   /** Resolved page locale. A locale change reloads the page, so it never changes mid-mount. */
   locale: string;
   /** Resolved theme. The module applies it inside its shadow root; the class never crosses. */
-  theme: Readable<'light' | 'dark'>;
+  theme: Readable<ResolvedTheme>;
   /**
    * Whether this mount is on screen. A host keeps a mount alive while another shows, and a hidden
    * mount may pause what only a viewer needs — measuring, polling — until this turns true.

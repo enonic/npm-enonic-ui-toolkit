@@ -71,4 +71,14 @@ Content Studio's client, and is not here.
 How the Settings shell behaves behind these types — keep-alive, what a hidden mount hears,
 revocation — is documented with the shell, in app-settings' `docs/extensions/`.
 
+## The theme
+
+The theme preference XP's admin applications share through one stored entry. Reading, writing
+and following that entry is `@enonic/ui-utils`' part.
+
+| Type            | What it is                                                             |
+| --------------- | ---------------------------------------------------------------------- |
+| `Theme`         | `light`, `dark`, `system` — what a user picks; `system` follows the OS |
+| `ResolvedTheme` | `light`, `dark` — what a page paints, and what `Host.theme` carries    |
+
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).
