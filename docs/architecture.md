@@ -43,12 +43,12 @@ before.
 Where that rule lands for the code these packages are waiting for (\* = optional peer, see the
 next section):
 
-| Package       | Peer                                                                                                                             | Dependency                                                                   |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `ui-types`    | —                                                                                                                                | —                                                                            |
-| `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                                           |
-| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                                                               | `@enonic/ui-utils`, `lucide-react`; `@enonic/ui-types` with its first import |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                                           |
+| Package       | Peer                                                                                                                             | Dependency                                             |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `ui-types`    | —                                                                                                                                | —                                                      |
+| `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                     |
+| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                                                               | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                     |
 
 The calls that are not obvious from the rule alone:
 

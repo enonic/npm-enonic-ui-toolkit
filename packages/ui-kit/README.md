@@ -2,8 +2,8 @@
 
 Composite React components for Enonic applications — what
 [`@enonic/ui`](https://www.npmjs.com/package/@enonic/ui) would be if its parts carried behaviour.
-The dialog with an outcome and its confirmations are here, and the filter input of a browse screen;
-layouts, toolbars and the rest of the browse screen follow.
+The dialog with an outcome and its confirmations are here, the filter input of a browse screen,
+and the theme switcher; layouts, toolbars and the rest of the browse screen follow.
 
 A component belongs here when it holds state, coordinates several base components, or encodes a
 screen pattern more than one application repeats. Props in, callbacks out: nothing here reaches
@@ -74,6 +74,9 @@ tells an application which keys its bundle lacks.
 | `textOf(query)`, `valuesOf(query, field)`      | the two readings a list takes of a query: the free text as one string, and every value picked for a field — empty narrows nothing                                                                                                       |
 | `withTerm`, `withoutTerm`, `toggledTerm`       | the pure operations on a query the input is built from, with `sameTerm`, `isTextTerm`, `isFieldTerm` and `EMPTY_FILTER`                                                                                                                 |
 | `filterInputPhrases`                           | the input's English, for an application's `comparePhrases`                                                                                                                                                                              |
+| `ThemeSwitcher`                                | the button that cycles the shared theme — light, dark, system — reading and writing it itself; `className`                                                                                                                              |
+| `useResolvedTheme()`                           | the theme to paint, `light` or `dark`, re-rendering when the user switches here or in another tab, or the OS does on `system`                                                                                                           |
+| `themeSwitcherPhrases`                         | the switcher's English, for an application's `comparePhrases`                                                                                                                                                                           |
 
 ## The filter
 
@@ -104,5 +107,25 @@ const text = textOf(query); // 'alice ward'
 
 <FilterInput fields={fields} value={query} onChange={setQuery} placeholder="Search users" />;
 ```
+
+## The theme
+
+The theme is the one state here that is not the caller's: XP's admin applications share it through
+one stored entry, the contract `@enonic/ui-utils` keeps. So `ThemeSwitcher` takes no value and no
+callback — it reads the stored theme, writes the next one on a click, and follows a switch made
+by another switcher on the page or in another tab. An application only paints:
+
+```tsx
+const theme = useResolvedTheme(); // 'light' | 'dark'
+
+useEffect(() => {
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+}, [theme]);
+
+<ThemeSwitcher className="ml-auto" />;
+```
+
+Outside a render — a host's `theme`, a script with no framework — `readResolvedTheme` and
+`subscribeResolvedTheme` from `@enonic/ui-utils` answer the same.
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

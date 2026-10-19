@@ -145,6 +145,9 @@ importers:
 
   packages/ui-kit:
     dependencies:
+      '@enonic/ui-types':
+        specifier: workspace:^
+        version: link:../ui-types
       '@enonic/ui-utils':
         specifier: workspace:^
         version: link:../ui-utils
