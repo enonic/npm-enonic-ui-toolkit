@@ -128,7 +128,7 @@ export const Default: Story = {
     <Harness
       fields={[ID_PROVIDER, STATUS]}
       placeholder="Search users"
-      description="Click the input, type, or press an arrow: the fields open. Pick one, or type `ID provider:` — its values open with their hit counts, most first; Guests has none and is disabled. Enter picks the highlighted value; the values stay open, so several can be ticked, and a tick picked again comes off. Typed text with no field entered becomes a tag on Enter. Backspace in the empty input steps out of a field, or takes the last tag back."
+      description="Click the input, type, or press an arrow: the fields open. Pick one, or type `ID provider:` — its values open with their hit counts, most first; Guests has none and is disabled. Enter picks the highlighted value, closes the list and returns the cursor to the input; a value picked again comes off. Typed text with no field entered becomes a tag on Enter. Backspace in the empty input steps out of a field, or takes the last tag back."
     />
   ),
 };
