@@ -44,12 +44,8 @@ pnpm version:set 0.2.0            # lockstep bump of all five manifests (see REA
 ## Toolchain
 
 - **vite-plus (`vp`)** builds, lints, formats and tests. Root `vite.config.ts` owns lint, format,
-  tests and the staged hooks; each package's config owns only its `pack` block. Single quotes and
-  sorted imports come from `vite.config.ts`; the 2-space indent from `.editorconfig`, which oxfmt
-  reads.
-- **Storybook** lives at the root: `.storybook/` finds `packages/*/src/**/*.stories.tsx`, aliases
-  `react` to `preact/compat` as the tests do, and pulls Tailwind in through `@tailwindcss/vite`.
-  Its dependencies — Storybook, Tailwind, `@enonic/ui`'s peers — are root devDependencies and
+  tests and the staged hooks; each package's config owns only its `pack` block.
+- **Storybook** lives at the root. Its dependencies — Storybook, Tailwind, `@enonic/ui`'s peers — are root devDependencies and
   nothing a package publishes.
 - **TypeScript 7**, `strict`, one program: the root tsconfig maps `@enonic/*` to sibling sources,
   so a typecheck needs no build.
