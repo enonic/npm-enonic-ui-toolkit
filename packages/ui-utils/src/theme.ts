@@ -15,8 +15,8 @@ export const THEME_CHANGE_EVENT = 'enonic:theme';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
-// Where storage refuses, the page keeps the theme itself until it unloads. Keyed by window so
-// that each page, and each test, keeps its own.
+// Where storage is blocked altogether, the page keeps the theme itself until it unloads. Keyed by
+// window so that each page, and each test, keeps its own.
 const fallbacks = new WeakMap<Window, Theme>();
 
 /** A stored value as a `Theme`: anything else, a missing entry included, is `system`. */
@@ -53,8 +53,8 @@ export function readTheme(win: Window = window): Theme {
 }
 
 /**
- * Stores the theme and tells the page. Where storage refuses the write, the theme holds for the
- * page's lifetime and is not kept for the next one.
+ * Stores the theme and tells the page. Where storage is blocked altogether, the theme holds for
+ * the page's lifetime and is not kept for the next one.
  */
 export function writeTheme(theme: Theme, win: Window = window): void {
   try {

@@ -63,8 +63,6 @@ The calls that are not obvious from the rule alone:
   nothing to match against. `ui-utils` itself declares no store library: where it reads one, as
   the topic reaction reads visibility, it takes the `Readable` from `ui-types`, which an atom
   satisfies as it is.
-- **`@nanostores/preact` needs a revisit** before the first store-bound component lands: a hard
-  Preact dependency contradicts the React target below.
 - **A list or a panel library joins as a peer when a component needs it**, not before: the first
   dialogs needed neither `react-virtuoso` nor `react-resizable-panels`, so the kit declares neither.
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not
