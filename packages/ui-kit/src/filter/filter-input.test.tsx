@@ -228,55 +228,50 @@ describe('FilterInput', () => {
       expect(attr(screen.getByRole('option', { name: /ID provider/ }), 'data-active')).toBeNull();
     });
 
-    it('toggles the highlighted value on Enter — the same one again, not the next', async () => {
+    it('picks the highlighted value on Enter, closes the list and leaves the field', async () => {
       const { user, input, tags } = mount();
 
       await user.type(input, 'ID provider:{Enter}');
       expect(tags()).toEqual(['ID provider: Company directory']);
-      expect(options()).toEqual(['Company directory', 'Entra ID', 'Guests']);
-
-      await user.keyboard('{Enter}');
-      expect(tags()).toEqual([]);
-      expect(listbox()).not.toBeNull();
+      expect(listbox()).toBeNull();
+      expect(input.value).toBe('');
+      expect(attr(input, 'aria-label')).toBe('Search users');
+      expect(document.activeElement).toBe(input);
     });
 
-    it('keeps a value picked from a narrowed list highlighted once the list widens again', async () => {
+    it('closes on a clicked value and opens the fields again, not the values', async () => {
       const { user, input, tags } = mount();
 
-      await user.type(input, 'ID provider:entra{Enter}');
-      expect(tags()).toEqual(['ID provider: Entra ID']);
-      expect(options()).toEqual(['Company directory', 'Entra ID', 'Guests']);
-      expect(attr(screen.getByRole('option', { name: /Entra ID/ }), 'data-active')).toBe('true');
-
-      await user.keyboard('{Enter}');
-      expect(tags()).toEqual([]);
-    });
-
-    it('picks the highlighted value on Enter with nothing typed, and keeps the values open', async () => {
-      const { user, input, tags } = mount();
-
-      await user.type(input, 'ID provider:{Enter}');
-      expect(tags()).toEqual(['ID provider: Company directory']);
-      expect(options()).toEqual(['Company directory', 'Entra ID', 'Guests']);
-
+      await user.type(input, 'ID provider:');
       await user.click(screen.getByRole('option', { name: /Entra ID/ }));
-      expect(tags()).toEqual(['ID provider: Company directory', 'ID provider: Entra ID']);
-      expect(listbox()).not.toBeNull();
+      expect(tags()).toEqual(['ID provider: Entra ID']);
+      expect(listbox()).toBeNull();
+      expect(document.activeElement).toBe(input);
+
+      await user.click(input);
+      expect(options()).toEqual(['ID provider', 'Status']);
     });
 
-    it('keeps a value picked from the keyboard focused, so the next arrow reaches the next value', async () => {
+    it('highlights the first value again when the field is typed back in after a click', async () => {
+      const { user, input, tags } = mount();
+
+      await user.type(input, 'ID provider:');
+      await user.click(screen.getByRole('option', { name: /Entra ID/ }));
+      await user.type(input, 'ID provider:{Enter}');
+      expect(tags()).toEqual(['ID provider: Entra ID', 'ID provider: Company directory']);
+    });
+
+    it('returns the focus to the input after a value picked from the keyboard', async () => {
       const { user, input, tags } = mount();
 
       await user.type(input, 'ID provider:');
       await user.keyboard('{ArrowDown}{Enter}');
       expect(tags()).toEqual(['ID provider: Company directory']);
-      expect(document.activeElement).toBe(
-        screen.getByRole('option', { name: /Company directory/ }),
-      );
+      expect(listbox()).toBeNull();
+      expect(document.activeElement).toBe(input);
 
-      await user.keyboard('{ArrowDown}{Enter}');
-      expect(tags()).toEqual(['ID provider: Company directory', 'ID provider: Entra ID']);
-      expect(listbox()).not.toBeNull();
+      await user.keyboard('s');
+      expect(options()).toEqual(['Status']);
     });
 
     it('takes a value back when it is picked again', async () => {
@@ -304,6 +299,8 @@ describe('FilterInput', () => {
       await user.click(screen.getByRole('option', { name: /Disabled/ }));
       expect(tags()).toEqual(['Status: Disabled']);
       expect(screen.getByText('Replaced Status: Enabled with Status: Disabled')).toBeTruthy();
+      expect(listbox()).toBeNull();
+      expect(document.activeElement).toBe(input);
     });
 
     it('drops every held value of a single-choice field on a swap', async () => {

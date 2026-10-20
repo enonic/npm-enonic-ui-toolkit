@@ -75,8 +75,8 @@ const VALUE_OPTION = 'value:';
  * The filter of a list: values of predefined fields combined with free text, every term a
  * tag. The dropdown opens on a click, a keystroke or an arrow — not on focus, so the focus the
  * library returns to the input on Escape does not reopen it. The fields come first; picking one, or
- * typing its label and a colon, opens its values with their hit counts, and the values stay open
- * across picks so several can be ticked. Enter picks the highlighted option, or adds typed text as
+ * typing its label and a colon, opens its values with their hit counts; picking a value closes the
+ * list and returns the focus to the input. Enter picks the highlighted option, or adds typed text as
  * a tag when no field is entered. The ref is the text input's.
  */
 const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
@@ -99,7 +99,6 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
     const composedRef = useComposedRefs(ref, inputRef);
     const removeRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const pickedRef = useRef(false);
-    const keyboardPickRef = useRef(false);
     const headingId = useId();
     const [value, onChange] = useControlledState(controlledValue, defaultValue, onValueChange);
     const [text, setText] = useState('');
@@ -132,7 +131,7 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
     // ? The library highlights an option only while it has the focus, so from the input Enter would act
     // ? on nothing the user can see. The active option is held here instead: the first one the list
     // ? offers, until the user moves it — except in the fields stage with text typed, where Enter is
-    // ? the search and nothing is highlighted. It stays put across a pick, so Enter again takes it back.
+    // ? the search and nothing is highlighted.
     const optionIds =
       field === undefined
         ? text.length === 0
@@ -176,6 +175,7 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
       setFieldId(next?.id);
       setText(typed);
       if (next !== undefined) {
+        setActiveOption(null);
         openList();
       }
     };
@@ -202,7 +202,7 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
     };
 
     // A value already picked is picked again to take it back, the way the tag's own cross does; a
-    // single-choice field swaps its value. The stage stays, so the next value is one pick away.
+    // single-choice field swaps its value. Either way the pick leaves the field and closes the list.
     const pickValue = (candidate: FilterValue): void => {
       if (field === undefined) {
         return;
@@ -224,10 +224,9 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
       } else {
         add(term);
       }
-      // The pick stays highlighted once the text that narrowed the list is cleared and the list
-      // widens again, so Enter again takes this value back rather than the first of the wider list.
-      setActiveOption(`${VALUE_OPTION}${candidate.id}`);
-      setText('');
+      setActiveOption(null);
+      enterField(undefined);
+      setOpen(false);
     };
 
     const handleTextChange = (typed: string | undefined): void => {
@@ -247,10 +246,8 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
         return;
       }
 
-      const fromKeyboard = keyboardPickRef.current;
-      keyboardPickRef.current = false;
-      pickedRef.current = true;
       if (id.startsWith(FIELD_OPTION)) {
+        pickedRef.current = true;
         enterField(fields.find((candidate) => candidate.id === id.slice(FIELD_OPTION.length)));
       } else if (field !== undefined) {
         const candidate = field.values.find(
@@ -259,24 +256,15 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
         if (candidate !== undefined) {
           pickValue(candidate);
         }
-        // A value picked from the keyboard stays focused, so the arrows go on to the next value.
-        if (fromKeyboard) {
-          return;
-        }
       }
       // ! Synchronously, before the library's blur check runs: the option that was clicked is about to
       // ! unmount with the focus on it, and a focus that landed on the body would read as leaving.
       focusInput();
     };
 
-    // Runs on the item before the listbox's own handler toggles it, so the pick knows its source.
-    const noteValueKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
-      keyboardPickRef.current = event.key === 'Enter' || event.key === ' ';
-    };
-
     const handleOpenChange = (next: boolean): void => {
-      // ! A single-select combobox closes on a pick. Ours stays open — a pick swaps the stage, and a
-      // ! value picked is one of several — so the close a pick asks for is the one to ignore.
+      // ! A single-select combobox closes on a pick. Picking a field swaps the stage instead, so the
+      // ! close that pick asks for is the one to ignore.
       if (!next && pickedRef.current) {
         pickedRef.current = false;
         return;
@@ -618,7 +606,6 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
                             // ? the item spreads props after its own, which is what lets the state be said here.
                             aria-selected={selected}
                             className="data-[active]:bg-surface-neutral-hover rounded-sm px-3 py-2"
-                            onKeyDown={noteValueKeyDown}
                           >
                             <span className="grow truncate">{candidate.label}</span>
                             {selected && (

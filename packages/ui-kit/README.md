@@ -86,8 +86,8 @@ with `loading` says its values are still on their way. The
 dropdown opens on a click, a keystroke or an arrow, not on focus. The fields come first; picking
 one, or typing its label and a colon — or pasting `Field: value` whole — opens its values ordered by
 hits, the empty ones last and disabled, with a `No matches` row when the typed text finds none.
-Enter picks the highlighted value, and the values stay open so several can be ticked; a tick picked
-again, or the tag's cross, takes the term back. Typed text with no field entered becomes a tag on
+Enter picks the highlighted value, closes the list and returns the cursor to the input; a value
+picked again, or the tag's cross, takes the term back. Typed text with no field entered becomes a tag on
 Enter. Backspace in the empty input steps out of a field, or takes the last tag back; ArrowLeft at
 the start of the input walks onto the tags, where arrows move between them and Backspace or Delete
 removes one. The right-hand cross clears everything, and leaving the filter drops a field no value
