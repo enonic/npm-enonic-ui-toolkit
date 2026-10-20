@@ -84,6 +84,7 @@ export type ActionDialogContentProps = {
 } & ComponentPropsWithoutRef<typeof Dialog.Content>;
 
 const CONTENT_NAME = 'ActionDialog.Content';
+const BODY_NAME = 'ActionDialog.Body';
 const QUESTION_NAME = 'ActionDialog.Question';
 const CLOSE_SELECTOR = '[data-component="Dialog.DefaultClose"]';
 
@@ -99,6 +100,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       onPointerDownCapture,
       onClickCapture,
       onClick,
+      onMouseDown,
       ...props
     },
     ref,
@@ -187,6 +189,18 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
             keepRef.current?.();
           }
         }}
+        onMouseDown={(event) => {
+          onMouseDown?.(event);
+          // ! The chrome takes no focus from a field: a blur would show its messages before the
+          // ! click lands, and the footer moves out from under the pointer.
+          if (
+            !event.defaultPrevented &&
+            event.target instanceof Element &&
+            event.target.closest(`[data-component="${BODY_NAME}"]`) === null
+          ) {
+            event.preventDefault();
+          }
+        }}
         {...props}
       >
         <ActionDialogProvider value={context}>{children}</ActionDialogProvider>
@@ -201,8 +215,6 @@ ActionDialogContent.displayName = CONTENT_NAME;
 //
 
 export type ActionDialogBodyProps = ComponentPropsWithoutRef<typeof Dialog.Body>;
-
-const BODY_NAME = 'ActionDialog.Body';
 
 const ActionDialogBody = forwardRef<HTMLDivElement, ActionDialogBodyProps>(
   ({ className, ...props }, ref): ReactElement => {
