@@ -252,6 +252,15 @@ describe('FilterInput', () => {
       expect(options()).toEqual(['ID provider', 'Status']);
     });
 
+    it('highlights the first value again when the field is typed back in after a click', async () => {
+      const { user, input, tags } = mount();
+
+      await user.type(input, 'ID provider:');
+      await user.click(screen.getByRole('option', { name: /Entra ID/ }));
+      await user.type(input, 'ID provider:{Enter}');
+      expect(tags()).toEqual(['ID provider: Entra ID', 'ID provider: Company directory']);
+    });
+
     it('returns the focus to the input after a value picked from the keyboard', async () => {
       const { user, input, tags } = mount();
 

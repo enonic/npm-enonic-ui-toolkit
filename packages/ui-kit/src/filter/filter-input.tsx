@@ -175,6 +175,7 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
       setFieldId(next?.id);
       setText(typed);
       if (next !== undefined) {
+        setActiveOption(null);
         openList();
       }
     };
