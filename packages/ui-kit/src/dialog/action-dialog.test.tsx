@@ -20,9 +20,10 @@ vi.mock(focusTrap, () => ({
 
 type HarnessProps = {
   onAside?: () => void;
+  withHeldClose?: boolean;
 };
 
-const Harness = ({ onAside }: HarnessProps): ReactElement => {
+const Harness = ({ onAside, withHeldClose }: HarnessProps): ReactElement => {
   const [open, setOpen] = useState(true);
   const [name, setName] = useState('Ada');
   const guard = useCloseGuard({ dirty: name !== 'Ada', open, onOpenChange: setOpen });
@@ -33,6 +34,12 @@ const Harness = ({ onAside }: HarnessProps): ReactElement => {
         <ActionDialog.Overlay />
         <ActionDialog.Content>
           <ActionDialog.DefaultHeader title="Edit profile" withClose />
+          {withHeldClose && (
+            <ActionDialog.DefaultClose
+              aria-label="Hold"
+              onClick={(event) => event.preventDefault()}
+            />
+          )}
           <button type="button" onPointerDown={onAside} onClick={onAside}>
             Aside
           </button>
@@ -134,6 +141,21 @@ describe('ActionDialog close question', () => {
     expect(question()).toBeNull();
     expect(dialog()).not.toBeNull();
     await waitFor(() => expect(document.activeElement).toBe(input));
+  });
+
+  it('keeps editing on a click on the mask after an X that did not close', async () => {
+    const { user } = await mountAsking({ withHeldClose: true });
+    const mask = document.querySelector('[data-component="Dialog.Overlay"]');
+    if (!(mask instanceof HTMLElement)) {
+      throw new Error('The dialog renders no mask');
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Hold' }));
+    expect(dialog()).not.toBeNull();
+
+    await user.click(mask);
+    expect(question()).toBeNull();
+    expect(dialog()).not.toBeNull();
   });
 
   it('keeps editing on Escape', async () => {

@@ -98,6 +98,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       onFocusCapture,
       onPointerDownCapture,
       onClickCapture,
+      onClick,
       ...props
     },
     ref,
@@ -170,6 +171,13 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
           ) {
             // ! Runs before the X's own click closes: the close guard reads this to tell the X from the mask.
             root.closeReasonRef.current = 'close';
+          }
+        }}
+        onClick={(event) => {
+          onClick?.(event);
+          // ! A close took the reason already; one the X's own handler prevented must not leave it behind.
+          if (root !== undefined) {
+            root.closeReasonRef.current = undefined;
           }
         }}
         onEscapeKeyDown={(event) => {
