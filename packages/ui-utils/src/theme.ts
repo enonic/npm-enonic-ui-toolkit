@@ -15,10 +15,6 @@ export const THEME_CHANGE_EVENT = 'enonic:theme';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
 
-// Where storage is blocked altogether, the page keeps the theme itself until it unloads. Keyed by
-// window so that each page, and each test, keeps its own.
-const fallbacks = new WeakMap<Window, Theme>();
-
 /** A stored value as a `Theme`: anything else, a missing entry included, is `system`. */
 export function parseTheme(value: unknown): Theme {
   return value === 'light' || value === 'dark' ? value : 'system';
@@ -48,19 +44,15 @@ export function readTheme(win: Window = window): Theme {
   try {
     return parseTheme(win.localStorage.getItem(THEME_STORAGE_KEY));
   } catch {
-    return fallbacks.get(win) ?? 'system';
+    return 'system';
   }
 }
 
-/**
- * Stores the theme and tells the page. Where storage is blocked altogether, the theme holds for
- * the page's lifetime and is not kept for the next one.
- */
+/** Stores the theme and tells the page; where storage refuses the write, warns and still tells it. */
 export function writeTheme(theme: Theme, win: Window = window): void {
   try {
     win.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch (cause: unknown) {
-    fallbacks.set(win, theme);
     console.warn(`The theme could not be stored under '${THEME_STORAGE_KEY}':`, cause);
   }
   win.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: theme }));
@@ -82,13 +74,7 @@ export function subscribeTheme(listener: (theme: Theme) => void, win: Window = w
     }
   };
 
-  // ! Another bundle's write reaches this one only through the event: its fallback is its own.
-  const onChange = (event: Event): void => {
-    if (event instanceof CustomEvent) {
-      fallbacks.set(win, parseTheme(event.detail));
-    }
-    reread();
-  };
+  const onChange = (): void => reread();
 
   win.addEventListener('storage', onStorage);
   win.addEventListener(THEME_CHANGE_EVENT, onChange);

@@ -69,8 +69,7 @@ functions are that contract, so that no application spells it out by hand.
   dispatches `THEME_CHANGE_EVENT` on the window, which every bundle on the page listens to.
 - **Listeners hear changes.** Never on subscribe, and not for a write that leaves the answer as it
   was; each `subscribe*` returns its unsubscribe, and the caller decides how long it listens.
-- **Blocked storage still switches.** Where storage is blocked altogether, read and write alike,
-  the theme holds for the page's lifetime, with a warning, and is not kept for the next page.
+- **Blocked storage reads as `system`, and a write warns.**
 
 Content Studio's pre-paint script reads `enonic:theme` inline, before any bundle loads, and is the
 one copy of the key outside this package.

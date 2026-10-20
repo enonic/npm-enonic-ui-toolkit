@@ -143,17 +143,20 @@ describe('writeTheme', () => {
     expect(announced).toHaveBeenCalledExactlyOnceWith('dark');
   });
 
-  it('holds the theme for the page where storage is blocked, and warns', () => {
+  it('warns where storage is blocked, and still announces', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { win } = fakeWindow({ blocked: true });
+    const announced = vi.fn();
     const listener = vi.fn();
+    win.addEventListener(THEME_CHANGE_EVENT, announced);
     subscribeTheme(listener, win);
 
     expect(() => writeTheme('dark', win)).not.toThrow();
 
-    expect(readTheme(win)).toBe('dark');
-    expect(listener).toHaveBeenCalledExactlyOnceWith('dark');
     expect(warn).toHaveBeenCalledOnce();
+    expect(announced).toHaveBeenCalledOnce();
+    expect(readTheme(win)).toBe('system');
+    expect(listener).not.toHaveBeenCalled();
   });
 
   it('does not throw where storage is full, and warns', () => {
@@ -164,20 +167,16 @@ describe('writeTheme', () => {
     expect(warn).toHaveBeenCalledOnce();
   });
 
-  it('reaches another bundle on the page, storage blocked or not', async () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('reaches another bundle on the page', async () => {
     const other = await anotherBundle();
+    const { win } = fakeWindow();
+    const listener = vi.fn();
+    other.subscribeTheme(listener, win);
 
-    for (const blocked of [false, true]) {
-      const { win } = fakeWindow({ blocked });
-      const listener = vi.fn();
-      other.subscribeTheme(listener, win);
+    writeTheme('dark', win);
 
-      writeTheme('dark', win);
-
-      expect(listener).toHaveBeenCalledExactlyOnceWith('dark');
-      expect(other.readTheme(win)).toBe('dark');
-    }
+    expect(listener).toHaveBeenCalledExactlyOnceWith('dark');
+    expect(other.readTheme(win)).toBe('dark');
   });
 });
 
