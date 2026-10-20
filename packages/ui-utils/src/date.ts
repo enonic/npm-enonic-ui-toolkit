@@ -19,16 +19,15 @@ export function pad(num: number, length = 2): string {
   return String(num).padStart(length, '0');
 }
 
-export function isValidDate(date: Date): boolean {
-  return !Number.isNaN(date.getTime());
-}
-
 /** `2010-01-01` from the date part of `date`, in local time. */
 export function formatDate(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-/** `10:55` or `10:55:00`. An hour or minute out of range answers an empty string. */
+/**
+ * `10:55`, or `10:55:30` when the seconds are not zero. An hour or minute out of range answers an
+ * empty string.
+ */
 export function formatTime(hours: number, minutes: number, seconds?: number): string {
   if (
     !isValidHours(hours) ||
@@ -38,16 +37,6 @@ export function formatTime(hours: number, minutes: number, seconds?: number): st
     return '';
   }
   return `${pad(hours)}:${pad(minutes)}${seconds ? `:${pad(seconds)}` : ''}`;
-}
-
-/** `10:55:00` from the time part of `date`, in local time. */
-export function formatTimeOfDay(date: Date, includeSeconds = true): string {
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}${includeSeconds ? `:${pad(date.getSeconds())}` : ''}`;
-}
-
-/** `2010-01-01 12:34:56` in local time. */
-export function formatDateTime(date: Date, includeSeconds = true): string {
-  return `${formatDate(date)} ${formatTimeOfDay(date, includeSeconds)}`;
 }
 
 /**
@@ -109,11 +98,6 @@ export function dateFromTime(hours: number, minutes: number, seconds = 0): Date 
   }
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, seconds);
-}
-
-/** `daysInMonth(2015, 1)` is 28; the month is 0-11, as `Date` counts it. */
-export function daysInMonth(year: number, month: number): number {
-  return new Date(year, month + 1, 0).getDate();
 }
 
 function isValidHours(hours: number): boolean {

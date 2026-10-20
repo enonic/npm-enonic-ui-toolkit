@@ -1,4 +1,4 @@
-import { Button, DatePicker, Input, TimePicker } from '@enonic/ui';
+import { Button, DatePicker, Input, TimePicker, useBlinkAttention } from '@enonic/ui';
 import { DateTime, formatDate, pad } from '@enonic/ui-utils';
 import { type ChangeEvent, type ReactElement, useCallback, useMemo, useRef, useState } from 'react';
 
@@ -62,12 +62,16 @@ export const InstantInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef: externalInputRef,
 }: InstantInputProps): ReactElement => {
   const [open, setOpen] = useState(false);
@@ -75,6 +79,8 @@ export const InstantInput = ({
   const [draftTime, setDraftTime] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const t = useInputTypesPhrases();
   const setInputRef = useCallback(
     (element: HTMLInputElement | null) => {
@@ -154,6 +160,12 @@ export const InstantInput = ({
           value={display}
           onChange={handleInputChange}
           onBlur={onBlur}
+          onFocus={onFocus}
+          readOnly={readOnly}
+          processing={processing}
+          tabIndex={processing ? -1 : undefined}
+          highlight={isBlinking}
+          highlightRef={highlightRef}
           enterKeyHint={onMobileComplete ? 'next' : undefined}
           onKeyDown={
             onMobileComplete
@@ -165,7 +177,7 @@ export const InstantInput = ({
           endAddon={
             <div className="flex h-full w-11 items-center justify-center bg-transparent">
               <DatePicker.Trigger
-                disabled={!enabled}
+                disabled={!enabled || readOnly || processing}
                 aria-label={t('enonic.inputTypes.field.dateTimeTrigger')}
               />
             </div>

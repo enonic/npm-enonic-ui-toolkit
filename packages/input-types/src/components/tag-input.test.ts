@@ -385,6 +385,27 @@ function getFirstTagItemProps(overrides: Partial<TagInputProps> = {}): Record<st
   return match.props;
 }
 
+function getDraftSlotClassName(overrides: Partial<TagInputProps> = {}): string {
+  const match = findElementInTree(
+    getTagInputElement(overrides),
+    (element) =>
+      element.type === 'li' &&
+      typeof element.props.className === 'string' &&
+      element.props.className.includes('shrink-0'),
+  );
+  if (match == null) {
+    throw new Error('Draft input slot was not rendered');
+  }
+  return match.props.className;
+}
+
+function mockFocusWithin(): void {
+  mocks.useState
+    .mockImplementationOnce(() => ['', vi.fn()])
+    .mockImplementationOnce(() => [false, vi.fn()])
+    .mockImplementationOnce(() => [true, vi.fn()]);
+}
+
 function getSuggestionListElement(overrides: Partial<TagInputProps> = {}) {
   return findElementInTree(
     getTagInputElement(overrides),
@@ -559,6 +580,15 @@ describe('TagInput', () => {
       return 0;
     });
     mocks.useEffect.mockImplementation(() => undefined);
+    mocks.useLayoutEffect.mockImplementation(() => undefined);
+    mocks.useSortable.mockImplementation(() => ({
+      attributes: {},
+      listeners: {},
+      setNodeRef: vi.fn(),
+      transform: null,
+      transition: null,
+      isDragging: false,
+    }));
     mocks.input.mockImplementation(() => null);
     mocks.button.mockImplementation(() => null);
     mocks.iconButton.mockImplementation(() => null);
@@ -578,9 +608,11 @@ describe('TagInput', () => {
 
   it('keeps the writable input mounted as the tab target even before activation', () => {
     renderTagInput({ values: [], errors: [] });
+    const className = getDraftSlotClassName({ values: [], errors: [] });
 
-    expect(mocks.input).toHaveBeenCalledTimes(1);
-    expect(mocks.button).not.toHaveBeenCalled();
+    expect(mocks.input).toHaveBeenCalledOnce();
+    expect(className).toContain('w-0');
+    expect(className).toContain('focus-within:w-36');
   });
 
   it('focuses the mounted input after a completed field tap', () => {
@@ -610,19 +642,18 @@ describe('TagInput', () => {
     expect(wrapperProps.tabIndex).toBeUndefined();
   });
 
-  it('keeps the writable input rendered when another value can still be added', () => {
+  it('shows the draft slot when another value can still be added', () => {
     mocks.useState
       .mockImplementationOnce(() => ['', vi.fn()])
       .mockImplementationOnce(() => [true, vi.fn()]);
 
-    renderTagInput({
+    const className = getDraftSlotClassName({
       values: [ValueTypes.STRING.newValue('alpha')],
       occurrences: Occurrences.minmax(0, 3),
       errors: [makeOccurrenceValidation(0)],
     });
 
-    expect(mocks.input).toHaveBeenCalledTimes(1);
-    expect(mocks.button).not.toHaveBeenCalled();
+    expect(className).toContain('w-36 opacity-100');
   });
 
   it('does not render empty tags', () => {
@@ -706,14 +737,14 @@ describe('TagInput', () => {
 
   it('surfaces the occurrence error on new content once the field has been interacted with', () => {
     mocks.useValidationVisibility.mockReturnValue('interactive');
-    mocks.useState.mockImplementation((initial: unknown) => [
-      initial === false
-        ? true
-        : typeof initial === 'function'
-          ? (initial as () => unknown)()
-          : initial,
-      vi.fn(),
-    ]);
+    mocks.useState
+      .mockImplementationOnce(() => ['', vi.fn()])
+      .mockImplementationOnce(() => [false, vi.fn()])
+      .mockImplementationOnce(() => [false, vi.fn()])
+      .mockImplementationOnce(() => [0, vi.fn()])
+      .mockImplementationOnce(() => [[], vi.fn()])
+      .mockImplementationOnce(() => [-1, vi.fn()])
+      .mockImplementationOnce(() => [true, vi.fn()]);
 
     expect(
       getFieldWrapperProps({
@@ -756,6 +787,7 @@ describe('TagInput', () => {
   });
 
   it('keeps remove buttons out of the tab order even when focus is within the component', () => {
+    mockFocusWithin();
     renderTagInput({
       values: [ValueTypes.STRING.newValue('alpha')],
       occurrences: Occurrences.minmax(0, 3),
@@ -766,6 +798,7 @@ describe('TagInput', () => {
   });
 
   it('keeps drag buttons out of the tab order even when focus is within the component', () => {
+    mockFocusWithin();
     renderTagInput({
       values: [ValueTypes.STRING.newValue('alpha'), ValueTypes.STRING.newValue('beta')],
       occurrences: Occurrences.minmax(0, 3),
@@ -834,6 +867,7 @@ describe('TagInput', () => {
   });
 
   it('keeps tag items themselves out of the tab order when focus is within the component', () => {
+    mockFocusWithin();
     const tagItemProps = getFirstTagItemProps({
       values: [ValueTypes.STRING.newValue('alpha'), ValueTypes.STRING.newValue('beta')],
       occurrences: Occurrences.minmax(0, 3),
@@ -944,12 +978,12 @@ describe('TagInput', () => {
     expect(getTagEditor(props).value).toBe('draft');
 
     mockTagEditingState({ editingId: 'stable-occurrence', editDraft: 'draft' });
-    expect(
-      getTagEditor({
-        ...props,
-        values: [ValueTypes.STRING.newValue('alpha')],
-      }).value,
-    ).toBe('draft');
+    const editor = getTagEditor({
+      occurrenceIds: ['other-occurrence', 'stable-occurrence'],
+      values: [ValueTypes.STRING.newValue('beta'), ValueTypes.STRING.newValue('alpha')],
+    });
+    expect(editor.value).toBe('draft');
+    expect(editor['aria-label']).toBe('enonic.inputTypes.action.edit: alpha');
   });
 
   it.each([
@@ -1854,7 +1888,7 @@ describe('TagInput', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it('filters async suggestions before showing them', async () => {
+  it('stores what the suggester answered once the debounce has passed', async () => {
     vi.useFakeTimers();
     const suggestTags = vi.fn(() =>
       Promise.resolve(['alpha', 'al', 'alpine', 'alpine', '  spaced  ', '   ']),
@@ -1885,7 +1919,37 @@ describe('TagInput', () => {
     await Promise.resolve();
 
     expect(suggestTags).toHaveBeenCalledWith('al');
-    expect(setSuggestions).toHaveBeenCalledWith(['alpine', 'spaced']);
+    expect(setSuggestions).toHaveBeenLastCalledWith([
+      'alpha',
+      'al',
+      'alpine',
+      'alpine',
+      '  spaced  ',
+      '   ',
+    ]);
+  });
+
+  it('shows only the suggestions that are not already a tag or the draft', () => {
+    mocks.useState
+      .mockImplementationOnce(() => ['al', vi.fn()])
+      .mockImplementationOnce(() => [true, vi.fn()])
+      .mockImplementationOnce(() => [false, vi.fn()])
+      .mockImplementationOnce(() => [0, vi.fn()])
+      .mockImplementationOnce(() => [['alpha', 'al', 'alpine', '  spaced  '], vi.fn()])
+      .mockImplementationOnce(() => [-1, vi.fn()]);
+
+    const list = getSuggestionListElement({
+      suggestTags: vi.fn(),
+      values: [ValueTypes.STRING.newValue('alpha')],
+      occurrences: Occurrences.minmax(0, 3),
+      errors: [makeOccurrenceValidation(0)],
+    });
+
+    const options = list?.props.children as Array<{ props: { id: string; children: any } }>;
+    expect(options.map((option) => option.props.children.props.children)).toEqual([
+      'alpine',
+      'spaced',
+    ]);
   });
 
   it('cancels pending suggestion requests before the debounce finishes', async () => {
@@ -2004,6 +2068,67 @@ describe('TagInput', () => {
     expect(onAdd).toHaveBeenCalledWith(ValueTypes.STRING.newValue('alpine'));
     expect(setDraft).toHaveBeenCalledWith('');
     expect(focus).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { name: 'the event', signal: { isComposing: true } },
+    { name: 'the native event', signal: { nativeEvent: { isComposing: true } } },
+    { name: 'the IME key code', signal: { keyCode: 229 } },
+  ])('leaves Enter to the IME while $name says it composes', ({ signal }) => {
+    const onAdd = vi.fn();
+    const preventDefault = vi.fn();
+    mocks.useState.mockImplementationOnce(() => ['ka', vi.fn()]);
+
+    renderTagInput({ onAdd, values: [], errors: [] });
+
+    getLastInputProps().onKeyDown({
+      key: 'Enter',
+      ...signal,
+      preventDefault,
+      currentTarget: { value: 'ka', focus: vi.fn() },
+    });
+
+    expect(onAdd).not.toHaveBeenCalled();
+    expect(preventDefault).not.toHaveBeenCalled();
+  });
+
+  it('closes the open suggestions on the first Escape and keeps the draft', () => {
+    const onAdd = vi.fn();
+    const setSuggestions = vi.fn();
+    const blur = vi.fn();
+    mocks.useState
+      .mockImplementationOnce(() => ['al', vi.fn()])
+      .mockImplementationOnce(() => [true, vi.fn()])
+      .mockImplementationOnce(() => [false, vi.fn()])
+      .mockImplementationOnce(() => [0, vi.fn()])
+      .mockImplementationOnce(() => [['alpine'], setSuggestions])
+      .mockImplementationOnce(() => [0, vi.fn()]);
+
+    renderTagInput({ onAdd, suggestTags: vi.fn(), values: [], errors: [] });
+
+    getLastInputProps().onKeyDown({
+      key: 'Escape',
+      preventDefault: vi.fn(),
+      currentTarget: { value: 'al', blur },
+    });
+
+    expect(setSuggestions).toHaveBeenCalledWith([]);
+    expect(onAdd).not.toHaveBeenCalled();
+    expect(blur).not.toHaveBeenCalled();
+  });
+
+  it('keeps the suggestion buttons out of the tab order', () => {
+    mocks.useState
+      .mockImplementationOnce(() => ['al', vi.fn()])
+      .mockImplementationOnce(() => [true, vi.fn()])
+      .mockImplementationOnce(() => [false, vi.fn()])
+      .mockImplementationOnce(() => [0, vi.fn()])
+      .mockImplementationOnce(() => [['alpine'], vi.fn()])
+      .mockImplementationOnce(() => [-1, vi.fn()]);
+
+    const button = getSuggestionButton('alpine', { suggestTags: vi.fn(), values: [], errors: [] });
+
+    expect(button.tabIndex).toBe(-1);
   });
 
   it('commits a clicked suggestion through the normal tag path', () => {
@@ -2491,8 +2616,9 @@ describe('TagInput', () => {
 
     iconButtonProps.onPointerDown({ preventDefault: vi.fn() });
     iconButtonProps.onClick();
-    inputProps.onBlur({ currentTarget: { value: 'gamma' } });
+    inputProps.onBlur({ currentTarget: { value: '' } });
 
+    expect(setDraft).toHaveBeenLastCalledWith('');
     expect(onAdd).toHaveBeenCalledTimes(1);
     expect(onAdd).toHaveBeenCalledWith(ValueTypes.STRING.newValue('gamma'));
     expect(onRemove).toHaveBeenCalledWith(0);
@@ -2516,8 +2642,27 @@ describe('TagInput', () => {
     iconButtonProps.onClick();
     inputProps.onBlur({ currentTarget: { value: '' } });
 
-    expect(setIsInputActive).toHaveBeenCalledTimes(1);
-    expect(setIsInputActive).toHaveBeenCalledWith(false);
+    expect(setIsInputActive).toHaveBeenLastCalledWith(false);
+  });
+
+  it('commits a draft typed after a tag was removed by click while the input kept the focus', () => {
+    const onAdd = vi.fn();
+    mocks.useState.mockImplementationOnce(() => ['', vi.fn()]);
+
+    renderTagInput({
+      onAdd,
+      values: [ValueTypes.STRING.newValue('alpha'), ValueTypes.STRING.newValue('beta')],
+      occurrences: Occurrences.minmax(0, 4),
+    });
+
+    const iconButtonProps = getFirstRemoveButtonProps();
+    const inputProps = getLastInputProps();
+
+    iconButtonProps.onPointerDown({ preventDefault: vi.fn() });
+    iconButtonProps.onClick();
+    inputProps.onBlur({ currentTarget: { value: 'delta' } });
+
+    expect(onAdd).toHaveBeenCalledWith(ValueTypes.STRING.newValue('delta'));
   });
 
   it('keeps keyboard drag on the drag button while remove button keys stay separate', () => {

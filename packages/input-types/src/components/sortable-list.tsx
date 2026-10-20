@@ -86,6 +86,9 @@ export type SortableListProps<T> = {
   items: T[];
   keyExtractor: (item: T, index: number) => string;
   onDragStart?: (index: number) => void;
+  /** After every drop, once `onMove` has run for a drop that moved anything. */
+  onDragEnd?: () => void;
+  onDragCancel?: () => void;
   /**
    * In projection mode `toIndex` is the projected placeholder, and `info` the final drag state,
    * called only when the final projection is allowed.
@@ -406,6 +409,8 @@ export const SortableList = <T,>({
   items,
   keyExtractor,
   onDragStart: onDragStartProp,
+  onDragEnd: onDragEndProp,
+  onDragCancel: onDragCancelProp,
   onMove,
   enabled,
   fullRowDraggable = false,
@@ -500,32 +505,41 @@ export const SortableList = <T,>({
     [applyProjection],
   );
 
+  const resolveMove = useCallback(
+    (event: DragEndEvent): Parameters<typeof onMove> | undefined => {
+      if (resolveDrop != null) {
+        const finalDrop = getProjectionDropFromEvent(event, ids, items, resolveDrop);
+        if (!finalDrop?.hint?.allowed) return undefined;
+        return [finalDrop.info.activeIndex, finalDrop.toIndex, finalDrop.info];
+      }
+      const { active, over } = event;
+      if (over == null || active.id === over.id) return undefined;
+      const oldIndex = ids.indexOf(String(active.id));
+      const newIndex = ids.indexOf(String(over.id));
+      if (oldIndex === -1 || newIndex === -1) return undefined;
+      return [oldIndex, newIndex];
+    },
+    [ids, items, resolveDrop],
+  );
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       setIsDragActive(false);
       setActiveId(null);
       applyDrop(null);
-      if (resolveDrop != null) {
-        const finalDrop = getProjectionDropFromEvent(event, ids, items, resolveDrop);
-        if (!finalDrop?.hint?.allowed) return;
-        onMove(finalDrop.info.activeIndex, finalDrop.toIndex, finalDrop.info);
-        return;
-      }
-      const { active, over } = event;
-      if (over == null || active.id === over.id) return;
-      const oldIndex = ids.indexOf(String(active.id));
-      const newIndex = ids.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return;
-      onMove(oldIndex, newIndex);
+      const move = resolveMove(event);
+      if (move !== undefined) onMove(...move);
+      onDragEndProp?.();
     },
-    [ids, items, onMove, resolveDrop, applyDrop],
+    [resolveMove, onMove, onDragEndProp, applyDrop],
   );
 
   const handleDragCancel = useCallback(() => {
     setIsDragActive(false);
     setActiveId(null);
     applyDrop(null);
-  }, [applyDrop]);
+    onDragCancelProp?.();
+  }, [applyDrop, onDragCancelProp]);
 
   return (
     <div

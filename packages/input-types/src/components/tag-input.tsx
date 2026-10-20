@@ -18,6 +18,7 @@ import { cn, getIsMobile, Input, subscribeToMobileChanges, Tag, Tooltip } from '
 import {
   type ClipboardEventHandler,
   type FocusEventHandler,
+  type KeyboardEvent,
   type KeyboardEventHandler,
   type MouseEventHandler,
   type ReactElement,
@@ -199,6 +200,16 @@ export function shouldRemoveLatestTag(
   return (
     !hasModifier && canRemove && draft.length === 0 && (key === 'Backspace' || key === 'Delete')
   );
+}
+
+/** A key the IME is still composing with belongs to the IME: Enter there picks a candidate. */
+function isComposing(event: KeyboardEvent<HTMLInputElement>): boolean {
+  // React wraps the native event, Preact hands it over as is.
+  const { isComposing, nativeEvent } = event as unknown as {
+    isComposing?: boolean;
+    nativeEvent?: { isComposing?: boolean };
+  };
+  return isComposing === true || nativeEvent?.isComposing === true || event.keyCode === 229;
 }
 
 function isRemoveButtonKey(key: string): boolean {
@@ -441,6 +452,7 @@ function renderTagDraftInput({
         onBlur={onBlur}
         disabled={!enabled}
         aria-invalid={invalid || undefined}
+        role="combobox"
         aria-autocomplete="list"
         aria-expanded={suggestionsExpanded}
         aria-controls={suggestionsExpanded ? suggestionListId : undefined}
@@ -648,6 +660,7 @@ const TagItem = ({
   };
 
   const handleEditKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (isComposing(event)) return;
     if (event.key === 'Enter') {
       event.preventDefault();
       event.stopPropagation();
@@ -786,6 +799,8 @@ export const TagInput = ({
   const draftRef = useRef(draft);
   const skipBlurCommit = useRef(false);
   const isDraggingRef = useRef(false);
+  const suggestTagsRef = useRef(suggestTags);
+  suggestTagsRef.current = suggestTags;
   const dragScrollListener = useDragScrollListener();
   draftRef.current = draft;
 
@@ -808,7 +823,7 @@ export const TagInput = ({
   const enterKeyHint = isMobile ? (nextTagReachesMaximum ? 'next' : 'enter') : undefined;
   const isDraftInputVisible = isInputActive || draft.length > 0;
   const [dragContextKey, setDragContextKey] = useState(0);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestedLabels, setSuggestedLabels] = useState<string[]>([]);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [touched, setTouched] = useState(false);
   const [editingState, setEditingState] = useState<EditingState | null>(null);
@@ -823,6 +838,7 @@ export const TagInput = ({
 
   const ids = tagEntries.map((entry) => entry.id);
   const normalizedDraft = normalizeTagDraft(draft);
+  const suggestions = getSuggestedTagLabels(suggestedLabels, values, normalizedDraft);
   const suggestionsVisible =
     editingState == null &&
     enabled &&
@@ -870,23 +886,23 @@ export const TagInput = ({
     inputRef.current?.focus();
   };
 
+  const hasSuggester = suggestTags != null;
   useEffect(() => {
-    if (suggestTags == null || !enabled || !canAdd || !hasRenderableTagLabel(normalizedDraft)) {
-      setSuggestions([]);
+    if (!hasSuggester || !enabled || !canAdd || !hasRenderableTagLabel(normalizedDraft)) {
+      setSuggestedLabels([]);
       setActiveSuggestionIndex(-1);
       return undefined;
     }
     let stale = false;
-    setSuggestions([]);
+    setSuggestedLabels([]);
     setActiveSuggestionIndex(-1);
     const timeoutId = setTimeout(() => {
-      suggestTags(normalizedDraft).then(
-        (suggestedLabels) => {
-          if (stale) return;
-          setSuggestions(getSuggestedTagLabels(suggestedLabels, values, normalizedDraft));
+      suggestTagsRef.current?.(normalizedDraft).then(
+        (labels) => {
+          if (!stale) setSuggestedLabels(labels);
         },
         () => {
-          if (!stale) setSuggestions([]);
+          if (!stale) setSuggestedLabels([]);
         },
       );
     }, SUGGESTION_DEBOUNCE_MS);
@@ -894,7 +910,7 @@ export const TagInput = ({
       stale = true;
       clearTimeout(timeoutId);
     };
-  }, [suggestTags, normalizedDraft, enabled, canAdd, values]);
+  }, [hasSuggester, normalizedDraft, enabled, canAdd]);
 
   const handleFieldActivate = (): void => {
     if (!canAdd || !enabled) return;
@@ -902,6 +918,7 @@ export const TagInput = ({
   };
 
   const handleInputFocus = (): void => {
+    skipBlurCommit.current = false;
     setIsInputActive(true);
   };
 
@@ -1045,7 +1062,7 @@ export const TagInput = ({
     focusTarget: HTMLInputElement | null = inputRef.current,
   ): void => {
     commitTagLabels([label], { focusTarget: focusTarget ?? undefined, clearDraft: true });
-    setSuggestions([]);
+    setSuggestedLabels([]);
     setActiveSuggestionIndex(-1);
   };
 
@@ -1220,7 +1237,10 @@ export const TagInput = ({
     onRemovePointerDown: prepareRemove,
     onRemoveKey: () =>
       handleRemove(entry.originalIndex, { activateInput: true, commitCurrentDraft: true }),
-    onRemove: () => handleRemove(entry.originalIndex, { commitCurrentDraft: true }),
+    onRemove: () => {
+      handleRemove(entry.originalIndex, { commitCurrentDraft: true });
+      skipBlurCommit.current = false;
+    },
   });
 
   const commitAndLeaveInput = (
@@ -1236,6 +1256,7 @@ export const TagInput = ({
   };
 
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (event) => {
+    if (isComposing(event)) return;
     if (isMobile && event.key === 'Enter') {
       event.stopPropagation();
     }
@@ -1252,6 +1273,12 @@ export const TagInput = ({
     if (event.key === 'Enter' && activeSuggestion != null) {
       event.preventDefault();
       commitSuggestion(activeSuggestion, event.currentTarget);
+      return;
+    }
+    if (event.key === 'Escape' && suggestionsVisible) {
+      event.preventDefault();
+      setSuggestedLabels([]);
+      setActiveSuggestionIndex(-1);
       return;
     }
     if (event.key === 'Escape') {
@@ -1357,7 +1384,8 @@ export const TagInput = ({
         onFocus={() => setHasFocusWithin(true)}
         onBlur={() => {
           requestAnimationFrame(() => {
-            if (!wrapperRef.current?.contains(document.activeElement)) {
+            const wrapper = wrapperRef.current;
+            if (!wrapper?.contains(wrapper.ownerDocument.activeElement)) {
               setHasFocusWithin(false);
             }
           });
@@ -1413,6 +1441,7 @@ export const TagInput = ({
               >
                 <button
                   type="button"
+                  tabIndex={-1}
                   className={cn(
                     'block w-full px-3 py-1.5 text-left text-sm',
                     activeSuggestionIndex === index

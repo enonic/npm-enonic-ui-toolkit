@@ -182,7 +182,6 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
         }}
         onEscapeKeyDown={(event) => {
           onEscapeKeyDown?.(event);
-          // While the footer asks its question, `Escape` is the way back, not the way out.
           if (asking && !event.defaultPrevented) {
             event.preventDefault();
             keepRef.current?.();

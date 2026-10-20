@@ -145,7 +145,6 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
         ? activeOption
         : (optionIds[0] ?? null);
 
-    // What a field is typed as to enter it: the form the tags show, and `Label:` whatever the locale.
     const fieldPrefixes = (label: string): string[] => [
       t('enonic.uiKit.filterInput.fieldPrefix', label),
       `${label}:`,
@@ -180,7 +179,6 @@ const FilterInput = forwardRef<HTMLInputElement, FilterInputProps>(
       }
     };
 
-    // A term already held changes nothing and says nothing: `withTerm` answers the same query.
     const add = (term: FilterTerm): void => {
       const next = withTerm(value, term);
       if (next === value) {

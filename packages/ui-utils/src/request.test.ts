@@ -157,6 +157,21 @@ describe('requestJson', () => {
   });
 });
 
+describe('a 200 with a body that is not JSON', () => {
+  it.each([
+    ['requestJson', requestJson],
+    ['requestOptionalJson', requestOptionalJson],
+  ] as const)('fails %s with an AppError that keeps the parse error', async (_name, request) => {
+    mockFetch.mockResolvedValue(new Response('<html>', { status: 200 }));
+
+    const error = (await request('/api/items'))._unsafeUnwrapErr();
+
+    expect(error).toBeInstanceOf(AppError);
+    expect(error).not.toBeInstanceOf(RequestError);
+    expect(error.cause).toBeInstanceOf(SyntaxError);
+  });
+});
+
 describe('requestOptionalJson', () => {
   it('resolves with the parsed body when there is one', async () => {
     mockFetch.mockResolvedValue(jsonResponse({ id: 'one' }));

@@ -1,4 +1,4 @@
-import { Button, Input, TimePicker } from '@enonic/ui';
+import { Button, Input, TimePicker, useBlinkAttention } from '@enonic/ui';
 import { formatTime, pad } from '@enonic/ui-utils';
 import { type ChangeEvent, type ReactElement, useCallback, useRef, useState } from 'react';
 
@@ -39,18 +39,24 @@ export const TimeInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef: externalInputRef,
 }: TimeInputProps): ReactElement => {
   const [open, setOpen] = useState(false);
   const [draftTime, setDraftTime] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const t = useInputTypesPhrases();
   const setInputRef = useCallback(
     (element: HTMLInputElement | null) => {
@@ -109,6 +115,12 @@ export const TimeInput = ({
           value={display}
           onChange={handleInputChange}
           onBlur={onBlur}
+          onFocus={onFocus}
+          readOnly={readOnly}
+          processing={processing}
+          tabIndex={processing ? -1 : undefined}
+          highlight={isBlinking}
+          highlightRef={highlightRef}
           enterKeyHint={onMobileComplete ? 'next' : undefined}
           onKeyDown={
             onMobileComplete
@@ -121,7 +133,7 @@ export const TimeInput = ({
             <div className="flex h-full w-11 items-center justify-center bg-transparent">
               <TimePicker.Trigger
                 className="size-8 bg-transparent"
-                disabled={!enabled}
+                disabled={!enabled || readOnly || processing}
                 aria-label={t('enonic.inputTypes.field.timeTrigger')}
               />
             </div>

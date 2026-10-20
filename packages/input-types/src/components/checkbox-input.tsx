@@ -21,10 +21,14 @@ export type CheckboxInputProps = InputTypeComponentProps<CheckboxConfig>;
 export const CheckboxInput = ({
   value,
   onChange,
+  onBlur,
+  onFocus,
   config,
   input,
   enabled,
   errors,
+  readOnly = false,
+  processing = false,
   inputRef,
 }: CheckboxInputProps): ReactElement => {
   const t = useInputTypesPhrases();
@@ -51,6 +55,9 @@ export const CheckboxInput = ({
         label={input.getLabel()}
         className={ALIGNMENT_CLASSES[config.alignment]}
         disabled={!enabled}
+        readOnly={readOnly || processing || undefined}
+        onBlur={onBlur}
+        onFocus={onFocus}
         error={errors.length > 0}
         errorMessage={getFirstError(errors, t)}
         onCheckedChange={handleCheckedChange}

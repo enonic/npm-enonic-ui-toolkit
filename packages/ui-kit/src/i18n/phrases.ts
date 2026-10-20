@@ -3,12 +3,6 @@ import { mergePhrases } from '@enonic/ui-utils';
 import { filterInputPhrases } from '../filter/filter-input.phrases';
 import { themeSwitcherPhrases } from '../theme/theme-switcher.phrases';
 
-/**
- * Every text the package renders, in English, keyed `enonic.uiKit.<area>.<name>`. An application
- * translates them through the `Translate` it hands `@enonic/ui`'s `I18nProvider`; a key it has no
- * text for renders this English. `comparePhrases` from `@enonic/ui-utils` tells an application
- * which of these its bundle lacks.
- */
 export const dialogPhrases = {
   'enonic.uiKit.dialog.cancel': 'Cancel',
   'enonic.uiKit.dialog.confirm': 'Confirm',
@@ -21,6 +15,12 @@ export const gatePhrases = {
   'enonic.uiKit.gate.mismatch': '{1} does not match {0}',
 } as const;
 
+/**
+ * Every text the package renders, in English, keyed `enonic.uiKit.<area>.<name>`. An application
+ * translates them through the `Translate` it hands `@enonic/ui`'s `I18nProvider`; a key it has no
+ * text for renders this English. `comparePhrases` from `@enonic/ui-utils` tells an application
+ * which of these its bundle lacks.
+ */
 export const uiKitPhrases = mergePhrases([
   dialogPhrases,
   gatePhrases,

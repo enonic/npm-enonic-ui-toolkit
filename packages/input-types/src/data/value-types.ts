@@ -69,10 +69,6 @@ abstract class ValueTypeNumber extends ValueType {
   }
 }
 
-function isSafeNumber(value: unknown): value is number {
-  return typeof value === 'number' && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
-}
-
 class ValueTypeLong extends ValueTypeNumber {
   constructor() {
     super('Long');
@@ -89,7 +85,7 @@ class ValueTypeDouble extends ValueTypeNumber {
   }
 
   override isValid(value: unknown): boolean {
-    return isSafeNumber(value);
+    return typeof value === 'number' && Math.abs(value) <= Number.MAX_SAFE_INTEGER;
   }
 }
 

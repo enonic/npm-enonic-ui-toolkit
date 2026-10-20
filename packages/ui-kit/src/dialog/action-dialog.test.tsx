@@ -21,9 +21,10 @@ vi.mock(focusTrap, () => ({
 type HarnessProps = {
   onAside?: () => void;
   withHeldClose?: boolean;
+  withAction?: 'held' | 'closing';
 };
 
-const Harness = ({ onAside, withHeldClose }: HarnessProps): ReactElement => {
+const Harness = ({ onAside, withHeldClose, withAction }: HarnessProps): ReactElement => {
   const [open, setOpen] = useState(true);
   const [name, setName] = useState('Ada');
   const guard = useCloseGuard({ dirty: name !== 'Ada', open, onOpenChange: setOpen });
@@ -50,6 +51,12 @@ const Harness = ({ onAside, withHeldClose }: HarnessProps): ReactElement => {
               onInput={(event) => setName(event.currentTarget.value)}
             />
           </ActionDialog.Body>
+          {withAction !== undefined && (
+            <ActionDialog.Action
+              label="Publish"
+              onClick={(event) => withAction === 'held' && event.preventDefault()}
+            />
+          )}
           <ActionDialog.Footer
             confirmLabel="Save"
             closeOnCancel={false}
@@ -180,5 +187,80 @@ describe('ActionDialog close question', () => {
     await user.click(closeButton());
     expect(question()).toBeNull();
     expect(dialog()).toBeNull();
+  });
+});
+
+describe('ActionDialog close question, from the footer', () => {
+  async function mountDirty(props: HarnessProps = {}): Promise<UserEvent> {
+    render(<Harness {...props} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'x');
+    return user;
+  }
+
+  it('closes on Save with unsaved edits, without asking', async () => {
+    const user = await mountDirty();
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(question()).toBeNull();
+    expect(dialog()).toBeNull();
+  });
+
+  it('asks on Cancel with unsaved edits', async () => {
+    const user = await mountDirty();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(question()).not.toBeNull();
+    expect(dialog()).not.toBeNull();
+  });
+
+  it('closes on Cancel with nothing to lose', async () => {
+    render(<Harness />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(dialog()).toBeNull();
+  });
+
+  it('closes on an action with unsaved edits, without asking', async () => {
+    const user = await mountDirty({ withAction: 'closing' });
+
+    await user.click(screen.getByRole('button', { name: 'Publish' }));
+    expect(question()).toBeNull();
+    expect(dialog()).toBeNull();
+  });
+
+  it('stays open, unasked, on an action that held its own click', async () => {
+    const user = await mountDirty({ withAction: 'held' });
+
+    await user.click(screen.getByRole('button', { name: 'Publish' }));
+    expect(question()).toBeNull();
+    expect(dialog()).not.toBeNull();
+  });
+});
+
+describe('useCloseGuard', () => {
+  const Guarded = ({ open }: { open: boolean }): ReactElement => {
+    const guard = useCloseGuard({ dirty: true, open, onOpenChange: () => undefined });
+    return (
+      <>
+        <button type="button" onClick={guard.requestClose}>
+          Close
+        </button>
+        {guard.asking && <p>Discard unsaved changes?</p>}
+      </>
+    );
+  };
+
+  it('starts a reopened dialog without the question', async () => {
+    const { rerender } = render(<Guarded open />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    expect(question()).not.toBeNull();
+
+    rerender(<Guarded open={false} />);
+    rerender(<Guarded open />);
+
+    await waitFor(() => expect(question()).toBeNull());
   });
 });

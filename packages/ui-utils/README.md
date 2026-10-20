@@ -7,9 +7,11 @@ and the theme the admin applications share.
 **Nothing here imports a component or a framework, and nothing reads state it did not create.**
 That is the package's whole value — it can be used from a store, a worker, a test, or code that has
 no DOM at all, and a function's result depends on its arguments alone. Phrases come from the
-consumer, which fetches them from its own server and passes them in. The one exception is the
-theme, which is the browser's by nature — its storage and the OS preference — and is read through
-the `window` a function is handed, the page's by default.
+consumer, which fetches them from its own server and passes them in. The exceptions read the
+environment by nature: the theme reads its storage and the OS preference through the `window` it
+is handed, the page's by default; `documentVisibility` reads the `document` it is handed;
+`parseRelativeTime` reads the clock unless it is handed `now`, and `dateFromTime` answers a time of
+today; the admin events hub imports its client from the url it is given.
 
 ```sh
 pnpm add @enonic/ui-utils              # the errors, the i18n core and the values, no peers

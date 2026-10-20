@@ -56,6 +56,7 @@ vi.mock('@enonic/ui', () => ({
   DatePicker: mocks.DatePicker,
   Input: mocks.Input,
   TimePicker: mocks.TimePicker,
+  useBlinkAttention: () => false,
 }));
 
 vi.mock('../hooks/use-is-mobile', () => ({

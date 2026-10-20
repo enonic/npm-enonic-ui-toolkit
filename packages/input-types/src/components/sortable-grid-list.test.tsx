@@ -697,6 +697,20 @@ describe('SortableGridList', () => {
     expect(focusedTargetIndexSetter).toHaveBeenCalledWith(1);
   });
 
+  it('leaves a key alone that comes from outside the row, such as from a portal it rendered', () => {
+    const rows = getRowElements();
+    const nodes = mountRows(rows);
+    const portalTarget = createFocusTarget();
+
+    const event = createKeyEvent('ArrowDown', nodes[0]!, portalTarget);
+    const onKeyDown = rows[0]!.props.onKeyDown as (event: unknown) => void;
+    expect(onKeyDown).toBeTypeOf('function');
+    onKeyDown(event);
+
+    expect(event.preventDefault).not.toHaveBeenCalled();
+    expect(focusedIndexSetter).not.toHaveBeenCalled();
+  });
+
   it('moves focus to the matching descendant in the next row on ArrowDown', () => {
     const rows = getRowElements();
     const firstRowPrimaryButton = createFocusTarget();

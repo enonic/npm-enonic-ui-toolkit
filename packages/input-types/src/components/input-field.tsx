@@ -435,7 +435,10 @@ export const InputFieldResolved = ({
 
   const handleAcquireProcessing = useCallback(
     (occurrenceId: string): ProcessingToken | undefined => {
-      if (!state.ids.includes(occurrenceId) || processingTokensRef.current.has(occurrenceId))
+      if (
+        !getOccurrenceIds().includes(occurrenceId) ||
+        processingTokensRef.current.has(occurrenceId)
+      )
         return undefined;
       const token = generateProcessingToken();
       processingTokensRef.current.set(occurrenceId, token);
@@ -448,7 +451,7 @@ export const InputFieldResolved = ({
       forceRender();
       return token;
     },
-    [state.ids, forceRender],
+    [getOccurrenceIds, forceRender],
   );
 
   const handleReleaseProcessing = useCallback(
@@ -472,8 +475,9 @@ export const InputFieldResolved = ({
 
   const handleReveal = useCallback(
     (occurrenceId?: string, options?: RevealOptions): boolean => {
-      const targetId = occurrenceId ?? state.ids[0];
-      if (targetId === undefined || !state.ids.includes(targetId)) return false;
+      const ids = getOccurrenceIds();
+      const targetId = occurrenceId ?? ids[0];
+      if (targetId === undefined || !ids.includes(targetId)) return false;
       const el = inputRefsRef.current.get(targetId);
       if (el === undefined) return false;
       if (
@@ -495,13 +499,14 @@ export const InputFieldResolved = ({
       }
       return true;
     },
-    [state.ids],
+    [getOccurrenceIds],
   );
 
   const handleFocus = useCallback(
     (occurrenceId?: string): boolean => {
-      const targetId = occurrenceId ?? state.ids[0];
-      if (targetId === undefined || !state.ids.includes(targetId)) return false;
+      const ids = getOccurrenceIds();
+      const targetId = occurrenceId ?? ids[0];
+      if (targetId === undefined || !ids.includes(targetId)) return false;
       const el = inputRefsRef.current.get(targetId);
       if (el === undefined) return false;
       if ((el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.readOnly)
@@ -509,7 +514,7 @@ export const InputFieldResolved = ({
       el.focus();
       return true;
     },
-    [state.ids],
+    [getOccurrenceIds],
   );
 
   useEffect(() => {

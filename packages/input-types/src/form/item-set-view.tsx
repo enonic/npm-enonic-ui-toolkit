@@ -55,6 +55,7 @@ export const ItemSetView = ({ itemSet, propertySet }: ItemSetViewProps): ReactEl
     handleExpandAll,
     handleCollapseAll,
     handleDragStart,
+    handleDragEnd,
     handleToggleSingle,
   } = useSetExpanded(propertyArray, state.count);
 
@@ -121,6 +122,8 @@ export const ItemSetView = ({ itemSet, propertySet }: ItemSetViewProps): ReactEl
           dragLabel={t('enonic.inputTypes.occurrence.reorder')}
           className="flex flex-col gap-2.5"
           onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragEnd}
           controlGrip
           renderItem={({ item, index }, grip) => (
             <ValidationVisibilityProvider

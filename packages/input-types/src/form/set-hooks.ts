@@ -111,6 +111,8 @@ export type UseSetExpandedResult = {
   handleExpandAll: () => void;
   handleCollapseAll: () => void;
   handleDragStart: () => void;
+  /** A drop or a cancel: a drop that moved nothing brings back what the drag start collapsed. */
+  handleDragEnd: () => void;
   handleToggleSingle: (index: number) => void;
 };
 
@@ -123,7 +125,7 @@ function sizeToMap(size: number, value = true): Map<number, boolean> {
  * occurrence stays open through a reorder, and a fresh one opens.
  */
 export function useSetExpanded(propertyArray: PropertyArray, size: number): UseSetExpandedResult {
-  const [expanded, setExpanded] = useState(() => sizeToMap(size, false));
+  const [expanded, setExpanded] = useState(() => sizeToMap(size, size === 1));
   const dragSnapshotRef = useRef<Map<number, boolean> | undefined>(undefined);
 
   useEffect(() => {
@@ -206,6 +208,12 @@ export function useSetExpanded(propertyArray: PropertyArray, size: number): UseS
       return sizeToMap(size, false);
     });
   }, [size]);
+  const handleDragEnd = useCallback(() => {
+    const snapshot = dragSnapshotRef.current;
+    if (snapshot === undefined) return;
+    dragSnapshotRef.current = undefined;
+    setExpanded(snapshot);
+  }, []);
   const handleToggleSingle = useCallback((index: number) => {
     setExpanded((prev) => {
       const newMap = new Map(prev);
@@ -220,6 +228,7 @@ export function useSetExpanded(propertyArray: PropertyArray, size: number): UseS
     handleExpandAll,
     handleCollapseAll,
     handleDragStart,
+    handleDragEnd,
     handleToggleSingle,
   };
 }

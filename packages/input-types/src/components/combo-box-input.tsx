@@ -16,6 +16,7 @@ const COMBO_BOX_INPUT_NAME = 'ComboBoxInput';
 export type ComboBoxInputProps = SelfManagedComponentProps<ComboBoxConfig>;
 
 export const ComboBoxInput = ({
+  occurrenceIds,
   values,
   onAdd,
   onRemove,
@@ -90,8 +91,8 @@ export const ComboBoxInput = ({
   );
 
   const keyExtractor = useCallback(
-    (item: Value, index: number) => (item.isNull() ? `null-${index}` : (item.getString() ?? '')),
-    [],
+    (_item: Value, index: number) => occurrenceIds[index] ?? String(index),
+    [occurrenceIds],
   );
 
   return (

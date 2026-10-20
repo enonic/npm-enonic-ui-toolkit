@@ -100,7 +100,8 @@ root. The pieces sit where a React context can reach them:
   application's phrase source (`fromPhrases`, `fromLookup`, `passthrough`), `bindPhrases` for a
   store, `mergePhrases` for a package's catalogue, `comparePhrases` for an application's check.
 - **The component packages own fragments and nothing else**: each component keeps its English in a
-  fragment beside it, keyed `enonic.uiKit.<component>.<name>` — the `enonic.` namespace `@enonic/ui`
+  fragment beside it, keyed `enonic.<package>.<component>.<name>` (`enonic.uiKit.*`,
+  `enonic.inputTypes.*`) — the `enonic.` namespace `@enonic/ui`
   chose for its own `enonic.ui.*` keys, so neither collides with an application's own — resolves it through `usePhrases` from
   `@enonic/ui`, and the package exports its merged catalogue. The first text-bearing component sets
   the `@enonic/ui` release that ships the provider as the kit's peer floor.

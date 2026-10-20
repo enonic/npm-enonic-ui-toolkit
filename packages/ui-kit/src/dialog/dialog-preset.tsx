@@ -46,7 +46,7 @@ const DialogPresetConfirm = ({
   <ActionDialog.Root
     open={open}
     onOpenChange={(next, details) => {
-      if (!next && details === undefined) {
+      if (!next && details?.reason !== 'action') {
         onCancel?.();
       }
       onOpenChange(next);

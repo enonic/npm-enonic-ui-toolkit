@@ -6,6 +6,7 @@
 
 export { useActionDialog } from './dialog/action-dialog-context';
 export type {
+  ActionDialogCloseReason,
   ActionDialogContextValue,
   ActionDialogOpenChangeDetails,
 } from './dialog/action-dialog-context';

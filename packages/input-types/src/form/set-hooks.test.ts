@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PropertySet } from '../data';
-import { PropertyTree } from '../data';
+import { PropertyArray, PropertyTree } from '../data';
 import { Occurrences } from '../schema';
 import { useSetPropertyArray } from './set-hooks';
 
@@ -19,6 +19,24 @@ vi.mock('react', () => ({
 }));
 
 describe('useSetPropertyArray', () => {
+  // A seed that never reaches the minimum would loop forever: fail instead of hanging the run.
+  beforeEach(() => {
+    const addSet = Reflect.get(PropertyArray.prototype, 'addSet') as PropertyArray['addSet'];
+    let calls = 0;
+    vi.spyOn(PropertyArray.prototype, 'addSet').mockImplementation(function (
+      this: PropertyArray,
+      ...args: Parameters<PropertyArray['addSet']>
+    ) {
+      calls += 1;
+      if (calls > 50) throw new Error('Seeding did not reach the minimum');
+      return addSet.apply(this, args);
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('fills a fresh set to its minimum when nothing listens for new occurrences', () => {
     const root = new PropertyTree().getRoot();
 

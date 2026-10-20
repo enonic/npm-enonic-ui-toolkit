@@ -128,10 +128,13 @@ export function chainFocusContainerRegistry(
 const ConfirmFocusTrap = forwardRef<HTMLDivElement, ConfirmFocusTrapProps>(
   ({ className, style, children }, ref): ReactElement => {
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
+    // The trap copies its options once, while the container is still null; they read this instead.
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const [portalContainers, setPortalContainers] = useState<HTMLElement[]>([]);
 
     const setRefs = useCallback(
       (node: HTMLDivElement | null) => {
+        containerRef.current = node;
         setContainer(node);
         if (typeof ref === 'function') ref(node);
         else if (ref != null) ref.current = node;
@@ -170,8 +173,8 @@ const ConfirmFocusTrap = forwardRef<HTMLDivElement, ConfirmFocusTrapProps>(
           active={container != null}
           containerElements={containerElements}
           focusTrapOptions={{
-            initialFocus: () => container ?? false,
-            fallbackFocus: () => container ?? document.body,
+            initialFocus: () => containerRef.current ?? false,
+            fallbackFocus: () => containerRef.current ?? document.body,
             escapeDeactivates: false,
             clickOutsideDeactivates: false,
             allowOutsideClick: true,
