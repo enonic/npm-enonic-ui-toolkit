@@ -1,13 +1,15 @@
 # @enonic/ui-utils
 
 Everything useful without a view layer: the request transport, the i18n core, the values an XP
-form edits with the helpers that parse and format them, and the browser side of the admin events
-hub.
+form edits with the helpers that parse and format them, the browser side of the admin events hub,
+and the theme the admin applications share.
 
 **Nothing here imports a component or a framework, and nothing reads state it did not create.**
 That is the package's whole value — it can be used from a store, a worker, a test, or code that has
 no DOM at all, and a function's result depends on its arguments alone. Phrases come from the
-consumer, which fetches them from its own server and passes them in.
+consumer, which fetches them from its own server and passes them in. The one exception is the
+theme, which is the browser's by nature — its storage and the OS preference — and is read through
+the `window` a function is handed, the page's by default.
 
 ```sh
 pnpm add @enonic/ui-utils              # the errors, the i18n core and the values, no peers
@@ -49,6 +51,27 @@ its `ResultAsync`, so a consumer of the transport installs it and shares one cop
 | `createAdminEvents(hubUrl)` †                                               | the hub reached at the `admin:events` url: `connect()` loads the served client once, `subscribeTopic(topic, handlers)` until unsubscribed   |
 | `createTopicReaction(options)` †                                            | one topic's messages parsed and gathered into a batch, dropped while `visible` is false with a `refresh` on reveal, and a `refresh` on loss |
 | `documentVisibility()` †                                                    | the page's `visibilityState` as the `Readable<boolean>` a reaction takes, for an application no host hands one                              |
+| `readTheme()`, `writeTheme(theme)`                                          | the theme the user picked, `system` where none is stored; writing stores it and tells the page                                              |
+| `subscribeTheme(listener)`                                                  | the picked theme changing — on this page, in another tab, removed — until unsubscribed                                                      |
+| `readResolvedTheme()`, `subscribeResolvedTheme(listener)`                   | the theme to paint, `system` answered by the OS, and its changes whether the user switched or the OS did                                    |
+| `THEME_STORAGE_KEY`, `THEME_CHANGE_EVENT`                                   | the `localStorage` entry and the window event the theme travels by                                                                          |
 | \* From `@enonic/ui-utils/request`. † From `@enonic/ui-utils/admin-events`. |
+
+## The theme
+
+XP's admin applications — Settings, Content Studio, the menu — are released separately and share
+one theme: the `enonic:theme` entry in `localStorage`, `light`, `dark` or `system`. These
+functions are that contract, so that no application spells it out by hand.
+
+- **The entry is the truth.** An event is only a cue to read it again: what a listener hears is
+  what `readTheme` answers, and a missing or invalid entry is `system`.
+- **Every page hears a switch.** `storage` fires only in the other tabs, so `writeTheme` also
+  dispatches `THEME_CHANGE_EVENT` on the window, which every bundle on the page listens to.
+- **Listeners hear changes.** Never on subscribe, and not for a write that leaves the answer as it
+  was; each `subscribe*` returns its unsubscribe, and the caller decides how long it listens.
+- **Blocked storage reads as `system`, and a write warns.**
+
+Content Studio's pre-paint script reads `enonic:theme` inline, before any bundle loads, and is the
+one copy of the key outside this package.
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

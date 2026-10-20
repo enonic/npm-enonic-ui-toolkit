@@ -1,7 +1,7 @@
 /**
  * `@enonic/ui-kit` — the composite React components: what `@enonic/ui` would be if its parts
- * carried behaviour. The dialog shell and its confirmations, and the filter input of a browse
- * screen; layouts, toolbars and the rest of the browse screen to follow.
+ * carried behaviour. The dialog shell and its confirmations, the filter input of a browse screen,
+ * and the theme switcher; layouts, toolbars and the rest of the browse screen to follow.
  */
 
 export { useActionDialog } from './dialog/action-dialog-context';
@@ -56,3 +56,8 @@ export { uiKitPhrases } from './i18n/phrases';
 export type { UiKitPhraseKey } from './i18n/phrases';
 export { useUiKitPhrases } from './i18n/use-phrases';
 export type { UiKitTranslate } from './i18n/use-phrases';
+export { ThemeSwitcher } from './theme/theme-switcher';
+export type { ThemeSwitcherProps } from './theme/theme-switcher';
+export { themeSwitcherPhrases } from './theme/theme-switcher.phrases';
+export type { ThemeSwitcherPhraseKey } from './theme/theme-switcher.phrases';
+export { useResolvedTheme } from './theme/use-resolved-theme';

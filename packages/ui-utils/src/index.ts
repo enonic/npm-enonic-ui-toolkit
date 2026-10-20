@@ -1,7 +1,7 @@
 /**
- * The root entry needs no peer: the errors, the i18n core, and the values a form edits with the
- * helpers that parse and format them. The transport, which needs `neverthrow`, is its own entry,
- * `@enonic/ui-utils/request`.
+ * The root entry needs no peer: the errors, the i18n core, the values a form edits with the
+ * helpers that parse and format them, and the stored theme. The transport, which needs
+ * `neverthrow`, is its own entry, `@enonic/ui-utils/request`.
  */
 export { dateFromTime, formatDate, formatTime, pad, parseDateTime, parseTime } from './date';
 export type { TimeOfDay } from './date';
@@ -25,3 +25,12 @@ export {
   passthrough,
 } from './translate';
 export type { PhraseComparison, Translate, TranslateOptions } from './translate';
+export {
+  readResolvedTheme,
+  readTheme,
+  subscribeResolvedTheme,
+  subscribeTheme,
+  THEME_CHANGE_EVENT,
+  THEME_STORAGE_KEY,
+  writeTheme,
+} from './theme';

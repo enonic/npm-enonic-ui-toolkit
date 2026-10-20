@@ -43,12 +43,12 @@ before.
 Where that rule lands for the code these packages are waiting for (\* = optional peer, see the
 next section):
 
-| Package       | Peer                                                                                                                             | Dependency                                                                   |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `ui-types`    | —                                                                                                                                | —                                                                            |
-| `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                                           |
-| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                                                               | `@enonic/ui-utils`, `lucide-react`; `@enonic/ui-types` with its first import |
-| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                                           |
+| Package       | Peer                                                                                                                             | Dependency                                             |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `ui-types`    | —                                                                                                                                | —                                                      |
+| `ui-utils`    | `neverthrow`\*                                                                                                                   | `@enonic/ui-types`                                     |
+| `ui-kit`      | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`                                                                               | `@enonic/ui-types`, `@enonic/ui-utils`, `lucide-react` |
+| `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react`                     |
 
 The calls that are not obvious from the rule alone:
 
@@ -63,8 +63,6 @@ The calls that are not obvious from the rule alone:
   nothing to match against. `ui-utils` itself declares no store library: where it reads one, as
   the topic reaction reads visibility, it takes the `Readable` from `ui-types`, which an atom
   satisfies as it is.
-- **`@nanostores/preact` needs a revisit** before the first store-bound component lands: a hard
-  Preact dependency contradicts the React target below.
 - **A list or a panel library joins as a peer when a component needs it**, not before: the first
   dialogs needed neither `react-virtuoso` nor `react-resizable-panels`, so the kit declares neither.
 - **`@enonic/ui`'s own peers are not re-declared** — they are its contract with the consumer, not

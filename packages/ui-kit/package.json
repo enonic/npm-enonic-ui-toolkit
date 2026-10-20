@@ -45,6 +45,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@enonic/ui-types": "workspace:^",
     "@enonic/ui-utils": "workspace:^",
     "lucide-react": "^1.48.0"
   },

@@ -40,3 +40,4 @@ export type {
   PropertyValueJson,
   ValueTypeName,
 } from './property';
+export type { ResolvedTheme, Theme } from './theme';
