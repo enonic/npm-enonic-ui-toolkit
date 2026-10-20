@@ -229,10 +229,18 @@ export const FormWithFooterConfirmation: Story = {
       <div className="flex flex-col items-center gap-y-3 p-4">
         <div className="text-subtle max-w-120 text-sm">
           Edit the name, then close by the mask, the X, Escape or Cancel: the question takes the
-          footer, the form stays in sight but inert, Escape keeps editing, and the focus comes back
-          where it left. Save closes without asking.
+          footer and the form stays in sight but inert. The X again discards; the mask, Escape or a
+          click anywhere else in the dialog keeps editing, and the focus comes back where it left.
+          Save closes without asking.
         </div>
-        <Button variant="solid" label="Edit profile" onClick={() => setOpen(true)} />
+        <Button
+          variant="solid"
+          label="Edit profile"
+          onClick={() => {
+            setName(saved);
+            setOpen(true);
+          }}
+        />
 
         <ActionDialog.Root open={open} onOpenChange={guard.onOpenChange}>
           <ActionDialog.Portal>
@@ -262,10 +270,7 @@ export const FormWithFooterConfirmation: Story = {
                         intent: 'danger',
                         confirmLabel: 'Discard',
                         onKeep: guard.keep,
-                        onConfirm: () => {
-                          setName(saved);
-                          guard.discard();
-                        },
+                        onConfirm: guard.discard,
                       }
                     : undefined
                 }
@@ -303,7 +308,14 @@ export const WizardWithCloseGuard: Story = {
           next step, then close by the mask or the X — the question takes the controls' place and
           Keep editing returns to the step as it was.
         </div>
-        <Button variant="solid" label="New user" onClick={() => setOpen(true)} />
+        <Button
+          variant="solid"
+          label="New user"
+          onClick={() => {
+            reset();
+            setOpen(true);
+          }}
+        />
 
         <ActionDialog.Root
           open={open}
@@ -351,10 +363,7 @@ export const WizardWithCloseGuard: Story = {
                         intent: 'danger',
                         confirmLabel: 'Discard',
                         onKeep: guard.keep,
-                        onConfirm: () => {
-                          reset();
-                          guard.discard();
-                        },
+                        onConfirm: guard.discard,
                       }
                     : undefined
                 }
@@ -364,10 +373,7 @@ export const WizardWithCloseGuard: Story = {
                   nextLabel="Next"
                   lastStepLabel="Create"
                   dots
-                  onLastStep={() => {
-                    reset();
-                    setOpen(false);
-                  }}
+                  onLastStep={() => setOpen(false)}
                 />
               </ActionDialog.Footer>
             </ActionDialog.Content>

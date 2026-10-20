@@ -22,6 +22,7 @@ import {
 
 import { useUiKitPhrases } from '../i18n/use-phrases';
 import {
+  type ActionDialogCloseReason,
   type ActionDialogContextValue,
   type ActionDialogOpenChangeDetails,
   ActionDialogProvider,
@@ -54,17 +55,17 @@ export type ActionDialogRootProps = Omit<DialogRootProps, 'onOpenChange'> & {
 };
 
 const ActionDialogRoot = ({ onOpenChange, ...props }: ActionDialogRootProps): ReactElement => {
-  const actionCloseRef = useRef(false);
-  const value = useMemo(() => ({ actionCloseRef }), []);
+  const closeReasonRef = useRef<ActionDialogCloseReason | undefined>(undefined);
+  const value = useMemo(() => ({ closeReasonRef }), []);
 
   return (
     <ActionDialogRootProvider value={value}>
       <Dialog.Root
         {...props}
         onOpenChange={(open) => {
-          const byAction = actionCloseRef.current;
-          actionCloseRef.current = false;
-          onOpenChange?.(open, !open && byAction ? { reason: 'action' } : undefined);
+          const reason = closeReasonRef.current;
+          closeReasonRef.current = undefined;
+          onOpenChange?.(open, !open && reason !== undefined ? { reason } : undefined);
         }}
       />
     </ActionDialogRootProvider>
@@ -84,6 +85,7 @@ export type ActionDialogContentProps = {
 
 const CONTENT_NAME = 'ActionDialog.Content';
 const QUESTION_NAME = 'ActionDialog.Question';
+const CLOSE_SELECTOR = '[data-component="Dialog.DefaultClose"]';
 
 const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>(
   (
@@ -94,6 +96,9 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       children,
       onEscapeKeyDown,
       onFocusCapture,
+      onPointerDownCapture,
+      onClickCapture,
+      onClick,
       ...props
     },
     ref,
@@ -103,6 +108,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
     const keepRef = useRef<(() => void) | undefined>(undefined);
     const lastFocusRef = useRef<HTMLElement | null>(null);
     const wasAskingRef = useRef(false);
+    const root = useActionDialogRoot();
 
     const context = useMemo<ActionDialogContextValue>(
       () => ({ confirmEnabled, setConfirmEnabled, asking, setAsking, keepRef, lastFocusRef }),
@@ -124,6 +130,13 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       return () => cancelAnimationFrame(frame);
     }, [asking]);
 
+    // While the footer asks, a click anywhere but the X and the question is the way back: the control
+    // it lands on neither takes the focus nor reacts.
+    const keepsEditing = (target: EventTarget | null): boolean =>
+      asking &&
+      target instanceof Element &&
+      target.closest(`${CLOSE_SELECTOR}, [data-component="${QUESTION_NAME}"]`) === null;
+
     return (
       <Dialog.Content
         ref={ref}
@@ -136,6 +149,35 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
             event.target.closest(`[data-component="${QUESTION_NAME}"]`) === null
           ) {
             lastFocusRef.current = event.target;
+          }
+        }}
+        onPointerDownCapture={(event) => {
+          onPointerDownCapture?.(event);
+          if (keepsEditing(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
+        onClickCapture={(event) => {
+          onClickCapture?.(event);
+          if (keepsEditing(event.target)) {
+            event.preventDefault();
+            event.stopPropagation();
+            keepRef.current?.();
+          } else if (
+            root !== undefined &&
+            event.target instanceof Element &&
+            event.target.closest(CLOSE_SELECTOR) !== null
+          ) {
+            // ! Runs before the X's own click closes: the close guard reads this to tell the X from the mask.
+            root.closeReasonRef.current = 'close';
+          }
+        }}
+        onClick={(event) => {
+          onClick?.(event);
+          // ! A close took the reason already; one the X's own handler prevented must not leave it behind.
+          if (root !== undefined) {
+            root.closeReasonRef.current = undefined;
           }
         }}
         onEscapeKeyDown={(event) => {
@@ -232,7 +274,7 @@ const ActionDialogAction = forwardRef<HTMLButtonElement, ActionDialogActionProps
           onClick?.(event);
           // ! Runs before `Dialog.Close` closes: the close guard reads this to let the action through.
           if (closeOnClick && root !== undefined && !event.defaultPrevented) {
-            root.actionCloseRef.current = true;
+            root.closeReasonRef.current = 'action';
           }
         }}
         {...props}

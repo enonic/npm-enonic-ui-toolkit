@@ -14,7 +14,7 @@ export type CloseGuard = {
   asking: boolean;
   /**
    * For `ActionDialog.Root`: lets an open through, and a close an action took; asks before any
-   * other close that would lose something.
+   * other close that would lose something. While asking, the X closes and any other close keeps.
    */
   onOpenChange: (open: boolean, details?: ActionDialogOpenChangeDetails) => void;
   /** Asks, or closes when there is nothing to lose — a Cancel button. */
@@ -29,8 +29,8 @@ export type CloseGuard = {
  * The dirty-close question of a dialog: `Escape`, the mask, the close button and Cancel all come
  * through `onOpenChange(false)`, and a dialog with unsaved edits asks before it closes. A close
  * from the footer's Confirm or an `Action` is the outcome itself and goes through unasked — its
- * click runs before the render that would clear `dirty`. The footer renders the question; this
- * decides when it is asked.
+ * click runs before the render that would clear `dirty`. The X clicked again while asking is the
+ * answer to close. The footer renders the question; this decides when it is asked.
  */
 export function useCloseGuard({ dirty, open, onOpenChange }: CloseGuardOptions): CloseGuard {
   const [asking, setAsking] = useState(false);
@@ -62,7 +62,7 @@ export function useCloseGuard({ dirty, open, onOpenChange }: CloseGuardOptions):
     onOpenChange: (next, details) => {
       if (next) {
         onOpenChange(true);
-      } else if (details?.reason === 'action') {
+      } else if (details?.reason === 'action' || (asking && details?.reason === 'close')) {
         discard();
       } else if (asking) {
         keep();

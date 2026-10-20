@@ -42,12 +42,17 @@ export const useActionDialog = (): ActionDialogContextValue => {
   return context;
 };
 
-/** Why `onOpenChange` closes: `action` when an `Action` or the footer's Confirm took the outcome. */
-export type ActionDialogOpenChangeDetails = { reason: 'action' };
+/**
+ * Why `onOpenChange` closes: `action` when an `Action` or the footer's Confirm took the outcome,
+ * `close` when the header's X was clicked.
+ */
+export type ActionDialogCloseReason = 'action' | 'close';
+
+export type ActionDialogOpenChangeDetails = { reason: ActionDialogCloseReason };
 
 export type ActionDialogRootContextValue = {
-  /** Set by an action that closes, read by the close it causes. */
-  actionCloseRef: MutableRefObject<boolean>;
+  /** Set by the click that closes, read by the close it causes. */
+  closeReasonRef: MutableRefObject<ActionDialogCloseReason | undefined>;
 };
 
 const ActionDialogRootContext = createContext<ActionDialogRootContextValue | undefined>(undefined);
