@@ -154,6 +154,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
           onPointerDownCapture?.(event);
           if (keepsEditing(event.target)) {
             event.preventDefault();
+            event.stopPropagation();
           }
         }}
         onClickCapture={(event) => {

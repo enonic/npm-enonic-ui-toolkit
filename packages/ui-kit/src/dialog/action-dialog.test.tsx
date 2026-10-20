@@ -33,7 +33,7 @@ const Harness = ({ onAside }: HarnessProps): ReactElement => {
         <ActionDialog.Overlay />
         <ActionDialog.Content>
           <ActionDialog.DefaultHeader title="Edit profile" withClose />
-          <button type="button" onClick={onAside}>
+          <button type="button" onPointerDown={onAside} onClick={onAside}>
             Aside
           </button>
           <ActionDialog.Body>
