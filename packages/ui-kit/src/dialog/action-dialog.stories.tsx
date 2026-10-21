@@ -445,3 +445,71 @@ export const FormWithError: Story = {
     </Opener>
   ),
 };
+
+export const ValidateOnBlur: Story = {
+  name: 'Composed / Validate On Blur',
+  render: () => {
+    const [open, setOpen] = useState(false);
+    const [key, setKey] = useState('');
+    const [touched, setTouched] = useState(false);
+    const [saves, setSaves] = useState(0);
+    const invalid = touched && !/^[a-z][a-z0-9-]{2,}$/.test(key);
+
+    return (
+      <div className="flex flex-col items-center gap-y-3 p-4">
+        <div className="text-subtle max-w-120 text-sm">
+          A form that shows its messages on blur and on Save. Type "x" into the field, then click
+          the upper half of Save: the click counts on the first press, and Save shows the messages.
+          Had the press blurred the field, the messages would grow the centered dialog, the footer
+          would move before the button is released, and the click would be lost.
+        </div>
+        <Button
+          variant="solid"
+          label="New project"
+          onClick={() => {
+            setKey('');
+            setTouched(false);
+            setSaves(0);
+            setOpen(true);
+          }}
+        />
+
+        <ActionDialog.Root open={open} onOpenChange={setOpen}>
+          <ActionDialog.Portal>
+            <ActionDialog.Overlay />
+            <ActionDialog.Content size="medium">
+              <ActionDialog.DefaultHeader title="New project" withClose />
+              <ActionDialog.Body>
+                <div className="flex flex-col gap-y-3">
+                  <Input
+                    label="Key"
+                    value={key}
+                    error={invalid ? 'Not a valid key' : undefined}
+                    onChange={(event) => setKey(event.currentTarget.value)}
+                    onBlur={() => setTouched(true)}
+                  />
+                  {invalid && (
+                    <ul className="text-subtle list-disc pl-5 text-sm">
+                      <li>Starts with a lowercase letter</li>
+                      <li>Uses only lowercase letters, digits and hyphens</li>
+                      <li>Is at least three characters long</li>
+                    </ul>
+                  )}
+                  <div className="text-subtle text-sm">Save clicked: {saves}</div>
+                </div>
+              </ActionDialog.Body>
+              <ActionDialog.Footer
+                confirmLabel="Save"
+                closeOnConfirm={false}
+                onConfirm={() => {
+                  setTouched(true);
+                  setSaves((count) => count + 1);
+                }}
+              />
+            </ActionDialog.Content>
+          </ActionDialog.Portal>
+        </ActionDialog.Root>
+      </div>
+    );
+  },
+};

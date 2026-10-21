@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, render, screen, waitFor } from '@testing-library/preact';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/preact';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { type ReactElement, type ReactNode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -22,9 +22,16 @@ type HarnessProps = {
   onAside?: () => void;
   withHeldClose?: boolean;
   withAction?: 'held' | 'closing';
+  /** A consumer field in the footer, and a Save that leaves the dialog open. */
+  withFooterField?: boolean;
 };
 
-const Harness = ({ onAside, withHeldClose, withAction }: HarnessProps): ReactElement => {
+const Harness = ({
+  onAside,
+  withHeldClose,
+  withAction,
+  withFooterField,
+}: HarnessProps): ReactElement => {
   const [open, setOpen] = useState(true);
   const [name, setName] = useState('Ada');
   const guard = useCloseGuard({ dirty: name !== 'Ada', open, onOpenChange: setOpen });
@@ -60,6 +67,7 @@ const Harness = ({ onAside, withHeldClose, withAction }: HarnessProps): ReactEle
           <ActionDialog.Footer
             confirmLabel="Save"
             closeOnCancel={false}
+            closeOnConfirm={withFooterField !== true}
             onCancel={guard.requestClose}
             onConfirm={() => undefined}
             question={
@@ -72,7 +80,9 @@ const Harness = ({ onAside, withHeldClose, withAction }: HarnessProps): ReactEle
                   }
                 : undefined
             }
-          />
+          >
+            {withFooterField && <input aria-label="Filter" />}
+          </ActionDialog.Footer>
         </ActionDialog.Content>
       </ActionDialog.Portal>
     </ActionDialog.Root>
@@ -236,6 +246,44 @@ describe('ActionDialog close question, from the footer', () => {
     await user.click(screen.getByRole('button', { name: 'Publish' }));
     expect(question()).toBeNull();
     expect(dialog()).not.toBeNull();
+  });
+});
+
+describe('ActionDialog focus on a press', () => {
+  const pressTakesFocus = (target: HTMLElement): boolean => fireEvent.mouseDown(target);
+
+  it('takes no focus on Save and on the X, and leaves a field alone', () => {
+    render(<Harness withFooterField />);
+
+    expect(pressTakesFocus(screen.getByRole('button', { name: 'Save' }))).toBe(false);
+    expect(pressTakesFocus(closeButton())).toBe(false);
+    expect(pressTakesFocus(screen.getByRole('textbox', { name: 'Name' }))).toBe(true);
+    expect(pressTakesFocus(screen.getByRole('textbox', { name: 'Filter' }))).toBe(true);
+  });
+
+  it('keeps the field focused through a click on Save', async () => {
+    render(<Harness withFooterField />);
+    const user = userEvent.setup();
+    const input = screen.getByRole('textbox', { name: 'Name' });
+
+    await user.type(input, 'x');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(dialog()).not.toBeNull();
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('returns the focus to the field after Cancel asked and the answer was to keep editing', async () => {
+    render(<Harness />);
+    const user = userEvent.setup();
+    const input = screen.getByRole('textbox', { name: 'Name' });
+
+    await user.type(input, 'x');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(question()).not.toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(question()).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(input));
   });
 });
 

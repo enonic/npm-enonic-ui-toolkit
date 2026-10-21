@@ -10,6 +10,7 @@ import { TriangleAlert } from 'lucide-react';
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
+  type MouseEvent,
   type ReactElement,
   type ReactNode,
   type Ref,
@@ -86,7 +87,17 @@ export type ActionDialogContentProps = {
 const CONTENT_NAME = 'ActionDialog.Content';
 const QUESTION_NAME = 'ActionDialog.Question';
 const CLOSE_SELECTOR = '[data-component="Dialog.DefaultClose"]';
+/** The chrome's controls from `@enonic/ui`; the kit's own carry `keepFocus` themselves. */
+const CHROME_CONTROL_SELECTOR = `${CLOSE_SELECTOR}, [data-component="Dialog.StepIndicator"]`;
 
+// ! A press that blurs a field can show its messages, grow the centered dialog and move the control
+// ! out from under the pointer before the click lands.
+const keepFocus = (event: MouseEvent<HTMLElement>): void => event.preventDefault();
+
+/**
+ * The dialog's own controls take no focus from a field on a press, so Save runs with the field
+ * still focused: a form validated on blur must also validate on confirm.
+ */
 const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>(
   (
     {
@@ -99,6 +110,7 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
       onPointerDownCapture,
       onClickCapture,
       onClick,
+      onMouseDown,
       ...props
     },
     ref,
@@ -187,6 +199,15 @@ const ActionDialogContent = forwardRef<HTMLDivElement, ActionDialogContentProps>
             keepRef.current?.();
           }
         }}
+        onMouseDown={(event) => {
+          onMouseDown?.(event);
+          if (
+            event.target instanceof Element &&
+            event.target.closest(CHROME_CONTROL_SELECTOR) !== null
+          ) {
+            keepFocus(event);
+          }
+        }}
         {...props}
       >
         <ActionDialogProvider value={context}>{children}</ActionDialogProvider>
@@ -254,6 +275,7 @@ const ActionDialogAction = forwardRef<HTMLButtonElement, ActionDialogActionProps
       variant = 'solid',
       className,
       onClick,
+      onMouseDown,
       ...props
     },
     ref,
@@ -269,6 +291,10 @@ const ActionDialogAction = forwardRef<HTMLButtonElement, ActionDialogActionProps
         label={label}
         disabled={disabled || !confirmEnabled}
         className={cn(intent === 'danger' && DANGER_BUTTON_CLASS_NAME, className)}
+        onMouseDown={(event) => {
+          onMouseDown?.(event);
+          keepFocus(event);
+        }}
         onClick={(event) => {
           onClick?.(event);
           // ! Runs before `Dialog.Close` closes: the close guard reads this to let the action through.
@@ -378,6 +404,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
         variant={cancelVariant}
         size="lg"
         label={cancelLabel ?? t('enonic.uiKit.dialog.cancel')}
+        onMouseDown={keepFocus}
         onClick={onCancel}
       />
     );
@@ -411,6 +438,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
                 variant="outline"
                 size="lg"
                 label={question.keepLabel ?? t('enonic.uiKit.dialog.keep')}
+                onMouseDown={keepFocus}
                 onClick={question.onKeep}
               />
               <Button
@@ -419,6 +447,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
                 size="lg"
                 label={question.confirmLabel ?? t('enonic.uiKit.dialog.confirm')}
                 className={cn(question.intent === 'danger' && DANGER_BUTTON_CLASS_NAME)}
+                onMouseDown={keepFocus}
                 onClick={question.onConfirm}
               />
             </div>
