@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FieldRegistry, type RevealOptions } from './field-registry';
 
@@ -31,6 +31,10 @@ function makeHandle(): HandleMocks {
 }
 
 describe('FieldRegistry', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   let registry: FieldRegistry;
 
   beforeEach(() => {
@@ -383,7 +387,6 @@ describe('FieldRegistry', () => {
       expect(throwing).toHaveBeenCalledOnce();
       expect(sane).toHaveBeenCalledExactlyOnceWith('.foo');
       expect(consoleError).toHaveBeenCalled();
-      consoleError.mockRestore();
     });
 
     it('returns an unsubscribe function that stops further deliveries', async () => {

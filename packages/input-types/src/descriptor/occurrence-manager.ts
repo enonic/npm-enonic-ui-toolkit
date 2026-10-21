@@ -67,8 +67,8 @@ export class OccurrenceManager<C extends InputTypeConfig = InputTypeConfig> {
   /**
    * Replaces the values from outside, keeping the id and raw value at every position whose value
    * is the same object, so a sync after `set()` does not blank what the user typed. No maximum is
-   * enforced: the data is shown as it is and the breach reported. Transient errors go, since the
-   * values they were tied to did.
+   * enforced: the data is shown as it is and the breach reported. A transient error stays only
+   * where its value did.
    */
   setValues(values: Value[]): void {
     const oldIds = this.ids;
@@ -79,7 +79,9 @@ export class OccurrenceManager<C extends InputTypeConfig = InputTypeConfig> {
       oldValues[i] === value ? oldRawValues[i] : undefined,
     );
     this.ids = this.values.map((_, i) => oldIds[i] ?? this.generateId());
-    this.transientErrors.clear();
+    oldIds.forEach((id, i) => {
+      if (oldValues[i] !== this.values[i]) this.transientErrors.delete(id);
+    });
   }
 
   getCount(): number {

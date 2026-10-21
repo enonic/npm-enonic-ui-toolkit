@@ -137,7 +137,8 @@ export function useOptionSetChildErrors(
 
 type OccurrenceInteraction = {
   interacted: boolean;
-  validationVisibility: ValidationVisibility;
+  /** Only an occurrence added during the session has its own; the rest follow the form's. */
+  validationVisibility?: ValidationVisibility;
 };
 
 export type UseSetChildShowErrorsResult = {
@@ -177,24 +178,6 @@ export function useSetChildShowErrors(
     [],
   );
 
-  const getOrInit = useCallback(
-    (set: PropertySet, defaultVisibility: ValidationVisibility): OccurrenceInteraction => {
-      const existing = occurrenceInteractions.get(set);
-      if (existing !== undefined) return existing;
-      const fresh: OccurrenceInteraction = {
-        interacted: false,
-        validationVisibility: defaultVisibility,
-      };
-      occurrenceInteractions.set(set, fresh);
-      return fresh;
-    },
-    [occurrenceInteractions],
-  );
-
-  useEffect(() => {
-    propertySets.forEach((set) => getOrInit(set, validationVisibility));
-  }, [propertySets, validationVisibility, getOrInit]);
-
   useEffect(() => {
     // Registers after `useSetPropertyArray` has seeded the minimum: the seed's synchronous adds
     // are not user interaction and must not count as one.
@@ -228,9 +211,8 @@ export function useSetChildShowErrors(
         set = container.getParent();
       }
       if (set === undefined) return;
-      const current = getOrInit(set, validationVisibility);
-      const nextVisibility: ValidationVisibility =
-        current.validationVisibility === 'none' ? 'all' : current.validationVisibility;
+      const recorded = occurrenceInteractions.get(set)?.validationVisibility;
+      const nextVisibility = (recorded ?? validationVisibility) === 'none' ? 'all' : recorded;
       occurrenceInteractions.set(set, { interacted: true, validationVisibility: nextVisibility });
       setTick((t) => t + 1);
     };
@@ -241,26 +223,28 @@ export function useSetChildShowErrors(
       propertyArray.unPropertyAdded(addHandler);
       propertyArray.unPropertyValueChanged(valueChangedHandler);
     };
-  }, [propertyArray, validationVisibility, occurrenceInteractions, getOrInit]);
+  }, [propertyArray, validationVisibility, occurrenceInteractions]);
 
   const childValidationVisibility = useMemo(() => {
     const map = new Map<number, ValidationVisibility>();
     propertySets.forEach((set, index) => {
-      const { validationVisibility: recorded } = getOrInit(set, validationVisibility);
+      const recorded =
+        occurrenceInteractions.get(set)?.validationVisibility ?? validationVisibility;
       map.set(index, effectiveOccurrenceVisibility(validationVisibility, recorded, revealFresh));
     });
     return map;
-  }, [propertySets, tick, validationVisibility, revealFresh, getOrInit]);
+  }, [propertySets, tick, validationVisibility, revealFresh, occurrenceInteractions]);
 
   const childShowErrors = useMemo(() => {
     const map = new Map<number, boolean>();
     propertySets.forEach((set, index) => {
-      const { interacted, validationVisibility: recorded } = getOrInit(set, validationVisibility);
+      const interaction = occurrenceInteractions.get(set);
+      const recorded = interaction?.validationVisibility ?? validationVisibility;
       const vv = effectiveOccurrenceVisibility(validationVisibility, recorded, revealFresh);
-      map.set(index, vv === 'all' || (vv === 'interactive' && interacted));
+      map.set(index, vv === 'all' || (vv === 'interactive' && interaction?.interacted === true));
     });
     return map;
-  }, [propertySets, tick, validationVisibility, revealFresh, getOrInit]);
+  }, [propertySets, tick, validationVisibility, revealFresh, occurrenceInteractions]);
 
   return { childValidationVisibility, childShowErrors, setInteracted };
 }

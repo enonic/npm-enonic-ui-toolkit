@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createAdminEvents, type TopicHandlers } from './hub-client';
 
@@ -44,6 +44,10 @@ function harness() {
 }
 
 describe('createAdminEvents', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('loads the client served under the hub url', async () => {
     const { events, loaded, arrive } = harness();
     events.connect();
@@ -116,7 +120,6 @@ describe('createAdminEvents', () => {
     expect(() => emit('app:mine', { n: 1 })).not.toThrow();
     expect(next).toHaveBeenCalledWith({ n: 1 });
     expect(error).toHaveBeenCalledTimes(1);
-    error.mockRestore();
   });
 
   it('reports a loss past a subscriber that throws on it', async () => {
@@ -136,7 +139,6 @@ describe('createAdminEvents', () => {
     expect(() => lose('app:mine', null)).not.toThrow();
     expect(next).toHaveBeenCalledWith(null);
     expect(error).toHaveBeenCalledTimes(1);
-    error.mockRestore();
   });
 
   it('stops delivering once unsubscribed', async () => {
@@ -230,11 +232,10 @@ describe('createAdminEvents', () => {
 
     expect(error).toHaveBeenCalled();
     expect(onMessage).not.toHaveBeenCalled();
-    error.mockRestore();
   });
 
   it('retries the load on the next connect after a failure', async () => {
-    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const subscribed: string[] = [];
     let attempts = 0;
     const events = createAdminEvents('/hub', () => {
@@ -254,7 +255,6 @@ describe('createAdminEvents', () => {
 
     expect(attempts).toBe(2);
     expect(subscribed).toEqual(['app:mine']);
-    error.mockRestore();
   });
 
   it('logs a client whose connect throws, and retries it on the next connect', async () => {
@@ -287,7 +287,6 @@ describe('createAdminEvents', () => {
 
     expect(attempts).toBe(2);
     expect(subscribed).toEqual(['app:mine']);
-    error.mockRestore();
   });
 
   it('keeps the one connection when a replayed subscribe throws', async () => {
@@ -316,6 +315,50 @@ describe('createAdminEvents', () => {
 
     expect(error).toHaveBeenCalledTimes(1);
     expect(connections).toBe(1);
-    error.mockRestore();
+  });
+
+  it('subscribes the later topics when an earlier replayed subscribe throws', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const subscribed: string[] = [];
+    const events = createAdminEvents('/hub', () =>
+      Promise.resolve({
+        connect: () => ({
+          subscribe: (topic: string) => {
+            if (topic === 'app:first') throw new Error('port closed');
+            subscribed.push(topic);
+          },
+        }),
+      }),
+    );
+    events.subscribeTopic('app:first', { onMessage: () => {} });
+    events.subscribeTopic('app:second', { onMessage: () => {} });
+
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(subscribed).toEqual(['app:second']);
+    expect(error).toHaveBeenCalledExactlyOnceWith(
+      "Failed to subscribe to the admin events topic 'app:first':",
+      expect.any(Error),
+    );
+  });
+
+  it('does not replay a topic unsubscribed before the client arrived', async () => {
+    const subscribed: string[] = [];
+    const events = createAdminEvents('/hub', () =>
+      Promise.resolve({
+        connect: () => ({ subscribe: (topic: string) => subscribed.push(topic) }),
+      }),
+    );
+    const unsubscribe = events.subscribeTopic('app:gone', { onMessage: () => {} });
+    events.subscribeTopic('app:kept', { onMessage: () => {} });
+    unsubscribe();
+
+    events.connect();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(subscribed).toEqual(['app:kept']);
   });
 });

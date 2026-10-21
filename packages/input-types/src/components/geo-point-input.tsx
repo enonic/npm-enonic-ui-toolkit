@@ -1,6 +1,6 @@
-import { Input } from '@enonic/ui';
+import { Input, useBlinkAttention } from '@enonic/ui';
 import { GeoPoint } from '@enonic/ui-utils';
-import type { ChangeEvent, ReactElement } from 'react';
+import { type ChangeEvent, type ReactElement, useRef } from 'react';
 
 import { type Value, ValueTypes } from '../data';
 import type { GeoPointConfig } from '../descriptor/input-type-config';
@@ -23,14 +23,20 @@ export const GeoPointInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef,
 }: GeoPointInputProps): ReactElement => {
   const t = useInputTypesPhrases();
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const display = displayValue(value, rawValue, valueToString);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -54,6 +60,12 @@ export const GeoPointInput = ({
       value={display}
       onChange={handleChange}
       onBlur={onBlur}
+      onFocus={onFocus}
+      readOnly={readOnly}
+      processing={processing}
+      tabIndex={processing ? -1 : undefined}
+      highlight={isBlinking}
+      highlightRef={highlightRef}
       enterKeyHint={onMobileComplete ? 'next' : undefined}
       onKeyDown={
         onMobileComplete

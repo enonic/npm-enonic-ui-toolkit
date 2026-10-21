@@ -5,6 +5,11 @@ boundaries and the peer-versus-dependency rule are `architecture.md`'s; this doc
 to one body of code. Written ahead of the code, from the three repositories it comes out of, so
 the extraction has something to check against.
 
+> [!NOTE]
+> Historical: the plan the extraction was checked against, kept for its reasons. The code has
+> landed and moved on since; where this document and the code or `architecture.md` disagree, they
+> win. The decisions that still hold are under **What the review settled**.
+
 ## Where the code is today
 
 The XP form has been solved three times. Two of the copies are the source; the third is what the

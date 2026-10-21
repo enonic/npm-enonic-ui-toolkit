@@ -81,8 +81,13 @@ export function createAdminEvents(
             onLoss: ({ topic, count }) => dispatch(topic, (h) => h.onLoss?.(count)),
           });
 
-          // Subscriptions taken before the client arrived.
-          registry.forEach((_, topic) => connection?.subscribe(topic));
+          registry.forEach((_, topic) => {
+            try {
+              connection?.subscribe(topic);
+            } catch (cause: unknown) {
+              console.error(`Failed to subscribe to the admin events topic '${topic}':`, cause);
+            }
+          });
         })
         .catch((cause: unknown) => {
           // ! Unlatch, or one transient failure would kill live updates for the page's life: the

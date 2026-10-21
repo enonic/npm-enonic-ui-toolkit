@@ -319,7 +319,33 @@ describe('OccurrenceManager', () => {
       ]);
     });
 
-    it('clears all transient on setValues (sync)', () => {
+    it('keeps the transient error of an untouched occurrence through the sync after an edit', () => {
+      const mgr = createManager({ values: ['a', 'b'] });
+      const idB = mgr.getIds()[1]!;
+      mgr.setTransientError(idB, 'Translation failed');
+
+      mgr.set(0, ValueTypes.STRING.newValue('a2'));
+      mgr.setValues(mgr.getValues());
+
+      expect(mgr.getTransientError(idB)).toBe('Translation failed');
+      expect(mgr.validate().occurrenceValidation[1]!.validationResults).toEqual([
+        { message: 'Translation failed', transient: true },
+      ]);
+    });
+
+    it('drops the transient error of a replaced value and keeps the one of a kept value', () => {
+      const mgr = createManager({ values: ['a', 'b'] });
+      const [idA, idB] = mgr.getIds();
+      mgr.setTransientError(idA!, 'One');
+      mgr.setTransientError(idB!, 'Two');
+
+      mgr.setValues([ValueTypes.STRING.newValue('x'), mgr.getValues()[1]!]);
+
+      expect(mgr.getTransientError(idA!)).toBeUndefined();
+      expect(mgr.getTransientError(idB!)).toBe('Two');
+    });
+
+    it('clears the transient errors of the values setValues replaced', () => {
       const mgr = createManager({ values: ['a', 'b'] });
       const [idA, idB] = mgr.getIds();
       mgr.setTransientError(idA!, 'One');

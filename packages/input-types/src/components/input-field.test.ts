@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PropertyTree } from '../data';
 import type { Value } from '../data';
@@ -176,6 +176,11 @@ describe('InputField', () => {
     });
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    mocks.useEffect.mockReset();
+  });
+
   it('renders UnsupportedInput when definition is missing', () => {
     const input = makeInput('Unknown');
     const propertySet = new PropertyTree().getRoot();
@@ -267,7 +272,6 @@ describe('InputField', () => {
     getOnlyChild(element).props.onMobileComplete(0, {} as HTMLElement);
 
     expect(focusNext).toHaveBeenCalledOnce();
-    vi.unstubAllGlobals();
   });
 
   it('moves mobile completion out of the field without changing occurrences', () => {
@@ -300,7 +304,6 @@ describe('InputField', () => {
     expect(focusNext).toHaveBeenCalledOnce();
     expect(add).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
-    vi.unstubAllGlobals();
   });
 
   it('stores null plus rawValue for invalid TextLine edits', () => {
@@ -346,6 +349,12 @@ describe('InputField', () => {
     expect(set.mock.calls[0]![2]).toBe('abc');
     expect(rawValueMap.get('testField')).toEqual(['abc']);
     expect(propertySet.getPropertyArray('testField')?.getValue(0)?.isNull()).toBe(true);
+
+    child.props.onChange(0, ValueTypes.STRING.newValue('123'), '123');
+
+    expect(set).toHaveBeenLastCalledWith(0, ValueTypes.STRING.newValue('123'), '123');
+    expect(rawValueMap.get('testField')).toEqual(['123']);
+    expect(propertySet.getPropertyArray('testField')?.getValue(0)?.getString()).toBe('123');
   });
 
   it('renders internal components with onMove and disables auto-seeding', () => {
@@ -915,7 +924,7 @@ describe('InputField', () => {
       return { input, propertySet, definition };
     }
 
-    it('registers a FieldHandle exposing the new AI affordance methods', async () => {
+    it('registers a FieldHandle that rejects an occurrence the manager does not hold', async () => {
       const { FieldRegistry } = await import('../field-registry');
       const registry = new FieldRegistry();
       const registerSpy = vi.spyOn(registry, 'register');
@@ -937,7 +946,7 @@ describe('InputField', () => {
         setTransientError: vi.fn(() => false),
         clearTransientError: vi.fn(() => false),
         clearAllTransientErrors: vi.fn(),
-        getOccurrenceIds: vi.fn(() => []),
+        getOccurrenceIds: vi.fn(() => ['occurrence-0']),
       });
 
       // Invoke effects synchronously so register() actually runs during the render.
@@ -953,17 +962,10 @@ describe('InputField', () => {
       if (lastCall == null) throw new Error('register was not called');
       const handle = lastCall[1]!;
 
-      expect(typeof handle.setTransientError).toBe('function');
-      expect(typeof handle.clearTransientError).toBe('function');
-      expect(typeof handle.clearAllTransientErrors).toBe('function');
-      expect(typeof handle.getOccurrenceIds).toBe('function');
-      expect(typeof handle.acquireProcessing).toBe('function');
-      expect(typeof handle.releaseProcessing).toBe('function');
-      expect(typeof handle.isProcessing).toBe('function');
-      expect(typeof handle.reveal).toBe('function');
-      expect(typeof handle.focus).toBe('function');
-
-      mocks.useEffect.mockReset();
+      expect(handle.acquireProcessing('gone')).toBeUndefined();
+      expect(handle.acquireProcessing('occurrence-0')).toBeDefined();
+      expect(handle.focus('gone')).toBe(false);
+      expect(handle.reveal('gone')).toBe(false);
     });
 
     it('registers under the data path including occurrence indices for nested PropertySets', async () => {
@@ -1008,8 +1010,6 @@ describe('InputField', () => {
       const lastCall = registerSpy.mock.calls.at(-1);
       if (lastCall == null) throw new Error('register was not called');
       expect(lastCall[0]!).toBe('.itemSet[1].testField');
-
-      mocks.useEffect.mockReset();
     });
 
     it('blurs the focused input without emitting active-path null to subscribers', async () => {
@@ -1087,6 +1087,8 @@ describe('InputField', () => {
       const token = handle.acquireProcessing(occurrenceId);
       expect(token).toBeDefined();
       expect(blur).toHaveBeenCalledOnce();
+      expect(handle.isProcessing(occurrenceId)).toBe(true);
+      expect(handle.acquireProcessing(occurrenceId)).toBeUndefined();
 
       // The leaf observes the blur and forwards it to handleOccurrenceBlur — this
       // is the call site that, without the suppression flag, would emit undefined.
@@ -1094,10 +1096,10 @@ describe('InputField', () => {
       await Promise.resolve();
 
       expect(subscriber).not.toHaveBeenCalledWith(undefined);
+      expect(handle.releaseProcessing(token!)).toBe(true);
+      expect(handle.isProcessing(occurrenceId)).toBe(false);
 
       unsubscribe();
-      vi.unstubAllGlobals();
-      mocks.useEffect.mockReset();
     });
 
     it('emits notifyActivePath(undefined) when an active field unmounts', async () => {
@@ -1148,7 +1150,6 @@ describe('InputField', () => {
       expect(subscriber).toHaveBeenCalledExactlyOnceWith(undefined);
 
       unsubscribe();
-      mocks.useEffect.mockReset();
     });
 
     it('does not emit on unmount when the field was never active', async () => {
@@ -1191,7 +1192,6 @@ describe('InputField', () => {
       expect(subscriber).not.toHaveBeenCalled();
 
       unsubscribe();
-      mocks.useEffect.mockReset();
     });
   });
 });

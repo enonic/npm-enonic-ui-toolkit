@@ -31,7 +31,6 @@ function validateRange(num: number, config: NumberConfig): ValidationResult[] {
 function numberDescriptor(
   name: 'Long' | 'Double',
   type: typeof ValueTypes.LONG | typeof ValueTypes.DOUBLE,
-  isOfKind: (num: number) => boolean,
 ): InputTypeDescriptor<NumberConfig> {
   return {
     name,
@@ -44,7 +43,7 @@ function numberDescriptor(
 
     createDefaultValue(raw: unknown): Value {
       const num = typeof raw === 'string' ? (raw.trim() === '' ? undefined : Number(raw)) : raw;
-      return typeof num === 'number' && isOfKind(num)
+      return typeof num === 'number' && type.isValid(num)
         ? type.fromJsonValue(num)
         : type.newNullValue();
     },
@@ -56,10 +55,12 @@ function numberDescriptor(
           return [];
         }
         const parsed = Number(rawValue);
-        return isOfKind(parsed) ? validateRange(parsed, config) : [invalidValue];
+        return type.isValid(parsed) ? validateRange(parsed, config) : [invalidValue];
       }
       const num = value.getObject();
-      return typeof num === 'number' && isOfKind(num) ? validateRange(num, config) : [invalidValue];
+      return typeof num === 'number' && type.isValid(num)
+        ? validateRange(num, config)
+        : [invalidValue];
     },
 
     valueBreaksRequired(value: Value): boolean {
@@ -68,10 +69,6 @@ function numberDescriptor(
   };
 }
 
-export const LongDescriptor = numberDescriptor('Long', ValueTypes.LONG, (num) =>
-  ValueTypes.LONG.isValid(num),
-);
+export const LongDescriptor = numberDescriptor('Long', ValueTypes.LONG);
 
-export const DoubleDescriptor = numberDescriptor('Double', ValueTypes.DOUBLE, (num) =>
-  ValueTypes.DOUBLE.isValid(num),
-);
+export const DoubleDescriptor = numberDescriptor('Double', ValueTypes.DOUBLE);

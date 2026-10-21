@@ -52,6 +52,12 @@ export default defineConfig({
     },
   },
 
+  // Vitest resolves a DOM test's packages without `module`, so dnd-kit, which has no `exports`,
+  // would load its CommonJS build and run its hooks on `react` instead of the aliased Preact.
+  ...(process.env.VITEST && {
+    environments: { client: { resolve: { mainFields: ['module', 'main'] } } },
+  }),
+
   // The workspace builds and tests on Preact; `react` is what package sources import.
   // These aliases govern lint and tests only — `vp pack` emits `react` as a bare external,
   // and `react`/`react-dom`/`preact` become optional peers with the first component.

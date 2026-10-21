@@ -1,4 +1,4 @@
-import { Button, DatePicker, Input } from '@enonic/ui';
+import { Button, DatePicker, Input, useBlinkAttention } from '@enonic/ui';
 import { formatDate } from '@enonic/ui-utils';
 import { type ChangeEvent, type ReactElement, useCallback, useRef, useState } from 'react';
 
@@ -25,12 +25,16 @@ export const DateInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef: externalInputRef,
 }: DateInputProps): ReactElement => {
   const [open, setOpen] = useState(false);
@@ -38,6 +42,8 @@ export const DateInput = ({
   const [draftDate, setDraftDate] = useState<Date | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputWrapperRef = useRef<HTMLDivElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const t = useInputTypesPhrases();
   const isMobile = useIsMobile();
   const setInputRef = useCallback(
@@ -85,6 +91,12 @@ export const DateInput = ({
           value={display}
           onChange={handleInputChange}
           onBlur={onBlur}
+          onFocus={onFocus}
+          readOnly={readOnly}
+          processing={processing}
+          tabIndex={processing ? -1 : undefined}
+          highlight={isBlinking}
+          highlightRef={highlightRef}
           enterKeyHint={onMobileComplete ? 'next' : undefined}
           onKeyDown={
             onMobileComplete
@@ -122,6 +134,12 @@ export const DateInput = ({
           value={display}
           onChange={handleInputChange}
           onBlur={onBlur}
+          onFocus={onFocus}
+          readOnly={readOnly}
+          processing={processing}
+          tabIndex={processing ? -1 : undefined}
+          highlight={isBlinking}
+          highlightRef={highlightRef}
           enterKeyHint={onMobileComplete ? 'next' : undefined}
           onKeyDown={
             onMobileComplete
@@ -133,7 +151,7 @@ export const DateInput = ({
           endAddon={
             <div className="flex h-full w-11 items-center justify-center bg-transparent">
               <DatePicker.Trigger
-                disabled={!enabled}
+                disabled={!enabled || readOnly || processing}
                 aria-label={t('enonic.inputTypes.field.dateTrigger')}
               />
             </div>

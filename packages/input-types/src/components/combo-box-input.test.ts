@@ -92,116 +92,47 @@ function getElementProps(
 }
 
 describe('ComboBoxInput', () => {
-  describe('selected values derivation', () => {
-    it('should extract strings from non-null values', () => {
-      const values = [ValueTypes.STRING.newValue('option1'), ValueTypes.STRING.newValue('option2')];
-
-      const selectedStrings = values.filter((v) => !v.isNull()).map((v) => v.getString());
-
-      expect(selectedStrings).toEqual(['option1', 'option2']);
+  describe('selection', () => {
+    beforeEach(() => {
+      mocks.useState.mockReset();
+      mocks.useState.mockImplementation((initial: unknown) => [
+        typeof initial === 'function' ? (initial as () => unknown)() : initial,
+        vi.fn(),
+      ]);
     });
 
-    it('should skip null values', () => {
+    it('removes what was deselected, last first, and adds what was picked', () => {
+      const onAdd = vi.fn();
+      const onRemove = vi.fn();
       const values = [
-        ValueTypes.STRING.newValue('option1'),
-        ValueTypes.STRING.newNullValue(),
-        ValueTypes.STRING.newValue('option3'),
+        ValueTypes.STRING.newValue('a'),
+        ValueTypes.STRING.newValue('b'),
+        ValueTypes.STRING.newValue('c'),
       ];
 
-      const selectedStrings = values.filter((v) => !v.isNull()).map((v) => v.getString());
+      getElementProps('Combobox.Root', {
+        values,
+        onAdd,
+        onRemove,
+        occurrences: Occurrences.minmax(0, 0),
+      }).onSelectionChange(['b', 'd']);
 
-      expect(selectedStrings).toEqual(['option1', 'option3']);
+      expect(onRemove.mock.calls).toEqual([[2], [0]]);
+      expect(onAdd).toHaveBeenCalledExactlyOnceWith(ValueTypes.STRING.newValue('d'));
     });
 
-    it('should return empty array for no values', () => {
-      const selectedStrings = [].filter(() => true).map(() => '');
+    it('keys the rows by occurrence, so two equal values stay two rows', () => {
+      const values = [ValueTypes.STRING.newValue('a'), ValueTypes.STRING.newValue('a')];
+      const { keyExtractor } = getElementProps('SortableGridList', {
+        occurrenceIds: ['occurrence-0', 'occurrence-1'],
+        values,
+        occurrences: Occurrences.minmax(0, 2),
+      });
 
-      expect(selectedStrings).toEqual([]);
-    });
-  });
-
-  describe('option lookup', () => {
-    const options: ComboBoxConfig['options'] = [
-      { label: 'Alpha', value: 'a' },
-      { label: 'Beta', value: 'b' },
-      { label: 'Gamma', value: 'c' },
-    ];
-    const optionMap = new Map(options.map((o) => [o.value, o]));
-
-    it('should find option by value', () => {
-      expect(optionMap.get('b')?.label).toBe('Beta');
-    });
-
-    it('should return undefined for unknown value', () => {
-      expect(optionMap.get('unknown')).toBeUndefined();
-    });
-  });
-
-  describe('option filtering', () => {
-    const options: ComboBoxConfig['options'] = [
-      { label: 'Alpha', value: 'a' },
-      { label: 'Beta', value: 'b' },
-      { label: 'Gamma', value: 'c' },
-    ];
-
-    it('should filter by label case-insensitively', () => {
-      const query = 'alpha';
-      const filtered = options.filter((o) => o.label.toLowerCase().includes(query));
-
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0]?.value).toBe('a');
-    });
-
-    it('should filter by value', () => {
-      const query = 'b';
-      const filtered = options.filter(
-        (o) => o.label.toLowerCase().includes(query) || o.value.toLowerCase().includes(query),
-      );
-
-      expect(filtered).toHaveLength(1);
-    });
-
-    it('should return all options when query is empty', () => {
-      const filtered = options;
-
-      expect(filtered).toHaveLength(3);
-    });
-  });
-
-  describe('isMultiSelect computation', () => {
-    function isMultiSelect(max: number): boolean {
-      return max === 0 || max > 1;
-    }
-
-    it('should be false for single select (max 1)', () => {
-      expect(isMultiSelect(1)).toBe(false);
-    });
-
-    it('should be true for unlimited (max 0)', () => {
-      expect(isMultiSelect(0)).toBe(true);
-    });
-
-    it('should be true for max greater than 1', () => {
-      expect(isMultiSelect(2)).toBe(true);
-      expect(isMultiSelect(5)).toBe(true);
-    });
-  });
-
-  describe('canAdd computation', () => {
-    function canAdd(max: number, count: number): boolean {
-      return max === 0 || count < max;
-    }
-
-    it('should allow adding when below max', () => {
-      expect(canAdd(3, 1)).toBe(true);
-    });
-
-    it('should allow adding when max is unlimited (0)', () => {
-      expect(canAdd(0, 100)).toBe(true);
-    });
-
-    it('should not allow adding when at max', () => {
-      expect(canAdd(3, 3)).toBe(false);
+      expect(values.map((value, index) => keyExtractor(value, index))).toEqual([
+        'occurrence-0',
+        'occurrence-1',
+      ]);
     });
   });
 
@@ -219,13 +150,6 @@ describe('ComboBoxInput', () => {
         { label: 'Label 2', value: 'key2' },
       ]);
     });
-
-    it('should create value from string', () => {
-      const value = ValueTypes.STRING.newValue('option1');
-
-      expect(value.isNull()).toBe(false);
-      expect(value.getString()).toBe('option1');
-    });
   });
 
   describe('validation visibility', () => {
@@ -238,15 +162,6 @@ describe('ComboBoxInput', () => {
       mocks.useValidationVisibility.mockReturnValue('all');
     });
 
-    const touchedStateImplementation = (initial: unknown) => [
-      initial === false
-        ? true
-        : typeof initial === 'function'
-          ? (initial as () => unknown)()
-          : initial,
-      vi.fn(),
-    ];
-
     it('does not surface the occurrence error on untouched new content in interactive mode', () => {
       mocks.useValidationVisibility.mockReturnValue('interactive');
       expect(getElementProps('Combobox.Root').error).toBe(false);
@@ -258,7 +173,9 @@ describe('ComboBoxInput', () => {
 
     it('surfaces the occurrence error on new content once the field has been interacted with', () => {
       mocks.useValidationVisibility.mockReturnValue('interactive');
-      mocks.useState.mockImplementation(touchedStateImplementation);
+      mocks.useState
+        .mockImplementationOnce(() => [undefined, vi.fn()])
+        .mockImplementationOnce(() => [true, vi.fn()]);
       expect(getElementProps('Combobox.Root').error).toBe(true);
     });
 

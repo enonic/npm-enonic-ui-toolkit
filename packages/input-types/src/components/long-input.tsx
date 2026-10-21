@@ -1,5 +1,5 @@
-import { Input } from '@enonic/ui';
-import type { ChangeEvent, ReactElement } from 'react';
+import { Input, useBlinkAttention } from '@enonic/ui';
+import { type ChangeEvent, type ReactElement, useRef } from 'react';
 
 import { type Value, ValueTypes } from '../data';
 import type { NumberConfig } from '../descriptor/input-type-config';
@@ -22,15 +22,21 @@ export const LongInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef,
 }: LongInputProps): ReactElement => {
   const t = useInputTypesPhrases();
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const display = displayValue(value, rawValue, valueToString);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -53,6 +59,12 @@ export const LongInput = ({
       value={display}
       onChange={handleChange}
       onBlur={onBlur}
+      onFocus={onFocus}
+      readOnly={readOnly}
+      processing={processing}
+      tabIndex={processing ? -1 : undefined}
+      highlight={isBlinking}
+      highlightRef={highlightRef}
       enterKeyHint={onMobileComplete ? 'next' : undefined}
       onKeyDown={
         onMobileComplete

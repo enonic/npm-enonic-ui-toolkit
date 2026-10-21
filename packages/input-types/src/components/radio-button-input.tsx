@@ -16,18 +16,24 @@ export const RadioButtonInput = ({
   value,
   onChange,
   onBlur,
+  onFocus,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
   inputRef,
 }: RadioButtonInputProps): ReactElement => {
   const t = useInputTypesPhrases();
   const stringValue = value.isNull() ? '' : (value.getString() ?? '');
   const primaryValue = stringValue || config.options[0]?.value;
 
+  const editable = !readOnly && !processing;
+
   const handleValueChange = (newValue: string): void => {
+    if (!editable) return;
     onChange(ValueTypes.STRING.newValue(newValue));
   };
 
@@ -39,6 +45,8 @@ export const RadioButtonInput = ({
         value={stringValue}
         onValueChange={handleValueChange}
         onBlur={onBlur}
+        onFocus={onFocus}
+        aria-readonly={!editable || undefined}
         error={errors.length > 0}
         errorMessage={getFirstError(errors, t)}
       >

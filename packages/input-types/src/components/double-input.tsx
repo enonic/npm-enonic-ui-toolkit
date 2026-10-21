@@ -1,4 +1,4 @@
-import { Input } from '@enonic/ui';
+import { Input, useBlinkAttention } from '@enonic/ui';
 import { type ChangeEvent, type ReactElement, useEffect, useRef, useState } from 'react';
 
 import { type Value, ValueTypes } from '../data';
@@ -30,15 +30,21 @@ export const DoubleInput = ({
   rawValue,
   onChange,
   onBlur,
+  onFocus,
   onMobileComplete,
   config,
   input,
   enabled,
   index,
   errors,
+  readOnly = false,
+  processing = false,
+  highlight,
   inputRef,
 }: DoubleInputProps): ReactElement => {
   const t = useInputTypesPhrases();
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const isBlinking = useBlinkAttention(highlightRef, highlight, { scrollIntoView: false });
   const display = displayValue(value, rawValue, valueToString);
   // The step follows the decimals the user typed, but holds through the spinner's own
   // increments, so 0.001 + 0.001 stays at three decimals instead of collapsing to 0.002 → 1.
@@ -80,6 +86,12 @@ export const DoubleInput = ({
       value={display}
       onChange={handleChange}
       onBlur={onBlur}
+      onFocus={onFocus}
+      readOnly={readOnly}
+      processing={processing}
+      tabIndex={processing ? -1 : undefined}
+      highlight={isBlinking}
+      highlightRef={highlightRef}
       enterKeyHint={onMobileComplete ? 'next' : undefined}
       onKeyDown={
         onMobileComplete

@@ -17,7 +17,7 @@ import {
 import { cn } from '@enonic/ui';
 import { GripVertical } from 'lucide-react';
 import type { FocusEventHandler, KeyboardEventHandler, ReactElement, ReactNode } from 'react';
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import type { ElementRole } from '../types';
 import {
@@ -86,6 +86,8 @@ const ROW_NAVIGATION_TARGET_SELECTOR = `${COMPOSITE_NAVIGATION_TARGET_SELECTOR},
 const NAVIGATION_TARGET_TABINDEX_ATTR = 'data-sortable-list-navigation-target-tabindex';
 const NAVIGATION_TARGET_TABINDEX_IMPLICIT = '__implicit__';
 const NAVIGATION_TARGET_EFFECTIVE_TABINDEX_ATTR = 'data-sortable-list-effective-tabindex';
+// Parses as -1, but no framework writes it: any other value is the consumer's own, set since.
+const NAVIGATION_TARGET_SUPPRESSED_TABINDEX = '-01';
 const NON_EDITABLE_INPUT_TYPES = new Set([
   'button',
   'checkbox',
@@ -188,10 +190,12 @@ function resolveFocusedIndexAfterMove(
 function restoreNavigationTargetTabIndex(target: HTMLElement): void {
   const original = target.getAttribute(NAVIGATION_TARGET_TABINDEX_ATTR);
   if (original == null) return;
-  if (original === NAVIGATION_TARGET_TABINDEX_IMPLICIT) {
-    target.removeAttribute('tabindex');
-  } else {
-    target.setAttribute('tabindex', original);
+  if (target.getAttribute('tabindex') === NAVIGATION_TARGET_SUPPRESSED_TABINDEX) {
+    if (original === NAVIGATION_TARGET_TABINDEX_IMPLICIT) {
+      target.removeAttribute('tabindex');
+    } else {
+      target.setAttribute('tabindex', original);
+    }
   }
   target.removeAttribute(NAVIGATION_TARGET_TABINDEX_ATTR);
   target.removeAttribute(NAVIGATION_TARGET_EFFECTIVE_TABINDEX_ATTR);
@@ -222,17 +226,17 @@ function syncRowNavigationTargetsTabIndex(row: HTMLDivElement | null, isNavigabl
       restoreNavigationTargetTabIndex(target);
       continue;
     }
-    if (target.getAttribute(NAVIGATION_TARGET_TABINDEX_ATTR) == null) {
-      target.setAttribute(
-        NAVIGATION_TARGET_TABINDEX_ATTR,
-        target.getAttribute('tabindex') ?? NAVIGATION_TARGET_TABINDEX_IMPLICIT,
-      );
-      target.setAttribute(
-        NAVIGATION_TARGET_EFFECTIVE_TABINDEX_ATTR,
-        String(getNavigationTargetTabIndex(target)),
-      );
-    }
-    target.tabIndex = -1;
+    const current = target.getAttribute('tabindex');
+    if (current === NAVIGATION_TARGET_SUPPRESSED_TABINDEX) continue;
+    target.setAttribute(
+      NAVIGATION_TARGET_TABINDEX_ATTR,
+      current ?? NAVIGATION_TARGET_TABINDEX_IMPLICIT,
+    );
+    target.setAttribute(
+      NAVIGATION_TARGET_EFFECTIVE_TABINDEX_ATTR,
+      String(getNavigationTargetTabIndex(target)),
+    );
+    target.setAttribute('tabindex', NAVIGATION_TARGET_SUPPRESSED_TABINDEX);
   }
 }
 
@@ -280,25 +284,30 @@ const SortableGridListItem = <T,>({
     disabled: !enabled || !isMovable,
   });
 
-  const handleNodeRef = (node: HTMLDivElement | null): void => {
-    if (node == null) {
-      restoreRowNavigationTargetsTabIndex(rowRef.current);
-      rowRef.current = null;
-      setNodeRef(null);
-      registerRowRef(index, null);
-      return;
-    }
-    rowRef.current = node;
-    setNodeRef(node);
-    registerRowRef(index, node);
-    syncRowNavigationTargetsTabIndex(node, isNavigable);
-  };
+  const handleNodeRef = useCallback(
+    (node: HTMLDivElement | null): void => {
+      if (node == null) {
+        restoreRowNavigationTargetsTabIndex(rowRef.current);
+        rowRef.current = null;
+        setNodeRef(null);
+        registerRowRef(index, null);
+        return;
+      }
+      rowRef.current = node;
+      setNodeRef(node);
+      registerRowRef(index, node);
+      syncRowNavigationTargetsTabIndex(node, isNavigable);
+    },
+    [setNodeRef, registerRowRef, index, isNavigable],
+  );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     syncRowNavigationTargetsTabIndex(rowRef.current, isNavigable);
-  }, [isNavigable]);
+  });
 
   const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (e) => {
+    // A key from a portal the row renders bubbles here through the React tree, not the DOM's.
+    if (!e.currentTarget.contains(e.target as Node)) return;
     syncRowNavigationTargetsTabIndex(e.currentTarget, isNavigable);
     const isKeyboardDragging = isKeyboardDragPressed(attributes['aria-pressed']);
     const targetIndex = getRowNavigationTargetIndex(e.currentTarget, e.target);

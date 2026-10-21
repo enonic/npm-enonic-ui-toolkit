@@ -235,10 +235,11 @@ describe('validateForm', () => {
 
     const result = looseValidate(form, propertySet);
 
+    expect(result.isValid).toBe(false);
     const node = result.children[0]!;
     expect(node.type).toBe('input');
     if (node.type === 'input') {
-      expect(node.occurrenceError).toBeDefined();
+      expect(node.occurrenceError).toEqual({ key: 'enonic.inputTypes.validation.required' });
     }
   });
 
@@ -950,6 +951,7 @@ describe('validateForm', () => {
     const result = looseValidate(form, tree.getRoot(), { serverErrors: [serverError] });
 
     const node = result.children[0]!;
+    expect(node.type).toBe('input');
     if (node.type === 'input') {
       const allErrors = node.errors.flat();
       expect(allErrors).toContainEqual({ message: 'Server says no', custom: true, server: true });
@@ -1000,10 +1002,11 @@ describe('validateForm', () => {
 
     const result = looseValidate(form, tree.getRoot(), { serverErrors: [serverError] });
 
+    expect(result.isValid).toBe(true);
     const node = result.children[0]!;
+    expect(node.type).toBe('input');
     if (node.type === 'input') {
-      const allErrors = node.errors.flat();
-      expect(allErrors).not.toContainEqual(expect.objectContaining({ custom: true }));
+      expect(node.errors).toEqual([[]]);
     }
   });
 
@@ -1032,8 +1035,9 @@ describe('validateForm', () => {
 
     expect(result.isValid).toBe(true);
     const node = result.children[0]!;
+    expect(node.type).toBe('input');
     if (node.type === 'input') {
-      expect(node.errors.flat()).not.toContainEqual(expect.objectContaining({ custom: true }));
+      expect(node.errors).toEqual([[]]);
     }
   });
 

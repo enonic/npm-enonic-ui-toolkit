@@ -1,8 +1,6 @@
 /**
  * The switcher's own English, keyed `enonic.uiKit.themeSwitcher.<name>`: the tooltip names the
- * theme picked, the accessible name what a click does. An application translates them through the
- * `Translate` it hands `@enonic/ui`'s `I18nProvider`; `comparePhrases` from `@enonic/ui-utils`
- * tells it which keys its bundle lacks.
+ * theme picked, the accessible name what a click does. See `uiKitPhrases`.
  */
 export const themeSwitcherPhrases = {
   'enonic.uiKit.themeSwitcher.light': 'Light theme',

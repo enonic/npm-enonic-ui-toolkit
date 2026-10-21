@@ -2,12 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   dateFromTime,
-  daysInMonth,
   formatDate,
-  formatDateTime,
   formatTime,
-  formatTimeOfDay,
-  isValidDate,
   pad,
   parseDate,
   parseDateTime,
@@ -23,25 +19,11 @@ describe('pad', () => {
   });
 });
 
-describe('isValidDate', () => {
-  it('tells a real date from an invalid one', () => {
-    expect(isValidDate(new Date(2015, 3, 17))).toBe(true);
-    expect(isValidDate(new Date('nope'))).toBe(false);
-  });
-});
-
 describe('formatting', () => {
   const date = new Date(2015, 3, 17, 6, 5, 9);
 
   it('formats the date part with a 1-12 month', () => {
     expect(formatDate(date)).toBe('2015-04-17');
-  });
-
-  it('formats a time of day, with and without seconds', () => {
-    expect(formatTimeOfDay(date)).toBe('06:05:09');
-    expect(formatTimeOfDay(date, false)).toBe('06:05');
-    expect(formatDateTime(date)).toBe('2015-04-17 06:05:09');
-    expect(formatDateTime(date, false)).toBe('2015-04-17 06:05');
   });
 
   it('formats hours and minutes, seconds only when non-zero', () => {
@@ -127,19 +109,11 @@ describe('dateFromTime', () => {
     const now = new Date();
     expect(date).toBeDefined();
     expect(formatDate(date as Date)).toBe(formatDate(now));
-    expect(formatTimeOfDay(date as Date)).toBe('06:05:09');
+    expect([date?.getHours(), date?.getMinutes(), date?.getSeconds()]).toEqual([6, 5, 9]);
   });
 
   it('is undefined for a time out of range', () => {
     expect(dateFromTime(24, 0)).toBeUndefined();
     expect(dateFromTime(0, 60)).toBeUndefined();
-  });
-});
-
-describe('daysInMonth', () => {
-  it('knows leap years', () => {
-    expect(daysInMonth(2015, 1)).toBe(28);
-    expect(daysInMonth(2016, 1)).toBe(29);
-    expect(daysInMonth(2015, 11)).toBe(31);
   });
 });

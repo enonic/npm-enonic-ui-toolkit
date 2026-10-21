@@ -30,7 +30,7 @@ export type FilterField = {
   label: string;
   icon?: LucideIcon;
   values: readonly FilterValue[];
-  /** Whether several values can be picked at once, ORed. Off, a pick replaces the field's value. */
+  /** Whether several values can be picked at once, ORed; on by default. Off, a pick replaces the field's value. */
   multiple?: boolean;
   /** Shown above the values: why the list may be short or stale, such as a count request that failed. */
   notice?: string;

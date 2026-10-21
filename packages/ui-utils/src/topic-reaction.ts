@@ -93,7 +93,6 @@ export function createTopicReaction<M>({
       // ! on subscribe would refresh a screen that has just loaded.
       unwatch = visible.listen((shown) => {
         if (!shown) {
-          // The refresh on reveal covers what the window holds; applying it later would race that refresh.
           const unapplied = gathered.length > 0;
           reset();
           stale = unapplied;

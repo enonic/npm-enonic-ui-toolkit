@@ -1,9 +1,4 @@
-/**
- * The input's own English, keyed `enonic.uiKit.filterInput.<name>`. An application translates it
- * through the `Translate` it hands `@enonic/ui`'s `I18nProvider`; a key it has no text for renders
- * this English. `comparePhrases` from `@enonic/ui-utils` tells an application which keys its
- * bundle lacks.
- */
+/** The input's own English, keyed `enonic.uiKit.filterInput.<name>`; see `uiKitPhrases`. */
 export const filterInputPhrases = {
   'enonic.uiKit.filterInput.label': 'Filter',
   'enonic.uiKit.filterInput.placeholder': 'Search',

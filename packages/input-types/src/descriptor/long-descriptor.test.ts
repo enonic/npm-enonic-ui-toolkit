@@ -72,6 +72,10 @@ describe('LongDescriptor', () => {
       expect(value.isNull()).toBe(true);
     });
 
+    it('returns null Value for an integer string past the safe range', () => {
+      expect(LongDescriptor.createDefaultValue('9007199254740993').isNull()).toBe(true);
+    });
+
     it('returns null Value for non-numeric string', () => {
       const value = LongDescriptor.createDefaultValue('abc');
       expect(value.isNull()).toBe(true);
