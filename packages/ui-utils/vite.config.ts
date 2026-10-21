@@ -4,8 +4,9 @@ import { defineConfig } from 'vite-plus';
 export default defineConfig({
   pack: {
     // The transport on its own entry: it is the only code that resolves `neverthrow`. The hub
-    // client on its own: it is the only code that imports a module from a runtime url.
-    entry: ['src/index.ts', 'src/request.ts', 'src/admin-events.ts'],
+    // client on its own: it is the only code that imports a module from a runtime url. The menu
+    // on its own: it is the only code that writes to `document.head`.
+    entry: ['src/index.ts', 'src/request.ts', 'src/admin-events.ts', 'src/admin-menu.ts'],
     // Nothing may be bundled from node_modules: a resolvable devDependency would otherwise be
     // inlined silently — a frozen copy of a sibling or react shipping inside dist.
     deps: { onlyBundle: [] },

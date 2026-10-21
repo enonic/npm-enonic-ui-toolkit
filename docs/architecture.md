@@ -94,8 +94,9 @@ root. The pieces sit where a React context can reach them:
   combination with two disconnected contexts and the base labels silently English.
 - **`ui-utils` owns the framework-free core**, on the package's root entry, which resolves nothing
   outside the package; the transport and its `neverthrow` sit behind `@enonic/ui-utils/request`,
-  and the admin events hub — the one code that imports a module from a runtime url — behind
-  `@enonic/ui-utils/admin-events`: the `Translate` type — structurally the one
+  the admin events hub — the one code that imports a module from a runtime url — behind
+  `@enonic/ui-utils/admin-events`, and the XP menu's loader — the one code that writes to
+  `document.head` — behind `@enonic/ui-utils/admin-menu`: the `Translate` type — structurally the one
   `@enonic/ui` declares, which takes no dependency on this workspace — and the adapters over an
   application's phrase source (`fromPhrases`, `fromLookup`, `passthrough`), `bindPhrases` for a
   store, `mergePhrases` for a package's catalogue, `comparePhrases` for an application's check.

@@ -38,6 +38,10 @@
     "./admin-events": {
       "types": "./src/admin-events.ts",
       "import": "./src/admin-events.ts"
+    },
+    "./admin-menu": {
+      "types": "./src/admin-menu.ts",
+      "import": "./src/admin-menu.ts"
     }
   },
   "publishConfig": {
@@ -55,6 +59,10 @@
       "./admin-events": {
         "types": "./dist/admin-events.d.ts",
         "import": "./dist/admin-events.js"
+      },
+      "./admin-menu": {
+        "types": "./dist/admin-menu.d.ts",
+        "import": "./dist/admin-menu.js"
       }
     },
     "access": "public",
