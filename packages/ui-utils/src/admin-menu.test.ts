@@ -73,14 +73,14 @@ describe('loadAdminMenu', () => {
 
   it('removes a script that failed and retries on the next call under a url the module map has not seen', async () => {
     const { doc, menu, scripts, fail, arrive } = fakeDocument();
-    const failed = loadAdminMenu('/menu-loader?theme=dark', doc);
+    const failed = loadAdminMenu('/menu-loader?appName=settings', doc);
     fail();
     await expect(failed).rejects.toThrow('failed to load');
     expect(scripts[0]?.removed).toBe(true);
 
-    const retried = loadAdminMenu('/menu-loader?theme=dark', doc);
+    const retried = loadAdminMenu('/menu-loader?appName=settings', doc);
     expect(scripts).toHaveLength(2);
-    expect(scripts[1]?.src).toBe('https://xp.example/menu-loader?theme=dark&retry=1');
+    expect(scripts[1]?.src).toBe('https://xp.example/menu-loader?appName=settings&retry=1');
     arrive();
     await expect(retried).resolves.toBe(menu);
   });
@@ -89,11 +89,11 @@ describe('loadAdminMenu', () => {
 describe('mountAdminMenu', () => {
   it('mounts with the options once the loader is there and answers the host', async () => {
     const { doc, mount, arrive } = fakeDocument();
-    const mounted = mountAdminMenu('/menu-loader', { autoOpen: true, theme: 'dark' }, doc);
+    const mounted = mountAdminMenu('/menu-loader', { autoOpen: true }, doc);
     arrive();
 
     const host = await mounted;
     expect(host.tagName).toBe('XP-MENU');
-    expect(mount).toHaveBeenCalledWith({ autoOpen: true, theme: 'dark' });
+    expect(mount).toHaveBeenCalledWith({ autoOpen: true });
   });
 });

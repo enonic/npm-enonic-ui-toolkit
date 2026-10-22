@@ -1,13 +1,13 @@
-import type { ResolvedTheme } from '@enonic/ui-types';
-
-/** What a mount takes; each option is one the loader also reads from its own `src`. */
+/**
+ * What a mount takes; each option is one the loader also reads from its own `src`. The loader's
+ * `theme` is left out on purpose: passed, it pins the menu, while left out the menu follows the
+ * stored theme and the OS on its own — the contract `readTheme` and `writeTheme` spell out.
+ */
 export type AdminMenuOptions = {
   /** Opens the panel on mount. */
   autoOpen?: boolean;
   /** Hides the menu button while the panel is open — for a page that is the menu, as XP's home. */
   hideButtonWhenOpen?: boolean;
-  /** Pins the theme. Left out, the menu follows the stored theme and the OS on its own. */
-  theme?: ResolvedTheme;
 };
 
 /** The api the loader leaves on the window as `XpMenu`. */
