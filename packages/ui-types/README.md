@@ -63,13 +63,31 @@ what arrives.
 | `PropertyArrayJson`   | a named array of one `ValueTypeName`, its `values`                                                            |
 | `PropertyValueJson`   | a scalar under `v` or a nested tree under `set`                                                               |
 | `ValueTypeName`       | the value types XP knows, as `ValueTypes` names them                                                          |
-| `PrincipalType`       | `user`, `group`, `role` — a principal key's own prefix                                                        |
 
 The `{ Input: { … } }` dialect with one wrapper key per item is Content Studio's REST talking to
 Content Studio's client, and is not here.
 
 How the Settings shell behaves behind these types — keep-alive, what a hidden mount hears,
 revocation — is documented with the shell, in app-settings' `docs/extensions/`.
+
+## Principals and tasks
+
+What XP itself declares for a principal and a task — `@enonic-types/core`'s `PrincipalKey`,
+`User`, `Group` and `Role`, `@enonic-types/lib-task`'s `TaskInfo` — copied here so that a browser
+program needs no server package, and pinned by a type test so that a value typed there is
+assignable here. The fields a server omits for a summary are optional. Reading and building a key
+and following a task are `@enonic/ui-utils`' part.
+
+| Type                             | What it is                                                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------- |
+| `PrincipalType`                  | `user`, `group`, `role` — a principal key's own prefix                                 |
+| `UserKey`, `GroupKey`, `RoleKey` | `user:<idProvider>:<id>`, `group:<idProvider>:<id>`, `role:<id>` — a key is its string |
+| `PrincipalKey`                   | any of the three                                                                       |
+| `User`, `Group`, `Role`          | the record behind a key: `type`, `key`, `displayName`, and what that kind carries      |
+| `Principal`                      | `User \| Group \| Role`, narrowed by `type`                                            |
+| `TaskState`                      | `WAITING`, `RUNNING`, `FINISHED`, `FAILED`                                             |
+| `TaskProgress`                   | `current` of `total`, and `info` — what the task reports, its result once it is done   |
+| `TaskInfo`                       | a task as XP's and Content Studio's task resources answer it                           |
 
 ## The theme
 
