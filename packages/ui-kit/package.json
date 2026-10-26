@@ -58,7 +58,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "happy-dom": "~20.14.5",
+    "happy-dom": "~21.0.4",
     "preact": "catalog:",
     "publint": "catalog:",
     "typescript": "catalog:",
