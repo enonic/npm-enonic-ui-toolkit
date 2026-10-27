@@ -1,6 +1,6 @@
 import { ResultAsync } from 'neverthrow';
 
-import { AppError, RequestAbortedError, RequestError } from './errors';
+import { AppError, describe, RequestAbortedError, RequestError } from './errors';
 
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -96,18 +96,7 @@ function toAppError(error: unknown, signal: AbortSignal | undefined): AppError {
   if (error instanceof AppError) {
     return error;
   }
-  return new AppError(describe(error), error);
-}
-
-/** `String(x)` itself throws on a value with no way to a primitive; this never does. */
-function describe(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  try {
-    return String(error);
-  } catch {
-    return 'Request failed';
-  }
+  return new AppError(describe(error, 'Request failed'), error);
 }
 
 function isAbortError(error: unknown): boolean {

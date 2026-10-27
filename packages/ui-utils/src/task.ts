@@ -4,9 +4,9 @@
  */
 
 import type { TaskInfo } from '@enonic/ui-types';
-import { ResultAsync } from 'neverthrow';
+import { ok, type Result, ResultAsync } from 'neverthrow';
 
-import { AppError, RequestAbortedError } from './errors';
+import { AppError, describe, RequestAbortedError } from './errors';
 import { requestJson } from './request';
 
 export type PollTaskOptions = {
@@ -16,6 +16,12 @@ export type PollTaskOptions = {
   signal?: AbortSignal;
   /** Every read while the task is still going. */
   onProgress?: (task: TaskInfo) => void;
+  /**
+   * What a `FINISHED` task's `progress.info` means, where the application has its own format for
+   * it: Content Studio ends a failed publish as `FINISHED` with `{"state":"ERROR",...}` there. An
+   * `Err` ends the polling with that error; without this, `FINISHED` is `Ok`.
+   */
+  readResult?: (task: TaskInfo) => Result<TaskInfo, AppError>;
 };
 
 /** A task that ended in `FAILED`; `message` is what the task reported in its progress. */
@@ -23,8 +29,8 @@ export class TaskFailedError extends AppError {
   override readonly name: string = 'TaskFailedError';
   readonly task: TaskInfo;
 
-  constructor(task: TaskInfo) {
-    super(task.progress.info || `Task ${task.id} failed`);
+  constructor(task: TaskInfo, message = task.progress.info || `Task ${task.id} failed`) {
+    super(message);
     this.task = task;
   }
 }
@@ -43,15 +49,23 @@ export function taskProgressPercent(task: TaskInfo): number {
 
 /**
  * Reads `<tasksUrl>/<taskId>` until the task is `FINISHED`, which resolves with its final info, or
- * `FAILED`, which is a `TaskFailedError`. A read that fails, a task the server no longer knows
- * included, ends the polling with that read's error; nothing throws.
+ * `FAILED`, which is a `TaskFailedError`. `tasksUrl` is the application's tasks resource, Content
+ * Studio's `rest-v2/cs/tasks`. `Ok` means `FINISHED` and no more: what the task reported is in
+ * `progress.info`, and `readResult` is where an application reads it. A read that fails ends the
+ * polling with that read's error; XP forgets a task about a minute after it ends, so a late first
+ * read is a 404. Nothing throws.
  */
 export function pollTask(
   tasksUrl: string,
   taskId: string,
   options: PollTaskOptions = {},
 ): ResultAsync<TaskInfo, AppError> {
-  const { intervalMs = DEFAULT_INTERVAL_MS, signal, onProgress } = options;
+  const {
+    intervalMs = DEFAULT_INTERVAL_MS,
+    signal,
+    onProgress,
+    readResult = (task: TaskInfo): Result<TaskInfo, AppError> => ok(task),
+  } = options;
   const url = `${tasksUrl.replace(/\/+$/, '')}/${encodeURIComponent(taskId)}`;
 
   const poll = async (): Promise<TaskInfo> => {
@@ -62,7 +76,11 @@ export function pollTask(
       }
       const task = read.value;
       if (task.state === 'FINISHED') {
-        return task;
+        const result = readResult(task);
+        if (result.isErr()) {
+          throw result.error;
+        }
+        return result.value;
       }
       if (task.state === 'FAILED') {
         throw new TaskFailedError(task);
@@ -102,5 +120,5 @@ function toAppError(error: unknown): AppError {
   if (error instanceof AppError) {
     return error;
   }
-  return new AppError(error instanceof Error ? error.message : String(error), error);
+  return new AppError(describe(error, 'Task failed'), error);
 }

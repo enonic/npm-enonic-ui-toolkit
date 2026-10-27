@@ -13,6 +13,7 @@ export { LocalDateTime } from './local-date-time';
 export type { LocalDateTimeFields } from './local-date-time';
 export { LocalTime } from './local-time';
 export { localize } from './localize';
+export type { Phrases, PhraseValue } from './localize';
 export {
   ADMIN_ROLE_KEY,
   ANONYMOUS_USER_KEY,
@@ -34,7 +35,6 @@ export {
   USER_ADMIN_ROLE_KEY,
   userKey,
 } from './principal-key';
-export type { Phrases, PhraseValue } from './localize';
 export { BinaryReference, Link, Reference } from './reference';
 export { isRelativeTime, parseRelativeTime } from './relative-time';
 export {
