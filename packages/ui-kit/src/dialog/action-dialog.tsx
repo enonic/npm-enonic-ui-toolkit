@@ -459,7 +459,7 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
               {error}
             </p>
           )}
-          <div className="flex shrink-0 justify-end gap-2.5 only:flex-1">
+          <div className="flex shrink-0 items-center justify-end gap-2.5 only:flex-1">
             {children}
             {onConfirm !== undefined &&
               (closeOnCancel ? <Dialog.Close asChild>{cancel}</Dialog.Close> : cancel)}
