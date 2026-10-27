@@ -455,22 +455,24 @@ const ActionDialogFooter = forwardRef<HTMLElement, ActionDialogFooterProps>(
         )}
         <div className={cn('flex flex-1 items-center justify-end gap-2.5', asking && 'hidden')}>
           {error !== undefined && (
-            <p className="text-error mr-auto text-sm" role="alert">
+            <p className="text-error min-w-0 flex-1 text-sm" role="alert">
               {error}
             </p>
           )}
-          {children}
-          {onConfirm !== undefined &&
-            (closeOnCancel ? <Dialog.Close asChild>{cancel}</Dialog.Close> : cancel)}
-          {onConfirm !== undefined && (
-            <ActionDialogAction
-              ref={confirmRef}
-              label={confirmLabel ?? t('enonic.uiKit.dialog.confirm')}
-              intent={intent}
-              closeOnClick={closeOnConfirm}
-              onClick={onConfirm}
-            />
-          )}
+          <div className="flex shrink-0 justify-end gap-2.5 only:flex-1">
+            {children}
+            {onConfirm !== undefined &&
+              (closeOnCancel ? <Dialog.Close asChild>{cancel}</Dialog.Close> : cancel)}
+            {onConfirm !== undefined && (
+              <ActionDialogAction
+                ref={confirmRef}
+                label={confirmLabel ?? t('enonic.uiKit.dialog.confirm')}
+                intent={intent}
+                closeOnClick={closeOnConfirm}
+                onClick={onConfirm}
+              />
+            )}
+          </div>
         </div>
       </Dialog.Footer>
     );

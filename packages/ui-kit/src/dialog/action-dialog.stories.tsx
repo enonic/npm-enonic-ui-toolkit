@@ -446,6 +446,36 @@ export const FormWithError: Story = {
   ),
 };
 
+export const FormWithLongError: Story = {
+  name: 'Composed / Footer Error, Long',
+  render: () => (
+    <Opener
+      label="Save settings"
+      description="A footer error longer than the room beside the buttons: the text wraps, and Cancel and Save keep their width and padding."
+    >
+      {(open, setOpen) => (
+        <ActionDialog.Root open={open} onOpenChange={setOpen}>
+          <ActionDialog.Portal>
+            <ActionDialog.Overlay />
+            <ActionDialog.Content>
+              <ActionDialog.DefaultHeader title="Settings" withClose />
+              <ActionDialog.Body>
+                <Input label="Display name" defaultValue="Ada" />
+              </ActionDialog.Body>
+              <ActionDialog.Footer
+                confirmLabel="Save"
+                error="The name is already taken by another user in this ID provider, and the server did not say which."
+                closeOnConfirm={false}
+                onConfirm={() => {}}
+              />
+            </ActionDialog.Content>
+          </ActionDialog.Portal>
+        </ActionDialog.Root>
+      )}
+    </Opener>
+  ),
+};
+
 export const ValidateOnBlur: Story = {
   name: 'Composed / Validate On Blur',
   render: () => {
