@@ -78,16 +78,17 @@ program needs no server package, and pinned by a type test so that a value typed
 assignable here. The fields a server omits for a summary are optional. Reading and building a key
 and following a task are `@enonic/ui-utils`' part.
 
-| Type                             | What it is                                                                             |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| `PrincipalType`                  | `user`, `group`, `role` — a principal key's own prefix                                 |
-| `UserKey`, `GroupKey`, `RoleKey` | `user:<idProvider>:<id>`, `group:<idProvider>:<id>`, `role:<id>` — a key is its string |
-| `PrincipalKey`                   | any of the three                                                                       |
-| `User`, `Group`, `Role`          | the record behind a key: `type`, `key`, `displayName`, and what that kind carries      |
-| `Principal`                      | `User \| Group \| Role`, narrowed by `type`                                            |
-| `TaskState`                      | `WAITING`, `RUNNING`, `FINISHED`, `FAILED`                                             |
-| `TaskProgress`                   | `current` of `total`, and `info` — what the task reports, its result once it is done   |
-| `TaskInfo`                       | a task as XP's and Content Studio's task resources answer it                           |
+| Type                                                         | What it is                                                                                                          |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `PrincipalType`                                              | `user`, `group`, `role` — a principal key's own prefix                                                              |
+| `UserKey`, `GroupKey`, `RoleKey`                             | `user:<idProvider>:<id>`, `group:<idProvider>:<id>`, `role:<id>` — a key is its string                              |
+| `PrincipalKey`                                               | any of the three                                                                                                    |
+| `User`, `Group`, `Role`                                      | the record behind a key: `type`, `key`, `displayName`, and what that kind carries                                   |
+| `Principal`                                                  | `User \| Group \| Role`, narrowed by `type`                                                                         |
+| `UserRecord`, `GroupRecord`, `RoleRecord`, `PrincipalRecord` | the same without `type` — what a REST layer sends, read into a `Principal` by `toPrincipal` from `@enonic/ui-utils` |
+| `TaskState`                                                  | `WAITING`, `RUNNING`, `FINISHED`, `FAILED`                                                                          |
+| `TaskProgress`                                               | `current` of `total`, and `info` — what the task reports, its result once it is done                                |
+| `TaskInfo`                                                   | a task as XP's and Content Studio's task resources answer it                                                        |
 
 ## The theme
 

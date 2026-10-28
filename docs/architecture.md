@@ -35,7 +35,11 @@ four reasons.
   core says `string`; Content Studio's own REST sends a principal without `type`, `login`,
   `idProvider` or `hasPassword`; a config value arrives as whatever the descriptor held. app-users
   patches the first of these with an `Omit` per shape, in the application. The copy makes every such
-  field optional once, and every consumer reads the wire as it is.
+  field optional once, and every consumer reads the wire as it is. The one field that cannot be
+  optional is a discriminant: a `Principal` without `type` would narrow to the wrong branch in
+  silence. So the wire has its own shape, `PrincipalRecord`, the record without `type`, and one
+  normalization, `toPrincipal`, reads `type` off the key where the response is read — no server
+  has to send what its keys already say, and one that does fits the record as it is.
 - **The copy is cheap, and the pin is a copy too.** The copied types are a few dozen lines each.
   The type test holds a second copy, of the core declaration itself, and asserts it assignable to
   ours; both are checked against `@enonic-types` by hand, when XP's types change, not by the

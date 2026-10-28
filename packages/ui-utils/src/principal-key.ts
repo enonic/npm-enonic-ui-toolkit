@@ -4,7 +4,21 @@
  * an id may itself contain a colon and the reading stops at the second separator.
  */
 
-import type { GroupKey, PrincipalKey, PrincipalType, RoleKey, UserKey } from '@enonic/ui-types';
+import type {
+  Group,
+  GroupKey,
+  GroupRecord,
+  Principal,
+  PrincipalKey,
+  PrincipalRecord,
+  PrincipalType,
+  Role,
+  RoleKey,
+  RoleRecord,
+  User,
+  UserKey,
+  UserRecord,
+} from '@enonic/ui-types';
 
 export const SYSTEM_ID_PROVIDER = 'system';
 
@@ -61,6 +75,31 @@ export function parsePrincipalKey(value: string): PrincipalKey {
 
 export function principalType(key: PrincipalKey): PrincipalType {
   return key.slice(0, key.indexOf(':')) as PrincipalType;
+}
+
+/**
+ * The principal a REST record is, its `type` read off the key: the one normalization between the
+ * wire and `Principal`, done where the response is read. A record that carries `type` keeps it.
+ */
+export function toPrincipal(record: UserRecord): User;
+export function toPrincipal(record: GroupRecord): Group;
+export function toPrincipal(record: RoleRecord): Role;
+export function toPrincipal(record: PrincipalRecord): Principal;
+export function toPrincipal(record: PrincipalRecord): Principal {
+  return { ...record, type: principalType(record.key) } as Principal;
+}
+
+/** The records that need no normalizing — a member, an ACL entry — told apart by their key. */
+export function isUserRecord(record: PrincipalRecord): record is UserRecord {
+  return principalType(record.key) === 'user';
+}
+
+export function isGroupRecord(record: PrincipalRecord): record is GroupRecord {
+  return principalType(record.key) === 'group';
+}
+
+export function isRoleRecord(record: PrincipalRecord): record is RoleRecord {
+  return principalType(record.key) === 'role';
 }
 
 /** The id after the prefix: `admin` of `user:system:admin`, `system.admin` of `role:system.admin`. */

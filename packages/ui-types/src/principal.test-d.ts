@@ -3,13 +3,17 @@ import { expectTypeOf } from 'vitest';
 import type {
   Group,
   GroupKey,
+  GroupRecord,
   Principal,
   PrincipalKey,
+  PrincipalRecord,
   PrincipalType,
   Role,
   RoleKey,
+  RoleRecord,
   User,
   UserKey,
+  UserRecord,
 } from './principal';
 
 // Publishing freezes the shape, so every exported type is pinned against its literal.
@@ -69,3 +73,21 @@ expectTypeOf<CoreUser>().toExtend<User>();
 expectTypeOf<CoreGroup>().toExtend<Group>();
 expectTypeOf<CoreRole>().toExtend<Role>();
 expectTypeOf<CoreUser | CoreGroup | CoreRole>().toExtend<Principal>();
+
+// What Content Studio's REST sends — a key and a name, no `type` — is a record, not a principal;
+// and what carries `type` is a record still.
+type StudioPrincipalJson = { key: `user:${string}:${string}`; displayName: string };
+type StudioUserJson = {
+  key: `user:${string}:${string}`;
+  displayName: string;
+  email?: string;
+  disabled?: boolean;
+};
+expectTypeOf<StudioPrincipalJson>().toExtend<PrincipalRecord>();
+expectTypeOf<StudioUserJson>().toExtend<UserRecord>();
+expectTypeOf<StudioPrincipalJson>().not.toExtend<Principal>();
+expectTypeOf<User>().toExtend<UserRecord>();
+expectTypeOf<Principal>().toExtend<PrincipalRecord>();
+expectTypeOf<PrincipalRecord>().toEqualTypeOf<UserRecord | GroupRecord | RoleRecord>();
+expectTypeOf<UserRecord>().not.toHaveProperty('type');
+expectTypeOf<keyof UserRecord>().toEqualTypeOf<Exclude<keyof User, 'type'>>();

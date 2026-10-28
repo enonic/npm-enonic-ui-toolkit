@@ -1,18 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import type { PrincipalRecord, User, UserRecord } from '@enonic/ui-types';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import {
   ANONYMOUS_USER_KEY,
   EVERYONE_ROLE_KEY,
   groupKey,
   idProviderOf,
+  isGroupRecord,
   isPrincipalKey,
+  isRoleRecord,
   isSystemPrincipal,
+  isUserRecord,
   parsePrincipalKey,
   principalId,
   principalPath,
   principalType,
   roleKey,
   SUPER_USER_KEY,
+  toPrincipal,
   userKey,
 } from './principal-key';
 
@@ -79,5 +84,46 @@ describe('a principal key', () => {
     expect(isSystemPrincipal('role:cms.admin')).toBe(false);
     expect(isSystemPrincipal('user:system:admin')).toBe(false);
     expect(isSystemPrincipal('group:system.editors:x')).toBe(false);
+  });
+});
+
+describe('a principal record', () => {
+  const records: PrincipalRecord[] = [
+    { key: 'user:system:su', displayName: 'Super User', email: 'su@example.com' },
+    { key: 'group:myidp:editors', displayName: 'Editors', description: 'Who edits' },
+    { key: 'role:system.admin', displayName: 'Administrator' },
+  ];
+
+  it('becomes the principal its key says, with every field kept', () => {
+    expect(records.map(toPrincipal)).toEqual([
+      { type: 'user', key: 'user:system:su', displayName: 'Super User', email: 'su@example.com' },
+      {
+        type: 'group',
+        key: 'group:myidp:editors',
+        displayName: 'Editors',
+        description: 'Who edits',
+      },
+      { type: 'role', key: 'role:system.admin', displayName: 'Administrator' },
+    ]);
+  });
+
+  it('keeps the kind it was read as', () => {
+    const user: UserRecord = { key: 'user:system:su', displayName: 'Super User' };
+    const principal = toPrincipal(user);
+
+    expectTypeOf(principal).toEqualTypeOf<User>();
+    expect(principal.type).toBe('user');
+  });
+
+  it('is left as it is when it carries type already', () => {
+    const user: User = { type: 'user', key: 'user:system:su', displayName: 'Super User' };
+
+    expect(toPrincipal(user)).toEqual(user);
+  });
+
+  it('is told apart by its key where no normalizing is needed', () => {
+    expect(records.filter(isUserRecord).map(({ key }) => key)).toEqual(['user:system:su']);
+    expect(records.filter(isGroupRecord).map(({ key }) => key)).toEqual(['group:myidp:editors']);
+    expect(records.filter(isRoleRecord).map(({ key }) => key)).toEqual(['role:system.admin']);
   });
 });

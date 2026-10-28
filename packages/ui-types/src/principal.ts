@@ -6,7 +6,7 @@
  * the wire: a field the REST layer drops or a summary omits is optional.
  *
  * `type` repeats the key's prefix so that the union narrows. A server that sends only the key is
- * read through `principalType` from `@enonic/ui-utils`.
+ * read as a `PrincipalRecord` and normalized once, through `toPrincipal` from `@enonic/ui-utils`.
  */
 
 /** The kind of principal a key names, as the key's own prefix spells it: `user:system:admin`. */
@@ -51,3 +51,16 @@ export type Role = {
 };
 
 export type Principal = User | Group | Role;
+
+/**
+ * A principal as a REST layer sends it: the record without `type`, which the key already spells.
+ * `toPrincipal` from `@enonic/ui-utils` fills it in; a value that carries `type` fits as it is.
+ * One `Omit` per kind, since `Omit` over the union would keep only the fields the kinds share.
+ */
+export type UserRecord = Omit<User, 'type'>;
+
+export type GroupRecord = Omit<Group, 'type'>;
+
+export type RoleRecord = Omit<Role, 'type'>;
+
+export type PrincipalRecord = UserRecord | GroupRecord | RoleRecord;

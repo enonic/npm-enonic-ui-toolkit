@@ -36,13 +36,17 @@ export type {
 export type {
   Group,
   GroupKey,
+  GroupRecord,
   Principal,
   PrincipalKey,
+  PrincipalRecord,
   PrincipalType,
   Role,
   RoleKey,
+  RoleRecord,
   User,
   UserKey,
+  UserRecord,
 } from './principal';
 export type {
   PropertyArrayJson,
