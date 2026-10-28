@@ -5,6 +5,8 @@ import { createAdminEvents, type TopicHandlers } from './hub-client';
 type ConnectHandlers = {
   onEvent: (event: { topic: string; data: unknown }) => void;
   onLoss: (loss: { topic: string; count: number | null }) => void;
+  onConnectionChange?: (connected: boolean) => void;
+  onSessionEnd?: () => void;
 };
 
 function harness() {
@@ -35,6 +37,8 @@ function harness() {
     loaded,
     emit: (topic: string, data: unknown) => handlers?.onEvent({ topic, data }),
     lose: (topic: string, count: number | null) => handlers?.onLoss({ topic, count }),
+    connection: (connected: boolean) => handlers?.onConnectionChange?.(connected),
+    sessionEnd: () => handlers?.onSessionEnd?.(),
     arrive: async () => {
       resolveImport?.();
       await Promise.resolve();
@@ -342,6 +346,106 @@ describe('createAdminEvents', () => {
       "Failed to subscribe to the admin events topic 'app:first':",
       expect.any(Error),
     );
+  });
+
+  it('reports connection changes in order', async () => {
+    const { events, connection, arrive } = harness();
+    const listener = vi.fn();
+    events.subscribeConnection(listener);
+    events.connect();
+    await arrive();
+
+    connection(false);
+    connection(true);
+
+    expect(listener).toHaveBeenNthCalledWith(1, false);
+    expect(listener).toHaveBeenNthCalledWith(2, true);
+  });
+
+  it('reports the session end', async () => {
+    const { events, sessionEnd, arrive } = harness();
+    const listener = vi.fn();
+    events.subscribeSessionEnd(listener);
+    events.connect();
+    await arrive();
+
+    sessionEnd();
+
+    expect(listener).toHaveBeenCalledOnce();
+  });
+
+  it('reports to a listener taken after the client arrived', async () => {
+    const { events, connection, sessionEnd, arrive } = harness();
+    const onConnection = vi.fn();
+    const onSessionEnd = vi.fn();
+    events.connect();
+    await arrive();
+
+    events.subscribeConnection(onConnection);
+    events.subscribeSessionEnd(onSessionEnd);
+    connection(false);
+    sessionEnd();
+
+    expect(onConnection).toHaveBeenCalledWith(false);
+    expect(onSessionEnd).toHaveBeenCalledOnce();
+  });
+
+  it('stops reporting the connection once unsubscribed', async () => {
+    const { events, connection, arrive } = harness();
+    const listener = vi.fn();
+    const unsubscribe = events.subscribeConnection(listener);
+    events.connect();
+    await arrive();
+
+    unsubscribe();
+    connection(false);
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('stops reporting the session end once unsubscribed', async () => {
+    const { events, sessionEnd, arrive } = harness();
+    const listener = vi.fn();
+    const unsubscribe = events.subscribeSessionEnd(listener);
+    events.connect();
+    await arrive();
+
+    unsubscribe();
+    sessionEnd();
+
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('reports a connection change past a listener that throws on it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { events, connection, arrive } = harness();
+    const next = vi.fn();
+    events.subscribeConnection(() => {
+      throw new Error('broken notice');
+    });
+    events.subscribeConnection(next);
+    events.connect();
+    await arrive();
+
+    expect(() => connection(false)).not.toThrow();
+    expect(next).toHaveBeenCalledWith(false);
+    expect(error).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports the session end past a listener that throws on it', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { events, sessionEnd, arrive } = harness();
+    const next = vi.fn();
+    events.subscribeSessionEnd(() => {
+      throw new Error('broken notice');
+    });
+    events.subscribeSessionEnd(next);
+    events.connect();
+    await arrive();
+
+    expect(() => sessionEnd()).not.toThrow();
+    expect(next).toHaveBeenCalledOnce();
+    expect(error).toHaveBeenCalledTimes(1);
   });
 
   it('does not replay a topic unsubscribed before the client arrived', async () => {
