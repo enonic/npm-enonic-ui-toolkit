@@ -340,6 +340,31 @@ describe('onClose', () => {
 
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('costs nobody else their close when it throws', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const throwing = () => {
+      throw new Error('boom');
+    };
+    const theirs = vi.fn();
+    const next = vi.fn();
+
+    store.notify('info', 'first', { owner: 'app:users', onClose: throwing });
+    store.notify('info', 'second', { owner: 'app:users', onClose: next });
+    store.notify('info', 'theirs', { owner: 'app:applications', onClose: theirs });
+
+    expect(() => store.dismissOwned('app:users')).not.toThrow();
+    expect(messages()).toEqual(['theirs']);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(error).toHaveBeenCalledTimes(1);
+
+    store.notify('info', 'first', { onClose: throwing });
+    expect(() => store.clear()).not.toThrow();
+    expect(theirs).toHaveBeenCalledTimes(1);
+    expect(messages()).toEqual([]);
+
+    error.mockRestore();
+  });
 });
 
 describe('notifications', () => {
@@ -362,6 +387,21 @@ describe('notifications', () => {
     dismissQueued();
 
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('hands nobody an older stack after a listener has changed it', () => {
+    const seen: (readonly unknown[])[] = [];
+    store.notifications.listen((visible) => {
+      if (visible.length > 0) {
+        store.clear();
+      }
+    });
+    store.notifications.listen((visible) => seen.push(visible));
+
+    show('Saved');
+
+    expect(seen).toEqual([[]]);
+    expect(seen.at(-1)).toBe(store.notifications.get());
   });
 
   it('stops reporting once unsubscribed', () => {

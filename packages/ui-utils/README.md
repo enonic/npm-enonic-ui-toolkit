@@ -99,7 +99,7 @@ host's stack, never in a second one. The policy it keeps:
   otherwise or `autoHide` is off. `pause` and `resume` hold and continue what is left — the list
   calls them on hover and focus.
 - **`owner` is what `dismissOwned` takes down** when a mount is revoked; `onClose` is called once
-  when a toast leaves, whichever way.
+  when a toast leaves, whichever way, and one that throws is reported and costs no other its close.
 
 ```ts
 export const notifications = createNotifications();

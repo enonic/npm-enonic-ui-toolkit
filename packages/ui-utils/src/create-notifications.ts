@@ -96,13 +96,26 @@ export function createNotifications(): Notifications {
     syncTimers();
 
     if (next.visible !== previous.visible) {
-      listeners.forEach((listener) => listener(next.visible));
+      // A listener that changes the store mid-dispatch has delivered the newer stack to everyone
+      // already, so the rest must not get this one after it.
+      for (const listener of listeners) {
+        if (state !== next) {
+          break;
+        }
+        listener(next.visible);
+      }
     }
 
     const kept = new Set([...next.visible, ...next.queued].map(({ id }) => id));
     [...previous.visible, ...previous.queued]
       .filter(({ id }) => !kept.has(id))
-      .forEach(({ onClose }) => onClose?.());
+      .forEach(({ id, onClose }) => {
+        try {
+          onClose?.();
+        } catch (cause: unknown) {
+          console.error(`The onClose of notification ${id} failed:`, cause);
+        }
+      });
   }
 
   return {

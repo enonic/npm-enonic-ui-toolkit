@@ -1,6 +1,6 @@
 import { cn, Toast, usePhrases } from '@enonic/ui';
 import { isUrgent, type Notifications } from '@enonic/ui-utils';
-import { type ReactElement, useCallback, useSyncExternalStore } from 'react';
+import { type ReactElement, useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { notificationListPhrases } from './notification-list.phrases';
 
@@ -30,6 +30,15 @@ const NotificationList = ({
   const notifications = useSyncExternalStore(subscribe, read);
   const t = usePhrases(notificationListPhrases);
 
+  // ! Announced reliably only if the region predates its content: the regions stay mounted, the
+  // ! toasts themselves are silenced with `aria-live="off"`, and what the store held before the
+  // ! list mounted enters the regions one render after they appeared.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const announced = mounted ? notifications : [];
+
   return (
     <div
       data-component={componentName}
@@ -37,17 +46,15 @@ const NotificationList = ({
       aria-label={t('enonic.uiKit.notifications.label')}
       className={cn('pointer-events-none', className)}
     >
-      {/* ! Announced reliably only if the region predates its content, so these stay mounted and
-          ! the toasts themselves are silenced with `aria-live="off"`. */}
       <div className="sr-only" aria-live="polite">
-        {notifications
+        {announced
           .filter(({ tone }) => !isUrgent(tone))
           .map(({ id, message }) => (
             <p key={id}>{message}</p>
           ))}
       </div>
       <div className="sr-only" aria-live="assertive">
-        {notifications
+        {announced
           .filter(({ tone }) => isUrgent(tone))
           .map(({ id, message }) => (
             <p key={id}>{message}</p>
