@@ -14,6 +14,31 @@ export type { LocalDateTimeFields } from './local-date-time';
 export { LocalTime } from './local-time';
 export { localize } from './localize';
 export type { Phrases, PhraseValue } from './localize';
+export {
+  ADMIN_ROLE_KEY,
+  ANONYMOUS_USER_KEY,
+  AUTHENTICATED_ROLE_KEY,
+  CMS_ADMIN_ROLE_KEY,
+  CMS_EXPERT_ROLE_KEY,
+  EVERYONE_ROLE_KEY,
+  groupKey,
+  idProviderOf,
+  isGroupRecord,
+  isPrincipalKey,
+  isRoleRecord,
+  isSystemPrincipal,
+  isUserRecord,
+  parsePrincipalKey,
+  principalId,
+  principalPath,
+  principalType,
+  roleKey,
+  SUPER_USER_KEY,
+  SYSTEM_ID_PROVIDER,
+  toPrincipal,
+  USER_ADMIN_ROLE_KEY,
+  userKey,
+} from './principal-key';
 export { BinaryReference, Link, Reference } from './reference';
 export { isRelativeTime, parseRelativeTime } from './relative-time';
 export {
