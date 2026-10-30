@@ -13,6 +13,53 @@ CLAUDE.md's table; how to build, test and release the workspace is in README.md.
   other, the edge goes `input-types → ui-kit` and never back — a split panel must not depend on a
   form.
 
+## XP's shapes are copied, not imported
+
+`ui-types` declares the shapes XP already declares — `@enonic-types/core`'s `PrincipalKey`,
+`User`, `Group`, `Role` and `FormItem`, `@enonic-types/lib-task`'s `TaskInfo` — as its own types,
+and pins each copy with a type test that asserts the core declaration, copied into the test, is
+assignable to it. A consumer may still import `@enonic-types` directly, as app-users does, and
+hand those values to this toolkit without a cast. The copy is here for the toolkit's own sake, for
+four reasons.
+
+- **The toolkit's signatures name the types.** `pollTask` answers `ResultAsync<TaskInfo>`,
+  `principalType` takes a `PrincipalKey`, `validateForm` reads a `FormJson`. A name in a public
+  signature has to come from a package the consumer resolves, and the only ways are a copy here or
+  `@enonic-types` as a dependency of every package that names one — which would make the one
+  dependency-free package in the workspace depend on XP's server typings, and put XP's release
+  cadence into the toolkit's: a field core adds as required is a breaking change in every consumer
+  of `@enonic/ui-utils`, published by XP and not by this repository.
+- **Core describes the engine, the browser receives the wire.** `@enonic-types` types what
+  `lib-auth` and `lib-task` return inside XP's JS engine. What reaches a page has been through a
+  REST layer: the Java bridge drops a key whose value is null, so `modifiedTime` is absent where
+  core says `string`; Content Studio's own REST sends a principal without `type`, `login`,
+  `idProvider` or `hasPassword`; a config value arrives as whatever the descriptor held. app-users
+  patches the first of these with an `Omit` per shape, in the application. The copy makes every such
+  field optional once, and every consumer reads the wire as it is. The one field that cannot be
+  optional is a discriminant: a `Principal` without `type` would narrow to the wrong branch in
+  silence. So the wire has its own shape, `PrincipalRecord`, the record without `type`, and one
+  normalization, `toPrincipal`, reads `type` off the key where the response is read — no server
+  has to send what its keys already say, and one that does fits the record as it is.
+- **The copy is cheap, and the pin is a copy too.** The copied types are a few dozen lines each.
+  The type test holds a second copy, of the core declaration itself, and asserts it assignable to
+  ours; both are checked against `@enonic-types` by hand, when XP's types change, not by the
+  compiler. `@enonic-types` is deliberately not a devDependency either: `ui-types` is kept free of
+  every package, so that its only version is its own and nothing XP releases can fail a build here.
+  The test is still worth having — it fixes the direction of the contract, core into ours, and a
+  field our copy drops or narrows fails it — and the test file is where a core change is applied
+  first. What it cannot see is a field core adds: the copy simply lacks it until a consumer needs
+  it, and a consumer that needs it before the toolkit does imports core for that field, as the two
+  shapes are structurally compatible.
+- **Two declarations do not collide.** TypeScript types are structural and live in the module
+  that declares them; a page typed partly against `@enonic-types` and partly against `ui-types`
+  passes values across without a cast in the direction the test pins, and a server controller in
+  the same repository keeps importing `@enonic-types` untouched.
+
+The alternatives — `@enonic-types` as a devDependency so that the test imports the real
+declarations, or `ui-types` re-exporting from it — were weighed and declined on 2026-10-26 for the
+independence above; either is a small change if that reason ever stops holding, and would be made
+together with this section.
+
 ## Dependency direction
 
 One way, no cycles: `ui-types` depends on nothing, `ui-utils` only on `ui-types`, the two
