@@ -22,6 +22,19 @@ export type AdminEvents = {
    * cannot.
    */
   subscribeTopic(topic: string, handlers: TopicHandlers): () => void;
+  /**
+   * `true` when the socket opens, `false` when it drops, `true` when it is back, until
+   * unsubscribed — so the first report may well be `true`. A hub never reached is silent. Through
+   * the shared worker, a page opened while the socket is down hears `false` on connect; over a
+   * socket of the page's own it hears nothing until the socket opens. Nothing is replayed, so
+   * subscribe before `connect()`.
+   */
+  subscribeConnection(listener: (connected: boolean) => void): () => void;
+  /**
+   * The session ended — logout, idle timeout, or a reconnect refused after a restart — until
+   * unsubscribed. The served client stops reconnecting; a reload after signing in is the way back.
+   */
+  subscribeSessionEnd(listener: () => void): () => void;
 };
 
 /** Loads the module at a runtime url; `import()` by default, a double in tests. */
@@ -34,6 +47,8 @@ type HubClient = {
   connect(handlers: {
     onEvent: (event: HubEvent) => void;
     onLoss: (loss: HubLoss) => void;
+    onConnectionChange?: (connected: boolean) => void;
+    onSessionEnd?: () => void;
   }): HubConnection;
 };
 // ? `unsubscribe` is what the socket underneath has and the served facade does not expose yet;
@@ -53,19 +68,13 @@ export function createAdminEvents(
   // removes only what its own call added.
   type Registration = { handlers: TopicHandlers };
   const registry = new Map<string, Set<Registration>>();
+  const connectionListeners = new Set<(connected: boolean) => void>();
+  const sessionEndListeners = new Set<() => void>();
   let connection: HubConnection | undefined;
   let connecting = false;
 
-  // A loss is reported once, so one subscriber's throw must not cost the others theirs.
-  const dispatch = (topic: string, deliver: (handlers: TopicHandlers) => void): void => {
-    registry.get(topic)?.forEach(({ handlers }) => {
-      try {
-        deliver(handlers);
-      } catch (cause: unknown) {
-        console.error(`An admin events handler of '${topic}' failed:`, cause);
-      }
-    });
-  };
+  const dispatch = (topic: string, deliver: (handlers: TopicHandlers) => void): void =>
+    deliverTo(registry.get(topic), ({ handlers }) => deliver(handlers), `handler of '${topic}'`);
 
   return {
     connect: () => {
@@ -79,6 +88,9 @@ export function createAdminEvents(
           connection = (loaded as HubClient).connect({
             onEvent: ({ topic, data }) => dispatch(topic, (h) => h.onMessage(data)),
             onLoss: ({ topic, count }) => dispatch(topic, (h) => h.onLoss?.(count)),
+            onConnectionChange: (connected) =>
+              deliverTo(connectionListeners, (l) => l(connected), 'connection listener'),
+            onSessionEnd: () => deliverTo(sessionEndListeners, (l) => l(), 'session end listener'),
           });
 
           registry.forEach((_, topic) => {
@@ -120,5 +132,40 @@ export function createAdminEvents(
         }
       };
     },
+    subscribeConnection: (listener) => {
+      connectionListeners.add(listener);
+      return () => {
+        connectionListeners.delete(listener);
+      };
+    },
+    subscribeSessionEnd: (listener) => {
+      sessionEndListeners.add(listener);
+      return () => {
+        sessionEndListeners.delete(listener);
+      };
+    },
   };
+}
+
+//
+// * Internal
+//
+
+/**
+ * Calls every listener, logging the one that throws instead of letting it stop the rest: a loss, a
+ * connection change or a session end is reported once. Shared by the topic handlers, keyed by
+ * topic, and the connection and session end listeners, which have no topic. `what` labels the log.
+ */
+function deliverTo<T>(
+  listeners: Iterable<T> | undefined,
+  deliver: (listener: T) => void,
+  what: string,
+): void {
+  for (const listener of listeners ?? []) {
+    try {
+      deliver(listener);
+    } catch (cause: unknown) {
+      console.error(`An admin events ${what} failed:`, cause);
+    }
+  }
 }
