@@ -63,7 +63,7 @@ its `ResultAsync`, so a consumer of the transport installs it and shares one cop
 | `THEME_STORAGE_KEY`, `THEME_CHANGE_EVENT`                                                                         | the `localStorage` entry and the window event the theme travels by                                                                                                                              |
 | `createNotifications()`                                                                                           | a toast stack's store: `notify(tone, message, options?)` answering its dismiss, `dismiss`, `dismissOwned`, `clear`, `pause`, `resume`, and `notifications`, the `Readable` of what is on screen |
 | `NotificationOptions`, `NotificationData`                                                                         | what a toast is raised with — the host contract's `autoHide` and `lifetimeMs`, plus `actions`, `owner` and `onClose` — and one entry on the stack                                               |
-| `admit`, `remove`, `findDuplicate`, `lifetimeFor`, `isUrgent`                                                     | the pure pieces of the policy, with `VISIBLE_LIMIT`, `SHORT_LIFETIME_MS` and `LONG_LIFETIME_MS`, for a host that composes its own                                                               |
+| `admit`, `remove`, `findDuplicate`, `lifetimeFor`, `isUrgent`                                                     | the pure pieces of the policy, with `VISIBLE_LIMIT`, `SHORT_LIFETIME_MS`, `LONG_LIFETIME_MS` and `MAX_LIFETIME_MS`, for a host that composes its own                                            |
 | \* From `@enonic/ui-utils/request`. † From `@enonic/ui-utils/admin-events`. ‡ From `@enonic/ui-utils/admin-menu`. |
 
 ## The theme
@@ -92,12 +92,15 @@ application creates one, exports it from its own module, and hands it to the lis
 host's stack, never in a second one. The policy it keeps:
 
 - **One just like it is not shown twice.** Same tone, message and owner is the toast already up,
-  whose dismiss comes back; two owners saying the same thing each keep their own.
+  whose dismiss comes back; its lifetime is not restarted, and the duplicate's own options — its
+  `onClose` among them — are dropped, since it was never shown. Two owners saying the same thing
+  each keep their own.
 - **Three on screen, the rest queued** in the order raised; a promoted toast starts its full
   lifetime then, not when it was raised.
 - **A warning or an error stays thirty seconds, the rest five**, unless `lifetimeMs` says
-  otherwise or `autoHide` is off. `pause` and `resume` hold and continue what is left — the list
-  calls them on hover and focus.
+  otherwise or `autoHide` is off; a lifetime past what `setTimeout` can wait, `MAX_LIFETIME_MS`, is
+  held there. `pause` and `resume` hold and continue what is left — the list calls them on hover
+  and focus.
 - **`owner` is what `dismissOwned` takes down** when a mount is revoked; `onClose` is called once
   when a toast leaves, whichever way, and one that throws is reported and costs no other its close.
 
@@ -106,7 +109,7 @@ export const notifications = createNotifications();
 
 const dismiss = notifications.notify('success', 'Saved');
 notifications.notify('info', 'Moved to /site/news', {
-  actions: [{ label: '/site/news', onClick: () => select(path) }],
+  actions: [{ label: '/site/news', onClick: () => select('/site/news') }],
 });
 notifications.notify('error', 'Live updates unavailable', { autoHide: false, owner: 'app:users' });
 notifications.dismissOwned('app:users');

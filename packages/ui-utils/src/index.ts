@@ -23,6 +23,7 @@ export {
   isUrgent,
   lifetimeFor,
   LONG_LIFETIME_MS,
+  MAX_LIFETIME_MS,
   remove,
   SHORT_LIFETIME_MS,
   VISIBLE_LIMIT,

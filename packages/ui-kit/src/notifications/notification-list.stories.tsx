@@ -32,8 +32,9 @@ const Playground = (): ReactElement => (
     <div className="text-subtle max-w-120 text-sm">
       Every button raises a toast on one store. Three show at once and the rest queue; an info or a
       success lives five seconds, a warning or an error thirty; hovering or focusing a toast holds
-      it; an action taken dismisses it. The same message twice is one toast. The list sits where the
-      story puts it, bottom right.
+      it; an action taken dismisses it. The same message twice is one toast. A toast closed from the
+      keyboard hands its focus to the toast next to it, or back to the button that raised it. The
+      list sits where the story puts it, bottom right.
     </div>
     <div className="flex flex-wrap gap-2">
       {(Object.keys(MESSAGES) as ToastTone[]).map((tone) => (

@@ -7,6 +7,7 @@ import {
   isUrgent,
   lifetimeFor,
   LONG_LIFETIME_MS,
+  MAX_LIFETIME_MS,
   type NotificationData,
   type NotificationsState,
   remove,
@@ -56,6 +57,12 @@ describe('lifetimeFor', () => {
     expect(lifetimeFor('info', -1)).toBe(SHORT_LIFETIME_MS);
     expect(lifetimeFor('info', Number.POSITIVE_INFINITY)).toBe(SHORT_LIFETIME_MS);
     expect(lifetimeFor('info', Number.NaN)).toBe(SHORT_LIFETIME_MS);
+  });
+
+  it('holds a lifetime past what setTimeout can wait at the longest wait', () => {
+    expect(lifetimeFor('info', MAX_LIFETIME_MS)).toBe(MAX_LIFETIME_MS);
+    expect(lifetimeFor('info', MAX_LIFETIME_MS + 1)).toBe(MAX_LIFETIME_MS);
+    expect(lifetimeFor('info', 3e9)).toBe(MAX_LIFETIME_MS);
   });
 });
 

@@ -1,6 +1,13 @@
 import { cn, Toast, usePhrases } from '@enonic/ui';
 import { isUrgent, type Notifications } from '@enonic/ui-utils';
-import { type ReactElement, useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import {
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 
 import { notificationListPhrases } from './notification-list.phrases';
 
@@ -14,10 +21,22 @@ export type NotificationListProps = {
 
 const NOTIFICATION_LIST_NAME = 'NotificationList';
 
+// Inside a shadow root `document.activeElement` is the host, so the focus is read from the root
+// the element is in.
+function activeElementAround(element: Element): Element | null {
+  return (element.getRootNode() as Document | ShadowRoot).activeElement;
+}
+
+function hasFocus(element: Element): boolean {
+  return element.contains(activeElementAround(element));
+}
+
 /**
  * The toasts on screen, one `Toast` each with its actions and a close, and two `aria-live` regions
  * that announce them. Hover and focus pause a toast's lifetime, so an action is never pulled out
- * from under a pointer or a keyboard user halfway to it; an action taken dismisses the toast.
+ * from under a pointer or a keyboard user halfway to it; an action taken dismisses the toast. A
+ * toast closed from the keyboard hands its focus to the toast next to it, or back to where the
+ * focus came from when the stack was entered.
  */
 const NotificationList = ({
   notifications: store,
@@ -38,6 +57,29 @@ const NotificationList = ({
     setMounted(true);
   }, []);
   const announced = mounted ? notifications : [];
+
+  const stack = useRef<HTMLDivElement>(null);
+  const wrappers = useRef(new Map<number, HTMLDivElement>());
+  const enteredFrom = useRef<HTMLElement | null>(null);
+
+  const rememberEntry = (relatedTarget: EventTarget | null): void => {
+    const from = relatedTarget instanceof HTMLElement ? relatedTarget : null;
+    if (from == null || !stack.current?.contains(from)) {
+      enteredFrom.current = from;
+    }
+  };
+
+  const dismissFrom = (id: number): void => {
+    const wrapper = wrappers.current.get(id);
+    if (wrapper != null && hasFocus(wrapper)) {
+      const neighbour = wrapper.nextElementSibling ?? wrapper.previousElementSibling;
+      const target = neighbour?.querySelector('button') ?? enteredFrom.current;
+      if (target?.isConnected) {
+        target.focus();
+      }
+    }
+    store.dismiss(id);
+  };
 
   return (
     <div
@@ -61,15 +103,24 @@ const NotificationList = ({
           ))}
       </div>
 
-      <div className="flex flex-col items-center gap-2.5">
+      <div
+        ref={stack}
+        className="flex flex-col items-center gap-2.5"
+        onFocusCapture={({ relatedTarget }) => rememberEntry(relatedTarget)}
+      >
         {notifications.map(({ id, tone, message, actions }) => (
           <div
             key={id}
+            ref={(element) => {
+              if (element == null) {
+                wrappers.current.delete(id);
+              } else {
+                wrappers.current.set(id, element);
+              }
+            }}
             className="pointer-events-auto w-full"
             onMouseEnter={() => store.pause(id)}
-            onMouseLeave={({ currentTarget }) =>
-              !currentTarget.contains(document.activeElement) && store.resume(id)
-            }
+            onMouseLeave={({ currentTarget }) => !hasFocus(currentTarget) && store.resume(id)}
             onFocusCapture={() => store.pause(id)}
             onBlurCapture={({ currentTarget }) =>
               !currentTarget.matches(':hover') && store.resume(id)
@@ -80,7 +131,7 @@ const NotificationList = ({
               withClose
               role="status"
               aria-live="off"
-              onOpenChange={(open) => !open && store.dismiss(id)}
+              onOpenChange={(open) => !open && dismissFrom(id)}
             >
               <Toast.Icon tone={tone} />
               <Toast.Description>{message}</Toast.Description>
@@ -88,8 +139,11 @@ const NotificationList = ({
                 <Toast.Button
                   key={`${index}-${label}`}
                   onClick={() => {
-                    onClick();
-                    store.dismiss(id);
+                    try {
+                      onClick();
+                    } finally {
+                      dismissFrom(id);
+                    }
                   }}
                 >
                   {label}

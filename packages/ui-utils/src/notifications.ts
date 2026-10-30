@@ -10,7 +10,10 @@ export type NotificationOptions = NotifyOptions & {
   actions?: readonly NotificationAction[];
   /** Who raised it, where something can be revoked — a mount's extension key. */
   owner?: string;
-  /** Called once when the toast leaves the stack, whichever way it goes. */
+  /**
+   * Called once when the toast leaves the stack, whichever way it goes. Never for one dropped as a
+   * duplicate: it was not shown, and the one already up keeps its own `onClose`.
+   */
   onClose?: () => void;
 };
 
@@ -40,17 +43,21 @@ export const SHORT_LIFETIME_MS = 5000;
 
 export const LONG_LIFETIME_MS = 30_000;
 
+/** The longest wait `setTimeout` keeps: past a signed 32-bit delay it fires at once. */
+export const MAX_LIFETIME_MS = 2 ** 31 - 1;
+
 export function isUrgent(tone: ToastTone): boolean {
   return tone === 'error' || tone === 'warning';
 }
 
 /**
  * The requested lifetime, or the tone's own — a warning or an error is worth reading twice. Only a
- * positive finite one is taken: `setTimeout` waits no time at all for both zero and `Infinity`.
+ * positive finite one is taken, and no further than `setTimeout` can wait: it waits no time at
+ * all for zero, for `Infinity` and for anything past `MAX_LIFETIME_MS`.
  */
 export function lifetimeFor(tone: ToastTone, requestedMs?: number): number {
   if (requestedMs != null && Number.isFinite(requestedMs) && requestedMs > 0) {
-    return requestedMs;
+    return Math.min(requestedMs, MAX_LIFETIME_MS);
   }
 
   return isUrgent(tone) ? LONG_LIFETIME_MS : SHORT_LIFETIME_MS;

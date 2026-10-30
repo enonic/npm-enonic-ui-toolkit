@@ -404,6 +404,23 @@ describe('notifications', () => {
     expect(seen.at(-1)).toBe(store.notifications.get());
   });
 
+  it('still reaches everyone after a listener has changed the queue alone', () => {
+    show('first');
+    show('second');
+    const seen: (readonly unknown[])[] = [];
+    store.notifications.listen(() => {
+      show('queued');
+      store.dismiss(99);
+    });
+    store.notifications.listen((visible) => seen.push(visible));
+
+    show('third');
+
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toBe(store.notifications.get());
+    expect(messages()).toEqual(['first', 'second', 'third']);
+  });
+
   it('stops reporting once unsubscribed', () => {
     const listener = vi.fn();
     const unsubscribe = store.notifications.listen(listener);

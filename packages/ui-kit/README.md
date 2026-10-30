@@ -137,8 +137,9 @@ Outside a render — a host's `theme`, a script with no framework — `readResol
 else: the kit holds no instance. The application exports its one store, renders the list once
 where its shell puts the corner, and hands the same store to every `Host` it creates for a mount.
 An action taken dismisses the toast, and so does the close; a toast raised with `autoHide: false`
-stays until one or the other; a hovered or focused toast holds its lifetime; the stack announces an
-info or a success politely and a warning or an error assertively.
+stays until one or the other; a hovered or focused toast holds its lifetime; a toast closed from
+the keyboard hands its focus to the toast next to it, or back to where the stack was entered from;
+the stack announces an info or a success politely and a warning or an error assertively.
 
 ```tsx
 export const notifications = createNotifications();

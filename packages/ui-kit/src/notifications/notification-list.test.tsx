@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { createNotifications, type Notifications, SHORT_LIFETIME_MS } from '@enonic/ui-utils';
-import { act, cleanup, render, screen } from '@testing-library/preact';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/preact';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -22,6 +22,12 @@ afterEach(() => {
 
 const messages = () =>
   screen.queryAllByRole('status').map((toast) => toast.querySelector('p')?.textContent);
+
+const closeOf = (message: string) =>
+  screen
+    .getAllByRole('status')
+    .find((toast) => toast.querySelector('p')?.textContent === message)!
+    .querySelector<HTMLButtonElement>('button[aria-label="Close notification"]')!;
 
 describe('NotificationList', () => {
   it('renders what the store shows, in order, and follows a change', async () => {
@@ -86,6 +92,31 @@ describe('NotificationList', () => {
     expect(store.notifications.get()).toEqual([]);
   });
 
+  it('dismisses the toast even when its action throws', async () => {
+    const onClose = vi.fn();
+    await act(() => {
+      store.notify('success', 'Deleted', {
+        autoHide: false,
+        actions: [
+          {
+            label: 'Undo',
+            onClick: () => {
+              throw new Error('boom');
+            },
+          },
+        ],
+        onClose,
+      });
+    });
+    render(<NotificationList notifications={store} />);
+
+    await expect(user.click(screen.getByRole('button', { name: 'Undo' }))).rejects.toThrow('boom');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(messages()).toEqual([]);
+    expect(store.notifications.get()).toEqual([]);
+  });
+
   it('pauses the lifetime while hovered and resumes it after', async () => {
     await act(() => {
       store.notify('info', 'Saved');
@@ -121,6 +152,94 @@ describe('NotificationList', () => {
       vi.advanceTimersByTime(SHORT_LIFETIME_MS * 2);
     });
     expect(messages()).toEqual(['Deleted']);
+  });
+
+  it('keeps a focused toast up when the pointer leaves it inside a shadow root', async () => {
+    const host = document.body.appendChild(document.createElement('div'));
+    const root = host.attachShadow({ mode: 'open' });
+    await act(() => {
+      store.notify('success', 'Deleted', { actions: [{ label: 'Undo', onClick: () => {} }] });
+    });
+    render(<NotificationList notifications={store} />, { container: root as unknown as Element });
+    const undo = root.querySelector('button')!;
+    const wrapper = root.querySelector('[role="status"]')!.parentElement!;
+
+    await user.hover(wrapper);
+    undo.focus();
+    expect(document.activeElement).toBe(host);
+    expect(root.activeElement).toBe(undo);
+    await user.unhover(wrapper);
+
+    await act(() => {
+      vi.advanceTimersByTime(SHORT_LIFETIME_MS * 2);
+    });
+    expect(store.notifications.get().map(({ message }) => message)).toEqual(['Deleted']);
+
+    host.remove();
+  });
+
+  it('hands the focus of a toast closed from the keyboard to the toast next to it', async () => {
+    await act(() => {
+      store.notify('info', 'first', { autoHide: false });
+      store.notify('success', 'second', {
+        autoHide: false,
+        actions: [{ label: 'Undo', onClick: () => {} }],
+      });
+      store.notify('info', 'third', { autoHide: false });
+    });
+    render(<NotificationList notifications={store} />);
+
+    closeOf('first').focus();
+    await user.keyboard('{Enter}');
+    expect(messages()).toEqual(['second', 'third']);
+    expect(document.activeElement).toBe(closeOf('second'));
+
+    closeOf('third').focus();
+    await user.keyboard('{Enter}');
+    expect(messages()).toEqual(['second']);
+    expect(document.activeElement).toBe(closeOf('second'));
+  });
+
+  it('hands the focus of the last toast back to where the stack was entered from', async () => {
+    const before = document.body.appendChild(document.createElement('button'));
+    before.textContent = 'before';
+    await act(() => {
+      store.notify('success', 'Deleted', {
+        autoHide: false,
+        actions: [{ label: 'Undo', onClick: () => {} }],
+      });
+    });
+    render(<NotificationList notifications={store} />);
+
+    before.focus();
+    await user.tab();
+    await user.tab();
+    expect(document.activeElement?.textContent).toBe('Undo');
+    await user.keyboard('{Enter}');
+
+    expect(messages()).toEqual([]);
+    expect(document.activeElement).toBe(before);
+
+    before.remove();
+  });
+
+  it('leaves a focus outside the stack alone when a toast is closed', async () => {
+    const elsewhere = document.body.appendChild(document.createElement('button'));
+    await act(() => {
+      store.notify('info', 'first', { autoHide: false });
+      store.notify('info', 'second', { autoHide: false });
+    });
+    render(<NotificationList notifications={store} />);
+    elsewhere.focus();
+
+    await act(() => {
+      fireEvent.click(closeOf('first'));
+    });
+
+    expect(messages()).toEqual(['second']);
+    expect(document.activeElement).toBe(elsewhere);
+
+    elsewhere.remove();
   });
 
   it('takes the class and the component name it is given', async () => {

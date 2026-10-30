@@ -15,6 +15,7 @@ export type Notifications = {
   /**
    * Shows a toast and returns its dismiss. One just like it — same tone, message and owner — is
    * not shown twice: the dismiss of the one already up comes back instead, and its options stand.
+   * The duplicate's own are dropped, its `onClose` with them, and the lifetime is not restarted.
    */
   notify(tone: ToastTone, message: string, options?: NotificationOptions): () => void;
   dismiss(id: number): void;
@@ -96,10 +97,11 @@ export function createNotifications(): Notifications {
     syncTimers();
 
     if (next.visible !== previous.visible) {
-      // A listener that changes the store mid-dispatch has delivered the newer stack to everyone
-      // already, so the rest must not get this one after it.
+      // A listener that changes the stack mid-dispatch has delivered the newer one to everyone
+      // already, so the rest must not get this one after it. A change to the queue alone is not
+      // dispatched, so it does not stop this one either.
       for (const listener of listeners) {
-        if (state !== next) {
+        if (state.visible !== next.visible) {
           break;
         }
         listener(next.visible);
