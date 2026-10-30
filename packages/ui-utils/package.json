@@ -1,7 +1,7 @@
 {
   "name": "@enonic/ui-utils",
   "version": "0.6.0",
-  "description": "Framework-free helpers for Enonic UIs: the request transport, phrase lookup and the admin events hub",
+  "description": "Framework-free helpers for Enonic UIs: the request transport, phrase lookup, principal keys, task polling and the admin events hub",
   "keywords": [
     "enonic",
     "i18n",
@@ -42,6 +42,10 @@
     "./admin-menu": {
       "types": "./src/admin-menu.ts",
       "import": "./src/admin-menu.ts"
+    },
+    "./task": {
+      "types": "./src/task.ts",
+      "import": "./src/task.ts"
     }
   },
   "publishConfig": {
@@ -63,6 +67,10 @@
       "./admin-menu": {
         "types": "./dist/admin-menu.d.ts",
         "import": "./dist/admin-menu.js"
+      },
+      "./task": {
+        "types": "./dist/task.d.ts",
+        "import": "./dist/task.js"
       }
     },
     "access": "public",

@@ -25,3 +25,14 @@ export class RequestAbortedError extends AppError {
     super(message, cause);
   }
 }
+
+/** `String(x)` itself throws on a value with no way to a primitive; this never does. */
+export function describe(error: unknown, fallback: string): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  try {
+    return String(error);
+  } catch {
+    return fallback;
+  }
+}

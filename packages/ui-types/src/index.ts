@@ -33,11 +33,26 @@ export type {
   ToastTone,
   Unmount,
 } from './mount';
-export type { PrincipalType } from './principal';
+export type {
+  Group,
+  GroupKey,
+  GroupRecord,
+  Principal,
+  PrincipalKey,
+  PrincipalRecord,
+  PrincipalType,
+  Role,
+  RoleKey,
+  RoleRecord,
+  User,
+  UserKey,
+  UserRecord,
+} from './principal';
 export type {
   PropertyArrayJson,
   PropertyTreeJson,
   PropertyValueJson,
   ValueTypeName,
 } from './property';
+export type { TaskInfo, TaskProgress, TaskState } from './task';
 export type { ResolvedTheme, Theme } from './theme';
