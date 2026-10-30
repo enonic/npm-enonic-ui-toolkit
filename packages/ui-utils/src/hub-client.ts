@@ -23,9 +23,11 @@ export type AdminEvents = {
    */
   subscribeTopic(topic: string, handlers: TopicHandlers): () => void;
   /**
-   * `false` once a made connection drops and `true` when it is back, until unsubscribed. A hub
-   * never reached is silent; a page opened while the socket is down hears `false` on connect.
-   * Nothing is replayed, so subscribe before `connect()`.
+   * `true` when the socket opens, `false` when it drops, `true` when it is back, until
+   * unsubscribed — so the first report may well be `true`. A hub never reached is silent. Through
+   * the shared worker, a page opened while the socket is down hears `false` on connect; over a
+   * socket of the page's own it hears nothing until the socket opens. Nothing is replayed, so
+   * subscribe before `connect()`.
    */
   subscribeConnection(listener: (connected: boolean) => void): () => void;
   /**
