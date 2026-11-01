@@ -52,16 +52,16 @@
   },
   "dependencies": {
     "@enonic/ui-types": "workspace:^",
-    "lucide-react": "^1.48.0"
+    "lucide-react": "^1.64.0"
   },
   "devDependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
-    "@enonic/ui": "^1.4.0",
+    "@enonic/ui": "^1.5.0",
     "@enonic/ui-utils": "workspace:^",
-    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-slot": "^1.5.0",
     "@storybook/preact-vite": "~10.6.0",
-    "@testing-library/preact": "~3.2.4",
+    "@testing-library/preact": "~3.2.6",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "focus-trap-react": "^12.0.0",
@@ -75,7 +75,7 @@
   "peerDependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
-    "@enonic/ui": "^1.4.0",
+    "@enonic/ui": "^1.5.0",
     "@enonic/ui-utils": "workspace:^",
     "focus-trap-react": "^12.0.0",
     "preact": ">=10.0.0",
