@@ -61,17 +61,29 @@ const NotificationList = ({
   const stack = useRef<HTMLDivElement>(null);
   const wrappers = useRef(new Map<number, HTMLDivElement>());
   const enteredFrom = useRef<HTMLElement | null>(null);
+  const focusInside = useRef(false);
+  // ! A pointer click focuses the button in most browsers, so the focus alone does not tell a
+  // ! keyboard close from a mouse one; `detail` is 0 for a key press and an assistive-tech click.
+  const closedByKeyboard = useRef(false);
 
+  // A window regaining focus reports no `relatedTarget` although the focus never left the stack.
   const rememberEntry = (relatedTarget: EventTarget | null): void => {
     const from = relatedTarget instanceof HTMLElement ? relatedTarget : null;
-    if (from == null || !stack.current?.contains(from)) {
+    if (from == null ? !focusInside.current : !stack.current?.contains(from)) {
       enteredFrom.current = from;
+    }
+    focusInside.current = true;
+  };
+
+  const forgetEntry = (relatedTarget: EventTarget | null): void => {
+    if (relatedTarget instanceof Node && !stack.current?.contains(relatedTarget)) {
+      focusInside.current = false;
     }
   };
 
   const dismissFrom = (id: number): void => {
     const wrapper = wrappers.current.get(id);
-    if (wrapper != null && hasFocus(wrapper)) {
+    if (wrapper != null && closedByKeyboard.current && hasFocus(wrapper)) {
       const neighbour = wrapper.nextElementSibling ?? wrapper.previousElementSibling;
       const target = neighbour?.querySelector('button') ?? enteredFrom.current;
       if (target?.isConnected) {
@@ -107,6 +119,10 @@ const NotificationList = ({
         ref={stack}
         className="flex flex-col items-center gap-2.5"
         onFocusCapture={({ relatedTarget }) => rememberEntry(relatedTarget)}
+        onBlurCapture={({ relatedTarget }) => forgetEntry(relatedTarget)}
+        onClickCapture={({ detail }) => {
+          closedByKeyboard.current = detail === 0;
+        }}
       >
         {notifications.map(({ id, tone, message, actions }) => (
           <div

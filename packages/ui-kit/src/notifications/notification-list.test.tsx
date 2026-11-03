@@ -223,6 +223,49 @@ describe('NotificationList', () => {
     before.remove();
   });
 
+  it('keeps the entry across the window losing and regaining the focus', async () => {
+    const before = document.body.appendChild(document.createElement('button'));
+    await act(() => {
+      store.notify('success', 'Deleted', {
+        autoHide: false,
+        actions: [{ label: 'Undo', onClick: () => {} }],
+      });
+    });
+    render(<NotificationList notifications={store} />);
+
+    before.focus();
+    await user.tab();
+    await user.tab();
+    const undo = document.activeElement!;
+    expect(undo.textContent).toBe('Undo');
+    fireEvent.blur(undo, { relatedTarget: null });
+    fireEvent.focus(undo, { relatedTarget: null });
+    await user.keyboard('{Enter}');
+
+    expect(messages()).toEqual([]);
+    expect(document.activeElement).toBe(before);
+
+    before.remove();
+  });
+
+  it('lets the next toast go when a toast is closed with the pointer', async () => {
+    await act(() => {
+      store.notify('info', 'first');
+      store.notify('success', 'second');
+    });
+    render(<NotificationList notifications={store} />);
+
+    await user.click(closeOf('first'));
+    expect(messages()).toEqual(['second']);
+    expect(document.activeElement).not.toBe(closeOf('second'));
+    await user.unhover(closeOf('second'));
+
+    await act(() => {
+      vi.advanceTimersByTime(SHORT_LIFETIME_MS * 2);
+    });
+    expect(messages()).toEqual([]);
+  });
+
   it('leaves a focus outside the stack alone when a toast is closed', async () => {
     const elsewhere = document.body.appendChild(document.createElement('button'));
     await act(() => {
