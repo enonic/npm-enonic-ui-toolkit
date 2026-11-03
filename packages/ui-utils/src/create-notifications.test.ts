@@ -162,6 +162,16 @@ describe('pause and resume', () => {
     expect(messages()).toEqual([]);
   });
 
+  it('dismisses at once when resumed with no time left', () => {
+    show('Saved');
+    vi.setSystemTime(SHORT_LIFETIME_MS);
+    store.pause(idOf('Saved'));
+    expect(messages()).toEqual(['Saved']);
+
+    store.resume(idOf('Saved'));
+    expect(messages()).toEqual([]);
+  });
+
   it('stays paused while the notification next to it comes and goes', () => {
     show('Saved');
     const dismissOther = show('Deleted');

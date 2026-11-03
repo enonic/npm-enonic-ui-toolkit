@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { notificationListPhrases } from './notification-list.phrases';
+import { hasFocus, useFocusHandOff } from './use-focus-hand-off';
 
 export type NotificationListProps = {
   /** The store the application created with `createNotifications`. */
@@ -20,16 +21,6 @@ export type NotificationListProps = {
 };
 
 const NOTIFICATION_LIST_NAME = 'NotificationList';
-
-// Inside a shadow root `document.activeElement` is the host, so the focus is read from the root
-// the element is in.
-function activeElementAround(element: Element): Element | null {
-  return (element.getRootNode() as Document | ShadowRoot).activeElement;
-}
-
-function hasFocus(element: Element): boolean {
-  return element.contains(activeElementAround(element));
-}
 
 /**
  * The toasts on screen, one `Toast` each with its actions and a close, and two `aria-live` regions
@@ -58,38 +49,11 @@ const NotificationList = ({
   }, []);
   const announced = mounted ? notifications : [];
 
-  const stack = useRef<HTMLDivElement>(null);
   const wrappers = useRef(new Map<number, HTMLDivElement>());
-  const enteredFrom = useRef<HTMLElement | null>(null);
-  const focusInside = useRef(false);
-  // ! A pointer click focuses the button in most browsers, so the focus alone does not tell a
-  // ! keyboard close from a mouse one; `detail` is 0 for a key press and an assistive-tech click.
-  const closedByKeyboard = useRef(false);
-
-  // A window regaining focus reports no `relatedTarget` although the focus never left the stack.
-  const rememberEntry = (relatedTarget: EventTarget | null): void => {
-    const from = relatedTarget instanceof HTMLElement ? relatedTarget : null;
-    if (from == null ? !focusInside.current : !stack.current?.contains(from)) {
-      enteredFrom.current = from;
-    }
-    focusInside.current = true;
-  };
-
-  const forgetEntry = (relatedTarget: EventTarget | null): void => {
-    if (relatedTarget instanceof Node && !stack.current?.contains(relatedTarget)) {
-      focusInside.current = false;
-    }
-  };
+  const { stackProps, handOff } = useFocusHandOff();
 
   const dismissFrom = (id: number): void => {
-    const wrapper = wrappers.current.get(id);
-    if (wrapper != null && closedByKeyboard.current && hasFocus(wrapper)) {
-      const neighbour = wrapper.nextElementSibling ?? wrapper.previousElementSibling;
-      const target = neighbour?.querySelector('button') ?? enteredFrom.current;
-      if (target?.isConnected) {
-        target.focus();
-      }
-    }
+    handOff(wrappers.current.get(id));
     store.dismiss(id);
   };
 
@@ -115,15 +79,7 @@ const NotificationList = ({
           ))}
       </div>
 
-      <div
-        ref={stack}
-        className="flex flex-col items-center gap-2.5"
-        onFocusCapture={({ relatedTarget }) => rememberEntry(relatedTarget)}
-        onBlurCapture={({ relatedTarget }) => forgetEntry(relatedTarget)}
-        onClickCapture={({ detail }) => {
-          closedByKeyboard.current = detail === 0;
-        }}
-      >
+      <div {...stackProps} className="flex flex-col items-center gap-2.5">
         {notifications.map(({ id, tone, message, actions }) => (
           <div
             key={id}
