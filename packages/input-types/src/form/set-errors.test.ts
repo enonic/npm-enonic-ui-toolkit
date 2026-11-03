@@ -34,7 +34,7 @@ describe('useSetChildShowErrors', () => {
     let visibility = initial;
     const sets = () => array.getProperties().map((property) => property.getPropertySet()!);
     const hook = renderHook(() => useSetChildShowErrors(array, sets()), {
-      wrapper: ({ children }: { children: ReactNode }) =>
+      wrapper: ({ children }: { children?: ReactNode }) =>
         createElement(ValidationVisibilityProvider, { visibility }, children),
     });
     return {
