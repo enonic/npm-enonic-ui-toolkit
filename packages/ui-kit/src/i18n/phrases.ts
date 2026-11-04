@@ -1,6 +1,7 @@
 import { mergePhrases } from '@enonic/ui-utils';
 
 import { filterInputPhrases } from '../filter/filter-input.phrases';
+import { notificationListPhrases } from '../notifications/notification-list.phrases';
 import { themeSwitcherPhrases } from '../theme/theme-switcher.phrases';
 
 export const dialogPhrases = {
@@ -26,6 +27,7 @@ export const uiKitPhrases = mergePhrases([
   gatePhrases,
   filterInputPhrases,
   themeSwitcherPhrases,
+  notificationListPhrases,
 ]);
 
 export type UiKitPhraseKey = keyof typeof uiKitPhrases;

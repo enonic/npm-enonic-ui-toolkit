@@ -3,7 +3,7 @@
 Composite React components for Enonic applications — what
 [`@enonic/ui`](https://www.npmjs.com/package/@enonic/ui) would be if its parts carried behaviour.
 The dialog with an outcome and its confirmations are here, the filter input of a browse screen,
-and the theme switcher; layouts, toolbars and the rest of the browse screen follow.
+the theme switcher and the toast stack; layouts, toolbars and the rest of the browse screen follow.
 
 A component belongs here when it holds state, coordinates several base components, or encodes a
 screen pattern more than one application repeats. Props in, callbacks out: nothing here reaches
@@ -54,29 +54,31 @@ tells an application which keys its bundle lacks.
 
 ## What is here
 
-| Export                                         | What it does                                                                                                                                                                                                                            |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ActionDialog`                                 | `Dialog` from `@enonic/ui` plus an outcome: a `Content` whose own controls take no focus from a field (so validate on confirm, not on blur alone), a `Body` inert while the footer asks, a `Footer` that takes the action or asks       |
-| `ActionDialog.Footer`                          | Cancel and Confirm when given `onConfirm`, or the controls it is given as children — a wizard's step indicator; `intent`, `error`, `confirmRef`; `question` asks in place of the controls                                               |
-| `ActionDialog.Action`                          | a further button of the footer, enabled by the content like Confirm; `intent`, `closeOnClick`                                                                                                                                           |
-| `useCloseGuard({ dirty, open, onOpenChange })` | the dirty-close question: the mask, the X, `Escape` and Cancel ask before a close that would lose something; `asking` feeds the footer's `question`, `keep` returns the focus                                                           |
-| `Gate`                                         | `Root`, `Hint` naming what to type back, `Input` that enables the confirm button on a match and locks                                                                                                                                   |
-| `DialogPreset.Confirm`                         | the plain question: title, question, two answers of equal weight                                                                                                                                                                        |
-| `DeleteConfirm`                                | the delete view: question, targets, the gate asking for the one name or the count, a red button — the first view, or the view after a list, with `closeOnCancel` off to go back to it                                                   |
-| `deleteExpectation(targets)`                   | the one name, or the count                                                                                                                                                                                                              |
-| `matchesExpected(typed, expected)`             | the gate's comparison, spaces around the entry forgiven                                                                                                                                                                                 |
-| `fillPhrase(phrase, values)`                   | a phrase with its `{n}` placeholders replaced by nodes                                                                                                                                                                                  |
-| `uiKitPhrases`, `useUiKitPhrases()`            | the catalogue, and the hook that resolves it through the application's `Translate`                                                                                                                                                      |
-| `useActionDialog()`                            | the content's state, for anything inside it that enables the action                                                                                                                                                                     |
-| `FilterInput`                                  | one input for a list's filter: values of predefined `fields` combined with free text, every term a `Tag`; `value`/`onChange` or `defaultValue`; `disabled`, `readOnly` (the tags alone, no input), `error`; the ref is the text input's |
-| `FilterField`, `FilterValue`                   | what the dropdown offers: a field with an id, a label, an icon, its values, `multiple` (on unless `false`) and a `notice`; a value with a `count`, a `group` and `disabled`                                                             |
-| `FilterQuery`, `FilterTerm`                    | what the list is narrowed by: `FieldTerm` and `TextTerm`, discriminated by `kind`, ids never labels, in the order they were added; `fieldTerm`, `textTerm`, `termKey`                                                                   |
-| `textOf(query)`, `valuesOf(query, field)`      | the two readings a list takes of a query: the free text as one string, and every value picked for a field — empty narrows nothing                                                                                                       |
-| `withTerm`, `withoutTerm`, `toggledTerm`       | the pure operations on a query the input is built from, with `sameTerm`, `isTextTerm`, `isFieldTerm` and `EMPTY_FILTER`                                                                                                                 |
-| `filterInputPhrases`                           | the input's English, part of `uiKitPhrases`                                                                                                                                                                                             |
-| `ThemeSwitcher`                                | the button that cycles the shared theme — light, dark, system — reading and writing it itself; `className`                                                                                                                              |
-| `useResolvedTheme()`                           | the theme to paint, `light` or `dark`, re-rendering when the user switches here or in another tab, or the OS does on `system`                                                                                                           |
-| `themeSwitcherPhrases`                         | the switcher's English, part of `uiKitPhrases`                                                                                                                                                                                          |
+| Export                                         | What it does                                                                                                                                                                                                                                   |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ActionDialog`                                 | `Dialog` from `@enonic/ui` plus an outcome: a `Content` whose own controls take no focus from a field (so validate on confirm, not on blur alone), a `Body` inert while the footer asks, a `Footer` that takes the action or asks              |
+| `ActionDialog.Footer`                          | Cancel and Confirm when given `onConfirm`, or the controls it is given as children — a wizard's step indicator; `intent`, `error`, `confirmRef`; `question` asks in place of the controls                                                      |
+| `ActionDialog.Action`                          | a further button of the footer, enabled by the content like Confirm; `intent`, `closeOnClick`                                                                                                                                                  |
+| `useCloseGuard({ dirty, open, onOpenChange })` | the dirty-close question: the mask, the X, `Escape` and Cancel ask before a close that would lose something; `asking` feeds the footer's `question`, `keep` returns the focus                                                                  |
+| `Gate`                                         | `Root`, `Hint` naming what to type back, `Input` that enables the confirm button on a match and locks                                                                                                                                          |
+| `DialogPreset.Confirm`                         | the plain question: title, question, two answers of equal weight                                                                                                                                                                               |
+| `DeleteConfirm`                                | the delete view: question, targets, the gate asking for the one name or the count, a red button — the first view, or the view after a list, with `closeOnCancel` off to go back to it                                                          |
+| `deleteExpectation(targets)`                   | the one name, or the count                                                                                                                                                                                                                     |
+| `matchesExpected(typed, expected)`             | the gate's comparison, spaces around the entry forgiven                                                                                                                                                                                        |
+| `fillPhrase(phrase, values)`                   | a phrase with its `{n}` placeholders replaced by nodes                                                                                                                                                                                         |
+| `uiKitPhrases`, `useUiKitPhrases()`            | the catalogue, and the hook that resolves it through the application's `Translate`                                                                                                                                                             |
+| `useActionDialog()`                            | the content's state, for anything inside it that enables the action                                                                                                                                                                            |
+| `FilterInput`                                  | one input for a list's filter: values of predefined `fields` combined with free text, every term a `Tag`; `value`/`onChange` or `defaultValue`; `disabled`, `readOnly` (the tags alone, no input), `error`; the ref is the text input's        |
+| `FilterField`, `FilterValue`                   | what the dropdown offers: a field with an id, a label, an icon, its values, `multiple` (on unless `false`) and a `notice`; a value with a `count`, a `group` and `disabled`                                                                    |
+| `FilterQuery`, `FilterTerm`                    | what the list is narrowed by: `FieldTerm` and `TextTerm`, discriminated by `kind`, ids never labels, in the order they were added; `fieldTerm`, `textTerm`, `termKey`                                                                          |
+| `textOf(query)`, `valuesOf(query, field)`      | the two readings a list takes of a query: the free text as one string, and every value picked for a field — empty narrows nothing                                                                                                              |
+| `withTerm`, `withoutTerm`, `toggledTerm`       | the pure operations on a query the input is built from, with `sameTerm`, `isTextTerm`, `isFieldTerm` and `EMPTY_FILTER`                                                                                                                        |
+| `filterInputPhrases`                           | the input's English, part of `uiKitPhrases`                                                                                                                                                                                                    |
+| `ThemeSwitcher`                                | the button that cycles the shared theme — light, dark, system — reading and writing it itself; `className`                                                                                                                                     |
+| `useResolvedTheme()`                           | the theme to paint, `light` or `dark`, re-rendering when the user switches here or in another tab, or the OS does on `system`                                                                                                                  |
+| `themeSwitcherPhrases`                         | the switcher's English, part of `uiKitPhrases`                                                                                                                                                                                                 |
+| `NotificationList`                             | the toast stack over a store from `createNotifications`: one `Toast` per entry with its actions and a close, an action taken dismissing it, two `aria-live` regions announcing them, hover and focus holding a lifetime; `className` places it |
+| `notificationListPhrases`                      | the stack's English, part of `uiKitPhrases`                                                                                                                                                                                                    |
 
 ## The filter
 
@@ -127,5 +129,27 @@ useEffect(() => {
 
 Outside a render — a host's `theme`, a script with no framework — `readResolvedTheme` and
 `subscribeResolvedTheme` from `@enonic/ui-utils` answer the same.
+
+## The notifications
+
+`NotificationList` renders a store the application created with `createNotifications` from
+`@enonic/ui-utils` — the same split as the theme, store below and component above — and nothing
+else: the kit holds no instance. The application exports its one store, renders the list once
+where its shell puts the corner, and hands the same store to every `Host` it creates for a mount.
+An action taken dismisses the toast, and so does the close; a toast raised with `autoHide: false`
+stays until one or the other; a hovered or focused toast holds its lifetime; a toast closed from
+the keyboard hands its focus to the toast next to it, or back to where the stack was entered from;
+the stack announces an info or a success politely and a warning or an error assertively.
+
+```tsx
+export const notifications = createNotifications();
+
+<NotificationList
+  notifications={notifications}
+  className="fixed right-6 bottom-6 z-60 max-w-115"
+/>;
+
+notifications.notify('success', 'Deleted', { actions: [{ label: 'Undo', onClick: undo }] });
+```
 
 Part of the [Enonic UI Toolkit](https://github.com/enonic/npm-enonic-ui-toolkit).

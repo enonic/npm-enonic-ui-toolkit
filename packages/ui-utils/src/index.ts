@@ -1,8 +1,10 @@
 /**
  * The root entry needs no peer: the errors, the i18n core, the values a form edits with the
- * helpers that parse and format them, and the stored theme. The transport, which needs
- * `neverthrow`, is its own entry, `@enonic/ui-utils/request`.
+ * helpers that parse and format them, the stored theme and the notification store. The transport,
+ * which needs `neverthrow`, is its own entry, `@enonic/ui-utils/request`.
  */
+export { createNotifications } from './create-notifications';
+export type { Notifications } from './create-notifications';
 export { dateFromTime, formatDate, formatTime, pad, parseDateTime, parseTime } from './date';
 export type { TimeOfDay } from './date';
 export { DateTime } from './date-time';
@@ -14,6 +16,24 @@ export type { LocalDateTimeFields } from './local-date-time';
 export { LocalTime } from './local-time';
 export { localize } from './localize';
 export type { Phrases, PhraseValue } from './localize';
+export {
+  admit,
+  EMPTY_STATE,
+  findDuplicate,
+  isUrgent,
+  lifetimeFor,
+  LONG_LIFETIME_MS,
+  MAX_LIFETIME_MS,
+  remove,
+  SHORT_LIFETIME_MS,
+  VISIBLE_LIMIT,
+} from './notifications';
+export type {
+  NotificationAction,
+  NotificationData,
+  NotificationOptions,
+  NotificationsState,
+} from './notifications';
 export {
   ADMIN_ROLE_KEY,
   ANONYMOUS_USER_KEY,
