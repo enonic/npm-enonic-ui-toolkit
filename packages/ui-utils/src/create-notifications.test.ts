@@ -431,6 +431,26 @@ describe('notifications', () => {
     expect(messages()).toEqual(['first', 'second', 'third']);
   });
 
+  it('costs nobody else the change or the close when a listener throws', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onClose = vi.fn();
+    store.notify('info', 'first', { owner: 'app:users', onClose });
+    store.notify('info', 'second', { owner: 'app:users' });
+    store.notifications.listen(() => {
+      throw new Error('boom');
+    });
+    const after = vi.fn();
+    store.notifications.listen(after);
+
+    expect(() => store.dismissOwned('app:users')).not.toThrow();
+    expect(messages()).toEqual([]);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(after).toHaveBeenCalledTimes(2);
+    expect(error).toHaveBeenCalledTimes(2);
+
+    error.mockRestore();
+  });
+
   it('stops reporting once unsubscribed', () => {
     const listener = vi.fn();
     const unsubscribe = store.notifications.listen(listener);

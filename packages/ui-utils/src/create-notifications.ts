@@ -104,7 +104,11 @@ export function createNotifications(): Notifications {
         if (state.visible !== next.visible) {
           break;
         }
-        listener(next.visible);
+        try {
+          listener(next.visible);
+        } catch (cause: unknown) {
+          console.error('A notifications listener failed:', cause);
+        }
       }
     }
 
