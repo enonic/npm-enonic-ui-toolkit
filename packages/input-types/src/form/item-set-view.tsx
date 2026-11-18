@@ -15,7 +15,12 @@ import type { FormItemSet } from '../schema';
 import { FormItemRenderer } from './form-item-renderer';
 import { useFormRender } from './form-render-context';
 import { ItemSetOccurrenceView } from './item-set-occurrence-view';
-import { useItemSetChildErrors, useSetChildShowErrors, useSetOccurrenceError } from './set-errors';
+import {
+  useItemSetChildErrors,
+  useSetChildShowErrors,
+  useSetOccurrenceError,
+  useSetServerErrors,
+} from './set-errors';
 import { SetHeader } from './set-header';
 import {
   usePropertySetKeys,
@@ -65,6 +70,7 @@ export const ItemSetView = ({ itemSet, propertySet }: ItemSetViewProps): ReactEl
     propertySets,
   );
   const childErrors = useItemSetChildErrors(formItems, propertySets);
+  const serverErrors = useSetServerErrors(propertySets);
 
   const addAt = useCallback(
     (index: number) => {
@@ -146,7 +152,8 @@ export const ItemSetView = ({ itemSet, propertySet }: ItemSetViewProps): ReactEl
                 onToggle={handleToggleSingle}
                 occurrences={occurrences}
                 hasErrors={
-                  (childShowErrors.get(index) ?? false) && (childErrors.get(index) ?? false)
+                  ((childShowErrors.get(index) ?? false) && (childErrors.get(index) ?? false)) ||
+                  serverErrors.get(index) === true
                 }
               >
                 {formItems.map((formItem, index) => (

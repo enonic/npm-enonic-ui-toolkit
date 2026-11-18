@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { useServerErrors } from '../context/server-errors';
 import {
   useValidationVisibility,
   type ValidationVisibility,
@@ -14,6 +15,7 @@ import type { SetOccurrenceManagerState } from '../descriptor/set-occurrence-man
 import { validateFormItemsValid } from '../descriptor/validate-form';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { FormItem, FormOptionSet, Occurrences } from '../schema';
+import { matchesOccurrencePath } from '../utils/server-errors';
 import { useOptionalFormRender } from './form-render-context';
 import { SELECTED_NAME } from './option-set-selection';
 
@@ -133,6 +135,24 @@ export function useOptionSetChildErrors(
     propertySets.forEach((set, i) => next.set(i, hasOptionSetOccurrenceError(optionSet, set)));
     return next;
   }, [optionSet, propertySets, tick]);
+}
+
+/** Whether the server reported an error on each set occurrence or on anything under it. */
+export function useSetServerErrors(propertySets: PropertySet[]): Map<number, boolean> {
+  const entries = useServerErrors()?.entries;
+  return useMemo(() => {
+    if (entries === undefined || entries.length === 0 || propertySets.length === 0) return EMPTY;
+    const next = new Map<number, boolean>();
+    propertySets.forEach((set, i) => {
+      const path = set.getPropertyPath().toString();
+      const occurrencePath = path.startsWith('.') ? path.slice(1) : path;
+      next.set(
+        i,
+        entries.some((entry) => matchesOccurrencePath(entry.path, occurrencePath)),
+      );
+    });
+    return next;
+  }, [entries, propertySets]);
 }
 
 type OccurrenceInteraction = {
