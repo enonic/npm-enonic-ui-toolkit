@@ -1,6 +1,14 @@
 import { useCallback, useMemo } from 'react';
 
-import { PropertyArray, type PropertySet, Value, ValueTypes } from '../data';
+import { useServerErrors } from '../context/server-errors';
+import {
+  PropertyArray,
+  PropertyPath,
+  PropertyPathElement,
+  type PropertySet,
+  Value,
+  ValueTypes,
+} from '../data';
 import { usePropertyArray } from '../hooks/use-property-array';
 import { useInputTypesPhrases } from '../i18n/use-phrases';
 import type { FormOptionSet } from '../schema';
@@ -92,6 +100,7 @@ export function useOptionSetSelection(
 ): UseOptionSetSelectionResult {
   const t = useInputTypesPhrases();
   const notify = useOptionalFormRender()?.notify;
+  const serverErrors = useServerErrors();
   const isRadio = optionSet.isRadioSelection();
   const schemaOptionNames = useMemo(
     () => optionSet.getOptions().map((o) => o.getName()),
@@ -119,24 +128,47 @@ export function useOptionSetSelection(
     [notify, occurrence, t],
   );
 
+  // The fields of an option that is no longer selected are gone, and their server errors with them.
+  const clearOptionServerErrors = useCallback(
+    (name: string) => {
+      if (serverErrors === undefined) return;
+      const path = PropertyPath.fromParent(
+        occurrence.getPropertyPath(),
+        new PropertyPathElement(name, 0),
+      ).toString();
+      serverErrors.clearField(path.startsWith('.') ? path.slice(1) : path);
+    },
+    [serverErrors, occurrence],
+  );
+
   const select = useCallback(
     (name: string) => {
       ensureOptionDataSet(occurrence, name);
       if (isRadio) {
         for (const prev of selectedNames) {
-          if (prev !== name) warnIfOptionHasData(prev);
+          if (prev === name) continue;
+          warnIfOptionHasData(prev);
+          clearOptionServerErrors(prev);
         }
         writeRadioSelection(selectedArray, name);
       } else {
         insertMultiSelection(selectedArray, name, selectedNames);
       }
     },
-    [isRadio, selectedArray, selectedNames, occurrence, warnIfOptionHasData],
+    [
+      isRadio,
+      selectedArray,
+      selectedNames,
+      occurrence,
+      warnIfOptionHasData,
+      clearOptionServerErrors,
+    ],
   );
 
   const deselect = useCallback(
     (name: string) => {
       warnIfOptionHasData(name);
+      clearOptionServerErrors(name);
       const size = selectedArray.getSize();
       for (let i = 0; i < size; i++) {
         if (selectedArray.get(i)?.getValue().getString() === name) {
@@ -145,7 +177,7 @@ export function useOptionSetSelection(
         }
       }
     },
-    [selectedArray, warnIfOptionHasData],
+    [selectedArray, warnIfOptionHasData, clearOptionServerErrors],
   );
 
   const toggle = useCallback(
