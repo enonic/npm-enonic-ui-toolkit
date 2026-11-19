@@ -95,9 +95,7 @@ export const SetOccurrenceHeader = ({
               onClick={onToggle}
             >
               {children}
-              {hasErrors && !expanded && (
-                <FilledOctagonAlert size={16} className="shrink-0 text-error" />
-              )}
+              {hasErrors && <FilledOctagonAlert size={16} className="shrink-0 text-error" />}
             </button>
             <button
               type="button"

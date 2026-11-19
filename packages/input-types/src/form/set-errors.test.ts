@@ -3,12 +3,17 @@ import { cleanup, renderHook } from '@testing-library/preact';
 import { createElement, type ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { type ServerErrorEntry, ServerErrorsProvider } from '../context/server-errors';
 import {
   type ValidationVisibility,
   ValidationVisibilityProvider,
 } from '../context/validation-visibility';
 import { type PropertyArray, PropertyTree } from '../data';
-import { effectiveOccurrenceVisibility, useSetChildShowErrors } from './set-errors';
+import {
+  effectiveOccurrenceVisibility,
+  useSetChildShowErrors,
+  useSetServerErrors,
+} from './set-errors';
 
 vi.mock('@enonic/ui', () => ({}));
 
@@ -71,5 +76,44 @@ describe('useSetChildShowErrors', () => {
 
     expect(result.current.childShowErrors.get(0)).toBe(true);
     expect(result.current.childShowErrors.get(1)).toBe(false);
+  });
+});
+
+describe('useSetServerErrors', () => {
+  function renderServerErrors(entries: ServerErrorEntry[] | undefined) {
+    const root = new PropertyTree().getRoot();
+    root.addPropertySet('choice');
+    root.addPropertySet('choice');
+    const sets = root
+      .getPropertyArray('choice')!
+      .getProperties()
+      .map((property) => property.getPropertySet()!);
+    return renderHook(() => useSetServerErrors(sets), {
+      wrapper: ({ children }: { children?: ReactNode }) =>
+        entries === undefined
+          ? createElement('div', null, children)
+          : createElement(
+              ServerErrorsProvider,
+              { entries, clear: () => undefined, clearField: () => undefined },
+              children,
+            ),
+    }).result;
+  }
+
+  it('marks the occurrence a nested server error sits under', () => {
+    const first = renderServerErrors([{ path: 'choice.color.value', message: 'no' }]);
+    expect(first.current.get(0)).toBe(true);
+    expect(first.current.get(1)).toBe(false);
+
+    const second = renderServerErrors([{ path: 'choice[1].color.value', message: 'no' }]);
+    expect(second.current.get(0)).toBe(false);
+    expect(second.current.get(1)).toBe(true);
+  });
+
+  it('marks nothing for errors elsewhere or without a provider', () => {
+    expect(renderServerErrors([{ path: 'choices.value', message: 'no' }]).current.get(0)).toBe(
+      false,
+    );
+    expect(renderServerErrors(undefined).current.size).toBe(0);
   });
 });

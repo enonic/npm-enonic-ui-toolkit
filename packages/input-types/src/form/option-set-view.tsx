@@ -26,6 +26,7 @@ import {
   useOptionSetChildErrors,
   useSetChildShowErrors,
   useSetOccurrenceError,
+  useSetServerErrors,
 } from './set-errors';
 import { SetHeader } from './set-header';
 import {
@@ -98,6 +99,7 @@ export const OptionSetView = ({ optionSet, propertySet }: OptionSetViewProps): R
     propertySets,
   );
   const childErrors = useOptionSetChildErrors(optionSet, propertySets);
+  const serverErrors = useSetServerErrors(propertySets);
 
   const addAt = useCallback(
     (index: number, selectedName?: string) => {
@@ -233,7 +235,10 @@ export const OptionSetView = ({ optionSet, propertySet }: OptionSetViewProps): R
                 onRemove={handleRemove}
                 onReset={isRadio && !state.canRemove ? handleReset : undefined}
                 onToggle={handleToggleSingle}
-                hasErrors={(childShowErrors.get(index) ?? false) && childErrors.get(index) === true}
+                hasErrors={
+                  ((childShowErrors.get(index) ?? false) && childErrors.get(index) === true) ||
+                  serverErrors.get(index) === true
+                }
               >
                 <OptionSetOccurrenceBody
                   optionSet={optionSet}
