@@ -178,6 +178,39 @@ types what the client's `Form.fromJson` and `PropertyTree.fromJson` read — one
 types are step 1. app-users has no lib-admin-ui and never will, so it is the consumer that proves
 the package stands on its own.
 
+## Standalone validation errors
+
+`FieldError` accepts native `div` attributes, including an `id` for a control's
+`aria-describedby`. Set the control's `aria-invalid` while its error is visible.
+The visible error updates immediately; a separate polite live region announces its text after
+500 ms, cancelling pending feedback when the error changes or disappears. Correcting a value and
+making it invalid again announces the same error again. When there is no error, only the visually
+hidden live region remains, without the error's layout classes.
+
+Give each error one explicit announcement owner. Standalone errors use `FieldError`'s default
+announcement. Use `announce={false}` when the control or a parent already owns that feedback;
+this preserves the visible error and its `id` without creating another live region.
+`@enonic/ui`'s `Input` announces its own `error`; it does not need a second `FieldError` for that text.
+
+Content Studio's existing error announcers remain the owners for their fields. Its
+`AnnouncedFieldError`, display-name error region, attachment error regions and site-configuration
+announcer should render their nested `FieldError` with `announce={false}`. For example, when the
+application provides its own `PoliteAnnouncement`:
+
+```tsx
+<FieldError id={errorId} message={message} announce={false} />
+<PoliteAnnouncement message={message} />
+```
+
+A screen reader may also announce changes to a focused control's `aria-describedby` and
+`aria-invalid`. The validation story opts out of `FieldError`'s live announcement for that reason
+when testing VoiceOver with Chrome. Do not infer that description changes are announced by every
+screen reader: verify clearing, correcting, clearing again and refocusing the field in the
+supported browser and screen-reader combinations before relying on that feedback alone.
+
+Pass only errors allowed by the form's validation visibility, and suppress them while processing,
+as the built-in input components already do.
+
 ## The manifest
 
 For `architecture.md`'s table, the row this package was waiting for, filled in:
@@ -186,8 +219,8 @@ For `architecture.md`'s table, the row this package was waiting for, filled in:
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
 | `input-types` | `react`\*, `react-dom`\*, `preact`\*, `@enonic/ui`, `@enonic/ui-utils`, `@dnd-kit/core`, `@dnd-kit/sortable`, `focus-trap-react` | `@enonic/ui-types`, `lucide-react` |
 
-`@enonic/ui`'s floor is 1.4.0, as it is `ui-kit`'s: 1.3.0 shipped `I18nProvider` and `usePhrases`
-(npm-enonic-ui#542), and the toolkit moves its floor with each release it builds against. The
+`input-types` requires `@enonic/ui` `^1.7.1`: its `Input` links errors and descriptions to the
+control and provides its own polite error region (npm-enonic-ui#576). The
 `@dnd-kit` pair is a peer for the reason `react-resizable-panels` is: a sortable finds its
 `DndContext` through a context, and two copies are two contexts. Content Studio and lib-admin-ui
 both carry the pair already. `focus-trap-react` is what the set confirmations trap focus with, as
