@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/preact-vite';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { FieldError } from './field-error';
 
@@ -62,6 +62,38 @@ export const Dismissible: Story = {
   render: () => <DismissibleDemo />,
 };
 
+function ValidationDemo() {
+  const id = useId();
+  const errorId = `${id}-error`;
+  const [value, setValue] = useState('Valid value');
+  const message = value.trim() ? undefined : 'This field is required';
+
+  return (
+    <div className="flex w-80 flex-col gap-y-2 p-4">
+      <label htmlFor={id}>Required value</label>
+      <input
+        id={id}
+        value={value}
+        required
+        aria-invalid={!!message || undefined}
+        aria-describedby={message ? errorId : undefined}
+        onChange={(event) => setValue(event.currentTarget.value)}
+        className="rounded-sm border border-bdr-subtle bg-surface-neutral px-3 py-2 text-main"
+      />
+      <FieldError id={errorId} message={message} announce={false} />
+      <p className="text-sm text-subtle">
+        VoiceOver with Chrome reads this field's changed error description. Clear the value, enter a
+        value and clear it again. FieldError does not queue a second announcement in this example.
+      </p>
+    </div>
+  );
+}
+
+export const ValidationAnnouncement: Story = {
+  name: 'Features / Validation announcement',
+  render: () => <ValidationDemo />,
+};
+
 export const AllVariants: Story = {
   name: 'States / All Variants',
   render: () => (
@@ -79,7 +111,7 @@ export const AllVariants: Story = {
         <FieldError message="Maximum 3 occurrences allowed" />
       </div>
       <div>
-        <h3 className="mb-3 font-medium text-sm">No error (renders nothing)</h3>
+        <h3 className="mb-3 font-medium text-sm">No error (nothing visible)</h3>
         <FieldError message={undefined} />
       </div>
     </div>
